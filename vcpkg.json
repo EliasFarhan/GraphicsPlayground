@@ -1,0 +1,18 @@
+{
+    "name": "gpr5300",
+    "version-string": "1.0",
+    "dependencies":
+    [
+        "glm",
+        "sdl2",
+      {
+        "name": "glad",
+        "features": [ "extensions", "gles2-api-latest" ]
+      },
+        "stb",
+        {
+            "name": "imgui",
+            "features": ["sdl2-binding", "opengl3-glad-binding"]
+        }
+    ]
+}
