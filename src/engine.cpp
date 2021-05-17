@@ -1,6 +1,6 @@
 #include <engine.h>
 #include <iostream>
-#include <glad/glad.h>
+#include <GL/glew.h>
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -18,11 +18,11 @@ void Engine::Init()
 #ifdef WIN32
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 #else
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 #endif
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
@@ -31,10 +31,6 @@ void Engine::Init()
 	// Turn on double buffering with a 24bit Z buffer.
 	// You may need to change this to 16 or 32 for your system
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
@@ -47,8 +43,8 @@ void Engine::Init()
 		"GPR5300",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		windowSize_.x,
-		windowSize_.y,
+		static_cast<int>(windowSize_.x),
+		static_cast<int>(windowSize_.y),
 		flags
 	);
 
@@ -61,10 +57,9 @@ void Engine::Init()
 	glRenderContext_ = SDL_GL_CreateContext(window_);
 	SDL_GL_MakeCurrent(window_, glRenderContext_);
 	SDL_GL_SetSwapInterval(1);
-
-	if (!gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress))
+    if (const auto errorCode = glewInit(); GLEW_OK != errorCode)
 	{
-		std::cerr << "Failed to initialize OpenGL context\n";
+		std::cerr << "Failed to initialize GLEW\n";
 		assert(false);
 	}
 	IMGUI_CHECKVERSION();
@@ -122,6 +117,7 @@ void Engine::Run()
 		ImGui::NewFrame();
 		DrawImGui();
 		ImGui::Render();
+		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		program_.Update(dt);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
