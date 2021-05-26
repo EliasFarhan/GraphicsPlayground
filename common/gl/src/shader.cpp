@@ -91,6 +91,21 @@ namespace gl
         glUniform1i(GetUniformLocation(uniformName), i);
     }
 
+    void ShaderProgram::SetVec2(std::string_view uniformName, glm::vec2 v)
+    {
+        glUniform2fv(GetUniformLocation(uniformName), 1, &v[0]);
+    }
+
+    void ShaderProgram::SetVec3(std::string_view uniformName, glm::vec3 v)
+    {
+        glUniform3fv(GetUniformLocation(uniformName), 1, &v[0]);
+    }
+
+    void ShaderProgram::SetVec4(std::string_view uniformName, glm::vec4 v)
+    {
+        glUniform4fv(GetUniformLocation(uniformName), 1, &v[0]);
+    }
+
     void ShaderProgram::Bind() const
     {
         glUseProgram(program_);

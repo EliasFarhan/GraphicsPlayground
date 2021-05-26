@@ -3,6 +3,7 @@
 #include "gl/engine.h"
 #include <GL/glew.h>
 #include "gl/shader.h"
+#include "gl/vertex_array.h"
 
 namespace gl
 {
@@ -28,13 +29,20 @@ namespace gl
             GLuint VAO = 0;
         };
         BasicTriangleProgram basicTriangleProgram_;
+
+        struct BasicQuadProgram
+        {
+            ShaderProgram shaderProgram;
+            Quad quad{glm::vec2(0.5f), glm::vec2(0.0f)};
+        };
+        BasicQuadProgram basicQuadProgram_;
     };
 
     void HelloTriangle::Init()
     {
         basicTriangleProgram_.shaderProgram.CreateDefaultProgram(
-            "data/shaders/hello_triangle/triangle.vert", 
-            "data/shaders/hello_triangle/triangle.frag");
+            "data/shaders/triangle.vert", 
+            "data/shaders/triangle.frag");
         glGenVertexArrays(1, &basicTriangleProgram_.VAO);
         // ..:: Initialization code (done once (unless your object frequently changes)) :: ..
         // 1. bind Vertex Array Object
@@ -46,6 +54,12 @@ namespace gl
         // 3. then set our vertex attributes pointers
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
+
+        basicQuadProgram_.quad.Init();
+        basicQuadProgram_.shaderProgram.CreateDefaultProgram(
+            "data/shaders/quad.vert",
+            "data/shaders/quad.frag"
+        );
     }
 
     void HelloTriangle::Update(seconds dt)
@@ -59,6 +73,8 @@ namespace gl
     {
         glDeleteVertexArrays(1, &basicTriangleProgram_.VAO);
         glDeleteBuffers(1, &basicTriangleProgram_.VBO);
+
+        basicQuadProgram_.quad.Destroy();
     }
 
     void HelloTriangle::OnEvent(SDL_Event& event)

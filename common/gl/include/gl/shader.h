@@ -6,6 +6,10 @@
 
 #include "filesystem.h"
 
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
+
 namespace gl
 {
 
@@ -28,7 +32,9 @@ public:
 
     void SetFloat(std::string_view uniformName, float f);
     void SetInt(std::string_view uniformName, int i);
-
+    void SetVec2(std::string_view uniformName, glm::vec2 v);
+    void SetVec3(std::string_view uniformName, glm::vec3 v);
+    void SetVec4(std::string_view uniformName, glm::vec4 v);
     void Bind() const;
 private:
 
