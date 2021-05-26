@@ -1,6 +1,6 @@
 #include <SDL_main.h>
 
-#include "engine.h"
+#include "gl/engine.h"
 #include <GL/glew.h>
 #include "gl/shader.h"
 

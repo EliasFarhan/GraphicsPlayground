@@ -1,0 +1,16 @@
+
+find_package(SDL2 CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+set(OpenGL_GL_PREFERENCE GLVND)
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+
+file(GLOB_RECURSE CommonGL_FILES src/* include/*)
+add_library(CommonGL STATIC ${CommonGL_FILES})
+target_link_libraries(CommonGL PUBLIC SDL2::SDL2 SDL2::SDL2main)
+target_link_libraries(CommonGL PUBLIC imgui::imgui)
+target_link_libraries(CommonGL PUBLIC GLEW::GLEW)
+target_link_libraries(CommonGL PUBLIC ${OPENGL_LIBRARIES})
+target_link_libraries(CommonGL PUBLIC Core)
+target_include_directories(CommonGL PUBLIC "include/")
+set_target_properties(CommonGL PROPERTIES UNITY_BUILD ON)

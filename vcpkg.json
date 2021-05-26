@@ -2,14 +2,19 @@
   "name": "gpr5300",
   "version-string": "1.0",
   "dependencies": [
+    "assimp",
     "glm",
-    "sdl2",
+    {
+      "name": "sdl2",
+      "features": [ "vulkan" ]
+    },
     "glew",
     "fmt",
     "stb",
     {
       "name": "imgui",
-      "features": [ "sdl2-binding", "opengl3-glew-binding" ]
-    }
+      "features": [ "sdl2-binding", "opengl3-glew-binding", "vulkan-binding" ]
+    },
+    "vulkan-memory-allocator"
   ]
 }

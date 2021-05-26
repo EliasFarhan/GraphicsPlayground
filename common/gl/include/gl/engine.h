@@ -34,7 +34,7 @@ namespace gl
         Program& program_;
         SDL_Window* window_;
         SDL_GLContext glRenderContext_;
-        glm::vec2 windowSize_{1024,720};
+        glm::vec2 windowSize_{ 1024,720 };
         float deltaTime_ = 0.0f;
     };
 } // namespace gl
