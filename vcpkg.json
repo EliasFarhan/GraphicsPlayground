@@ -4,6 +4,7 @@
   "dependencies": [
     "assimp",
     "glm",
+    "gli",
     {
       "name": "sdl2",
       "features": [ "vulkan" ]

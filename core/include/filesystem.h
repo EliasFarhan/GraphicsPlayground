@@ -2,7 +2,7 @@
 #include <string_view>
 #include <service_locator.h>
 
-namespace common
+namespace core
 {
 
     /**

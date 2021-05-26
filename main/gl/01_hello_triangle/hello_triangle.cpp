@@ -2,6 +2,8 @@
 
 #include "gl/engine.h"
 #include <GL/glew.h>
+
+#include "imgui.h"
 #include "gl/shader.h"
 #include "gl/vertex_array.h"
 
@@ -33,9 +35,18 @@ namespace gl
         struct BasicQuadProgram
         {
             ShaderProgram shaderProgram;
-            Quad quad{glm::vec2(0.5f), glm::vec2(0.0f)};
+            glm::vec4 color{1.0f};
+            Quad quad{glm::vec2(1.0f), glm::vec2(0.0f)};
         };
         BasicQuadProgram basicQuadProgram_;
+
+        enum class ProgramType
+        {
+            Triangle,
+            Quad,
+            Length
+        };
+        ProgramType currentProgram_ = ProgramType::Triangle;
     };
 
     void HelloTriangle::Init()
@@ -60,21 +71,34 @@ namespace gl
             "data/shaders/quad.vert",
             "data/shaders/quad.frag"
         );
+        basicQuadProgram_.shaderProgram.Bind();
+        basicQuadProgram_.shaderProgram.SetVec3("color", glm::vec3(1.0f));
     }
 
     void HelloTriangle::Update(seconds dt)
     {
-        basicTriangleProgram_.shaderProgram.Bind();
-        glBindVertexArray(basicTriangleProgram_.VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        switch (currentProgram_)
+        {
+        case ProgramType::Triangle: 
+            basicTriangleProgram_.shaderProgram.Bind();
+            glBindVertexArray(basicTriangleProgram_.VAO);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+            break;
+        case ProgramType::Quad: 
+            basicQuadProgram_.shaderProgram.Bind();
+            basicQuadProgram_.quad.Draw();
+            break;
+        default: 
+            break;
+        }
+        
     }
 
     void HelloTriangle::Destroy()
     {
         glDeleteVertexArrays(1, &basicTriangleProgram_.VAO);
         glDeleteBuffers(1, &basicTriangleProgram_.VBO);
-
-        basicQuadProgram_.quad.Destroy();
+        
     }
 
     void HelloTriangle::OnEvent(SDL_Event& event)
@@ -83,12 +107,25 @@ namespace gl
 
     void HelloTriangle::DrawImGui()
     {
+        ImGui::Begin("Hello Triangle");
+        int currentProgram = static_cast<int>(currentProgram_);
+        if(ImGui::Combo("TriangleProgramCombo", &currentProgram,
+            "Triangle\0Quad"))
+        {
+            currentProgram_ = static_cast<ProgramType>(currentProgram);
+        }
+        if(ImGui::ColorPicker3("Quad Color", &basicQuadProgram_.color[0]))
+        {
+            basicQuadProgram_.shaderProgram.SetVec3("color", basicQuadProgram_.color);
+        }
+
+        ImGui::End();
     }
 }
 
 int main(int argc, char** argv)
 {
-    common::Filesystem filesystem;
+    core::Filesystem filesystem;
     gl::HelloTriangle program;
     gl::Engine engine(program);
     engine.Run();

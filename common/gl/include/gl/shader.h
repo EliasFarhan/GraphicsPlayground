@@ -5,6 +5,7 @@
 #include <string>
 
 #include "filesystem.h"
+#include "texture.h"
 
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
@@ -36,6 +37,7 @@ public:
     void SetVec3(std::string_view uniformName, glm::vec3 v);
     void SetVec4(std::string_view uniformName, glm::vec4 v);
     void Bind() const;
+    void SetTexture(std::string_view uniformName, const Texture& texture, int textureUnit);
 private:
 
     static constexpr unsigned INVALID_SHADER = 0;
@@ -44,7 +46,7 @@ private:
 
     int GetUniformLocation(std::string_view uniformName);
     static unsigned CreateShaderProgram(unsigned vertexShader, unsigned fragmentShader);
-    unsigned LoadShader(common::BufferFile&& bufferFile, int shaderType) const;
+    unsigned LoadShader(core::BufferFile&& bufferFile, int shaderType) const;
     static unsigned LoadShader(char* shaderContent, unsigned shaderType);
 
 };

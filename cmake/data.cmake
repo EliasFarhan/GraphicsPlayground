@@ -56,30 +56,30 @@ file(GLOB_RECURSE DATA_FILES
 		"${main_folder}/data/*.bmp"
 		"${main_folder}/data/*.hdr"
 		)
-		source_group("Shader Files" FILES ${DATA_FILES})
-foreach(Data ${DATA_FILES})
-	get_filename_component(FILE_NAME ${Data} NAME)
-	get_filename_component(PATH_NAME ${Data} DIRECTORY)
-	get_filename_component(EXTENSION ${Data} EXT)
+		source_group("Data" FILES ${DATA_FILES})
+foreach(DATA ${DATA_FILES})
+	get_filename_component(FILE_NAME ${DATA} NAME)
+	get_filename_component(PATH_NAME ${DATA} DIRECTORY)
+	get_filename_component(EXTENSION ${DATA} EXT)
 	file(RELATIVE_PATH PATH_NAME "${main_folder}" ${PATH_NAME})
-	#MESSAGE("Data PATH: ${PATH_NAME} NAME: ${FILE_NAME}")
+	MESSAGE("Data PATH: ${PATH_NAME} NAME: ${FILE_NAME}")
 	set(DATA_OUTPUT "${CMAKE_BINARY_DIR}/${PATH_NAME}/${FILE_NAME}")
-	#MESSAGE("Data OUT PATH: ${Data_OUTPUT}")
+	MESSAGE("Data OUT PATH: ${DATA_OUTPUT}")
 	add_custom_command(
-			OUTPUT ${Data_OUTPUT}
+			OUTPUT ${DATA_OUTPUT}
 			COMMAND ${CMAKE_COMMAND} -E copy 
 			${main_folder}/${PATH_NAME}/${FILE_NAME} 
-			${Data_OUTPUT}
-			DEPENDS ${Data})
-	list(APPEND Data_OUTPUT_FILES ${Data_OUTPUT})
-endforeach(Data)
+			${DATA_OUTPUT}
+			DEPENDS ${DATA})
+	list(APPEND Data_OUTPUT_FILES ${DATA_OUTPUT})
+endforeach(DATA)
 
 set(DATA_TARGET "${exe_name}_Data")
 MESSAGE(${DATA_TARGET})
 
 add_custom_target(
 		"${exe_name}_DATA"
-		DEPENDS ${DATA_FILES}
+		DEPENDS ${Data_OUTPUT_FILES}
 )
 CheckGlShader(${main_folder} ${exe_name})
 add_dependencies("${exe_name}_DATA" "${exe_name}_ShadersCheck")

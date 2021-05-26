@@ -1,10 +1,10 @@
 #include <gl/engine.h>
-#include <iostream>
-#include <GL/glew.h>
+#include <gl/glew.h>
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
+#include "log.h"
 
 namespace gl
 {
@@ -51,16 +51,16 @@ namespace gl
 		// Check that everything worked out okay
 		if (window_ == nullptr)
 		{
-			std::cerr << "[Error] Unable to create window\n";
-			return;
+            core::LogError("Unable to create window");
+			std::terminate();
 		}
 		glRenderContext_ = SDL_GL_CreateContext(window_);
 		SDL_GL_MakeCurrent(window_, glRenderContext_);
 		SDL_GL_SetSwapInterval(1);
 		if (const auto errorCode = glewInit(); GLEW_OK != errorCode)
 		{
-			std::cerr << "Failed to initialize GLEW\n";
-			assert(false);
+            core::LogError("Failed to initialize GLEW");
+			std::terminate();
 		}
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();

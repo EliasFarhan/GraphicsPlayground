@@ -20,7 +20,7 @@ namespace gl
         }
     }
 
-    unsigned ShaderProgram::LoadShader(common::BufferFile&& bufferFile, int shaderType) const
+    unsigned ShaderProgram::LoadShader(core::BufferFile&& bufferFile, int shaderType) const
     {
         if (bufferFile.dataBuffer == nullptr)
             return INVALID_SHADER;
@@ -52,8 +52,8 @@ namespace gl
 
     void ShaderProgram::CreateDefaultProgram(std::string_view vertexPath, std::string_view fragmentPath)
     {
-        auto& filesystem = common::FilesystemLocator::get();
-        common::BufferFile vertexFile = filesystem.LoadFile(vertexPath);
+        auto& filesystem = core::FilesystemLocator::get();
+        core::BufferFile vertexFile = filesystem.LoadFile(vertexPath);
 
         const GLuint vertexShader = LoadShader(std::move(vertexFile), GL_VERTEX_SHADER);
         if (vertexShader == INVALID_SHADER)
@@ -61,7 +61,7 @@ namespace gl
             std::cerr << fmt::format("[Error] Loading vertex shader: {} unsuccessful", vertexPath) << '\n';
             return;
         }
-        common::BufferFile fragmentFile = filesystem.LoadFile(fragmentPath);
+        core::BufferFile fragmentFile = filesystem.LoadFile(fragmentPath);
 
         const GLuint fragmentShader = LoadShader(std::move(fragmentFile), GL_FRAGMENT_SHADER);
         if (fragmentShader == INVALID_SHADER)
@@ -109,6 +109,14 @@ namespace gl
     void ShaderProgram::Bind() const
     {
         glUseProgram(program_);
+    }
+
+    void ShaderProgram::SetTexture(std::string_view uniformName, const Texture& texture, int textureUnit)
+    {
+        glActiveTexture(GL_TEXTURE0+textureUnit);
+        glBindTexture(GL_TEXTURE_2D, texture.GetName());
+        glUniform1i(GetUniformLocation(uniformName), textureUnit);
+
     }
 
     int ShaderProgram::GetUniformLocation(std::string_view uniformName)

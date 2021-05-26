@@ -4,10 +4,11 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
+
+#include "log.h"
 namespace fs = std::filesystem;
 
-namespace common
+namespace core
 {
 BufferFile::~BufferFile()
 {
@@ -54,7 +55,7 @@ BufferFile Filesystem::LoadFile(std::string_view path) const
         std::ifstream is(path.data(), std::ifstream::binary);
         if (!is)
         {
-            std::cerr << (fmt::format("[Error] Could not open file: {}  for BufferFile", path));
+            LogError(fmt::format("[Error] Could not open file: {}  for BufferFile", path));
         }
         else
         {

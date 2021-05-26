@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace common
+namespace core
 {
 
     template<class T, class TNull>

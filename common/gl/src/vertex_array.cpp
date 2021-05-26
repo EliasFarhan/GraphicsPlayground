@@ -6,6 +6,10 @@
 
 namespace gl
 {
+    VertexArray::~VertexArray()
+    {
+		FreeVao();
+    }
 
     void VertexArray::GenerateVao()
     {
@@ -23,6 +27,11 @@ namespace gl
 
     Quad::Quad(glm::vec2 size, glm::vec2 offset) : size_(size), offset_(offset)
     {
+    }
+
+    Quad::~Quad()
+    {
+		FreeBuffers();
     }
 
     void Quad::Init()
@@ -104,8 +113,228 @@ namespace gl
 
     void Quad::Destroy()
     {
+		FreeBuffers();
 		FreeVao();
+    }
+
+    void Quad::Draw()
+    {
+		glBindVertexArray(vao_);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
+
+    void Quad::FreeBuffers()
+    {
+		if(ebo_ != 0)
+		{
+			glDeleteBuffers(4, &vbo_[0]);
+			glDeleteBuffers(1, &ebo_);
+		}
+    }
+
+    Cuboid::Cuboid(glm::vec3 size, glm::vec3 offset) : size_(size), offset_(offset)
+    {
+    }
+
+    Cuboid::~Cuboid()
+    {
+		FreeBuffers();
+    }
+
+    void Cuboid::Init()
+    {
+
+		glm::vec3 position[36] =
+		{
+			//Right face 
+			 glm::vec3(0.5f,   0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  -0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,   0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  -0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,   0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  -0.5f ,  0.5f) * size_ + offset_,
+			 //Left face                 *size_+offset_
+			 glm::vec3(-0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f,  0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f, -0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f, -0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f, -0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 //Top face                  *size_+offset_
+			 glm::vec3(-0.5f,  0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f,  0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 //Bottom fa                 *size_+offset_
+			 glm::vec3(-0.5f, -0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(0.5f, -0.5f , -0.5f) * size_ + offset_,
+			 glm::vec3(0.5f, -0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(0.5f, -0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f, -0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f, -0.5f , -0.5f) * size_ + offset_,
+			 //Front fac                 *size_+offset_
+			 glm::vec3(-0.5f, -0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(0.5f, -0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f,  0.5f ,  0.5f) * size_ + offset_,
+			 glm::vec3(-0.5f, -0.5f ,  0.5f) * size_ + offset_,
+			 //Back face
+			glm::vec3(-0.5f , -0.5f , -0.5f) * size_ + offset_,
+			glm::vec3(0.5f ,  0.5f , -0.5f) * size_ + offset_,
+			glm::vec3(0.5f , -0.5f , -0.5f) * size_ + offset_,
+			glm::vec3(0.5f ,  0.5f , -0.5f) * size_ + offset_,
+			glm::vec3(-0.5f , -0.5f , -0.5f) * size_ + offset_,
+			glm::vec3(-0.5f ,  0.5f , -0.5f) * size_ + offset_,
+		};
+		glm::vec2 texCoords[36] = {
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(0.0f, 0.0f),
+
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(1.0f, 0.0f),
+
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(0.0f, 0.0f),
+
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(0.0f, 1.0f),
+
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(0.0f, 0.0f),
+
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(0.0f, 1.0f),
+		};
+
+		glm::vec3 normals[36] =
+		{
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(1.0f, 0.0f, 0.0f),
+
+			glm::vec3(-1.0f, 0.0f, 0.0f),
+			glm::vec3(-1.0f, 0.0f, 0.0f),
+			glm::vec3(-1.0f, 0.0f, 0.0f),
+			glm::vec3(-1.0f, 0.0f, 0.0f),
+			glm::vec3(-1.0f, 0.0f, 0.0f),
+			glm::vec3(-1.0f, 0.0f, 0.0f),
+
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+
+			glm::vec3(0.0f, 0.0f, -1.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
+		};
+
+		glm::vec3 tangent[36]{};
+		for (int i = 0; i < 36; i += 3)
+		{
+			const glm::vec3 edge1 = position[i + 1] - position[i];
+			const glm::vec3 edge2 = position[i + 2] - position[i];
+			const glm::vec2 deltaUV1 = texCoords[i + 1] - texCoords[i];
+			const glm::vec2 deltaUV2 = texCoords[i + 2] - texCoords[i];
+
+			const float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+			tangent[i].x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+			tangent[i].y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+			tangent[i].z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+			tangent[i + 1] = tangent[i];
+			tangent[i + 2] = tangent[i];
+		}
+		GenerateVao();
+		glGenBuffers(4, &vbo_[0]);
+
+		glBindVertexArray(vao_);
+		// position attribute
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_[0]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(position), position, GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+		glEnableVertexAttribArray(0);
+		// texture coord attribute
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_[1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+		glEnableVertexAttribArray(1);
+		// normal attribute
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_[2]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+		glEnableVertexAttribArray(2);
+		//tangent attribute
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_[3]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(tangent), tangent, GL_STATIC_DRAW);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+		glEnableVertexAttribArray(3);
+
+		glBindVertexArray(0);
+    }
+
+	void Cuboid::Destroy()
+	{
+		FreeVao();
+		FreeBuffers();
+	}
+
+    void Cuboid::Draw()
+    {
+		glBindVertexArray(vao_);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+
+    void Cuboid::FreeBuffers()
+    {
 		glDeleteBuffers(4, &vbo_[0]);
-		glDeleteBuffers(1, &ebo_);
     }
 }

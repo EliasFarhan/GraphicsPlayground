@@ -10,6 +10,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS On)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_path(STB_INCLUDE_DIRS "stb.h")
 include(cmake/data.cmake)
 
 add_subdirectory(core)
