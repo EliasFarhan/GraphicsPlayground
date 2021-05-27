@@ -2,7 +2,7 @@
 
 #include "filesystem.h"
 #include "log.h"
-#include "gl/glew.h"
+#include <GL/glew.h>
 #include "fmt/core.h"
 
 #define STB_IMAGE_IMPLEMENTATION

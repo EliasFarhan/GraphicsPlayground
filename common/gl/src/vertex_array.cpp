@@ -2,7 +2,7 @@
 #include <array>
 #include <gl/vertex_array.h>
 
-#include "gl/glew.h"
+#include "GL/glew.h"
 
 namespace gl
 {

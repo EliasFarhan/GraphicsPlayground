@@ -2,7 +2,7 @@
 
 #include "filesystem.h"
 #include "gl/engine.h"
-#include "gl/glew.h"
+#include "GL/glew.h"
 #include "gl/shader.h"
 #include "gl/texture.h"
 #include "gl/vertex_array.h"

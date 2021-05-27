@@ -1,7 +1,7 @@
 #include <iostream>
 #include <gl/shader.h>
 
-#include "gl/glew.h"
+#include <GL/glew.h>
 #include <fmt/core.h>
 
 namespace gl
