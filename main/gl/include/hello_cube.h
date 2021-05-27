@@ -1,8 +1,7 @@
-#include <SDL_main.h>
+#pragma once
 
-#include "filesystem.h"
 #include "gl/engine.h"
-#include <GL/glew.h>
+#include "GL/glew.h"
 #include "gl/shader.h"
 #include "gl/texture.h"
 #include "gl/vertex_array.h"
@@ -22,43 +21,11 @@ namespace gl
 
         void DrawImGui() override;
 
-    public:
-
     private:
-        Cuboid cuboid_;
+        Cuboid cuboid_{glm::vec3(1.0f), glm::vec3(0.0f)};
         ShaderProgram shader_;
         Texture cubeTexture_;
         constexpr static int cubeNmb = 10;
 
     };
-
-    void HelloCube::Init()
-    {
-        cuboid_.Init();
-    }
-
-    void HelloCube::Update(seconds dt)
-    {
-
-    }
-
-    void HelloCube::Destroy()
-    {
-
-    }
-
-    void HelloCube::OnEvent(SDL_Event &event)
-    {
-
-    }
-
-    void HelloCube::DrawImGui()
-    {
-
-    }
-}
-
-int main(int argc, char** argv)
-{
-    return EXIT_SUCCESS;
 }

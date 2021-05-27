@@ -1,59 +1,17 @@
-#include <SDL_main.h>
 
-#include "gl/engine.h"
-#include <GL/glew.h>
 
 #include "imgui.h"
-#include "gl/shader.h"
-#include "gl/vertex_array.h"
+#include "hello_triangle.h"
 
 namespace gl
 {
-    class HelloTriangle : public Program
-    {
-    public:
-        void Init() override;
-        void Update(seconds dt) override;
-        void Destroy() override;
-        void OnEvent(SDL_Event& event) override;
-        void DrawImGui() override;
-    private:
 
-        struct BasicTriangleProgram
-        {
-            ShaderProgram shaderProgram;
-            float vertices[9] = {
-                -0.5f, -0.5f, 0.0f,
-                 0.5f, -0.5f, 0.0f,
-                 0.0f,  0.5f, 0.0f
-            };
-            GLuint VBO = 0;
-            GLuint VAO = 0;
-        };
-        BasicTriangleProgram basicTriangleProgram_;
-
-        struct BasicQuadProgram
-        {
-            ShaderProgram shaderProgram;
-            glm::vec4 color{1.0f};
-            Quad quad{glm::vec2(1.0f), glm::vec2(0.0f)};
-        };
-        BasicQuadProgram basicQuadProgram_;
-
-        enum class ProgramType
-        {
-            Triangle,
-            Quad,
-            Length
-        };
-        ProgramType currentProgram_ = ProgramType::Triangle;
-    };
 
     void HelloTriangle::Init()
     {
         basicTriangleProgram_.shaderProgram.CreateDefaultProgram(
-            "data/shaders/triangle.vert", 
-            "data/shaders/triangle.frag");
+            "data/shaders/01_hello_triangle/triangle.vert",
+            "data/shaders/01_hello_triangle/triangle.frag");
         glGenVertexArrays(1, &basicTriangleProgram_.VAO);
         // ..:: Initialization code (done once (unless your object frequently changes)) :: ..
         // 1. bind Vertex Array Object
@@ -68,8 +26,8 @@ namespace gl
 
         basicQuadProgram_.quad.Init();
         basicQuadProgram_.shaderProgram.CreateDefaultProgram(
-            "data/shaders/quad.vert",
-            "data/shaders/quad.frag"
+            "data/shaders/01_hello_triangle/quad.vert",
+            "data/shaders/01_hello_triangle/quad.frag"
         );
         basicQuadProgram_.shaderProgram.Bind();
         basicQuadProgram_.shaderProgram.SetVec3("color", glm::vec3(1.0f));
@@ -110,7 +68,7 @@ namespace gl
         ImGui::Begin("Hello Triangle");
         int currentProgram = static_cast<int>(currentProgram_);
         if(ImGui::Combo("TriangleProgramCombo", &currentProgram,
-            "Triangle\0Quad"))
+            "Triangle\0Quad\0"))
         {
             currentProgram_ = static_cast<ProgramType>(currentProgram);
         }
@@ -121,13 +79,4 @@ namespace gl
 
         ImGui::End();
     }
-}
-
-int main(int argc, char** argv)
-{
-    core::Filesystem filesystem;
-    gl::HelloTriangle program;
-    gl::Engine engine(program);
-    engine.Run();
-    return EXIT_SUCCESS;
 }
