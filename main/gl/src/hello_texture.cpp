@@ -16,7 +16,7 @@ namespace gl
         shader_.SetTexture("ourTexture", texture_, 0);
     }
 
-    void HelloTexture::Update(seconds dt)
+    void HelloTexture::Update(core::seconds dt)
     {
         shader_.Bind();
         quad_.Draw();

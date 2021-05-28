@@ -47,7 +47,7 @@ add_custom_target(
 
 endfunction()
 
-function(GENERATEDATA main_folder exe_name)
+function(GENERATEGLDATA main_folder exe_name)
 
 file(GLOB_RECURSE DATA_FILES
 		"${main_folder}/data/*.json"

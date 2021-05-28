@@ -8,9 +8,9 @@
 
 namespace gl
 {
-	Engine::Engine(Program& program) : program_(program)
-	{
-	}
+	Engine::Engine(core::Program& program) : program_(program), window_(nullptr), glRenderContext_(nullptr)
+    {
+    }
 
 	void Engine::Init()
 	{
@@ -40,7 +40,7 @@ namespace gl
 
 
 		window_ = SDL_CreateWindow(
-			"GPR5300",
+			"GL Playground",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			static_cast<int>(windowSize_.x),
@@ -90,7 +90,7 @@ namespace gl
 		while (isOpen)
 		{
 			const auto start = std::chrono::system_clock::now();
-			const auto dt = std::chrono::duration_cast<seconds>(start - clock);
+			const auto dt = std::chrono::duration_cast<core::seconds>(start - clock);
 			deltaTime_ = dt.count();
 			clock = start;
 			SDL_Event event;

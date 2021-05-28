@@ -27,8 +27,12 @@ namespace gl
 
         int imageWidth, imageHeight;
         int channelNb;
-        void * imageData = stbi_load_from_memory((unsigned char*)(textureFile.dataBuffer),
-            textureFile.dataLength, &imageWidth, &imageHeight, &channelNb, channelsDesired);
+        stbi_uc * imageData = stbi_load_from_memory(
+            textureFile.dataBuffer,
+            static_cast<int>(textureFile.dataLength), 
+            &imageWidth, 
+            &imageHeight, 
+            &channelNb, channelsDesired);
         /*if (extension == ".hdr")
         {
             //data = stbi_loadf(filename.data(), &width, &height, &reqComponents, 0);
@@ -61,16 +65,26 @@ namespace gl
         }
         switch(channelNb)
         {
+        case 1:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imageWidth, imageHeight, 0,
+                GL_RED, GL_UNSIGNED_BYTE, imageData);
+            break;
+        case 2:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, imageWidth, imageHeight, 0,
+                GL_RG, GL_UNSIGNED_BYTE, imageData);
+            break;
         case 3:
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, 
+                GL_RGB, GL_UNSIGNED_BYTE, imageData);
             break;
         case 4:
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, 
+                GL_RGBA, GL_UNSIGNED_BYTE, imageData);
             break;
         default:
             break;
         }
-
+        //For HDR
         //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, imageWidth, imageHeight, 0, GL_RGB, GL_FLOAT, imageData);
         
         if (mipmap)

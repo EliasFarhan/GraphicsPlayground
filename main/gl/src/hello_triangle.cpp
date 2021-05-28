@@ -33,7 +33,7 @@ namespace gl
         basicQuadProgram_.shaderProgram.SetVec3("color", glm::vec3(1.0f));
     }
 
-    void HelloTriangle::Update(seconds dt)
+    void HelloTriangle::Update(core::seconds dt)
     {
         switch (currentProgram_)
         {

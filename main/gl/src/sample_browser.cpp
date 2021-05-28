@@ -24,7 +24,7 @@ void SampleBrowser::Init()
     samples_[currentIndex_].sample->Init();
 }
 
-void SampleBrowser::Update(seconds dt)
+void SampleBrowser::Update(core::seconds dt)
 {
     samples_[currentIndex_].sample->Update(dt);
 }

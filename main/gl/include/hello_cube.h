@@ -8,12 +8,12 @@
 
 namespace gl
 {
-    class HelloCube : public Program
+    class HelloCube : public core::Program
     {
     public:
         void Init() override;
 
-        void Update(seconds dt) override;
+        void Update(core::seconds dt) override;
 
         void Destroy() override;
 
@@ -24,7 +24,7 @@ namespace gl
     private:
         Cuboid cuboid_{glm::vec3(1.0f), glm::vec3(0.0f)};
         ShaderProgram shader_;
-        Texture cubeTexture_;
+        Texture cubeTexture_{};
         constexpr static int cubeNmb = 10;
 
     };

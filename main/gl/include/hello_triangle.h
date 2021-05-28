@@ -5,11 +5,11 @@
 #include "gl/vertex_array.h"
 
 namespace gl{
-class HelloTriangle : public Program
+class HelloTriangle : public core::Program
 {
 public:
     void Init() override;
-    void Update(seconds dt) override;
+    void Update(core::seconds dt) override;
     void Destroy() override;
     void OnEvent(SDL_Event& event) override;
     void DrawImGui() override;

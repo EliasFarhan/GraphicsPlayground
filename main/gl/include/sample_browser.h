@@ -7,13 +7,13 @@
 
 namespace gl
 {
-    class SampleBrowser : public Program
+    class SampleBrowser : public core::Program
     {
     public:
         SampleBrowser();
         void Init() override;
 
-        void Update(seconds dt) override;
+        void Update(core::seconds dt) override;
 
         void Destroy() override;
 

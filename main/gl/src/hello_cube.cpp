@@ -8,7 +8,7 @@ namespace gl
         cuboid_.Init();
     }
 
-    void HelloCube::Update(seconds dt)
+    void HelloCube::Update(core::seconds dt)
     {
 
     }
