@@ -30,12 +30,19 @@ public:
     };
 
     Mesh() = default;
+
     ~Mesh();
+
     Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, std::vector<Texture>&& textures);
+
     Mesh(const Mesh& other) = delete;
+
     Mesh(Mesh&& other) noexcept = default;
+
     Mesh& operator=(const Mesh& other) = delete;
+
     Mesh& operator=(Mesh&& other) noexcept = default;
+
     void SetupMesh();
 
     void Draw(ShaderProgram& shader);

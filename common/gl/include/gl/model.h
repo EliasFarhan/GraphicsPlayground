@@ -10,10 +10,15 @@ class Model
 {
 public:
     Model() = default;
+
     ~Model();
+
     void LoadModel(std::string_view path);
+
     void Draw(ShaderProgram& shader);
+
     void Destroy();
+
 private:
     std::vector<Mesh> meshes_;
     std::string directory_;
@@ -21,8 +26,11 @@ private:
     std::vector<Texture> textures_;
 
     void ProcessNode(aiNode* node, const aiScene* scene);
+
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<Mesh::Texture> LoadMaterialTextures(aiMaterial* material, aiTextureType type, std::string_view typeName);
+
+    std::vector<Mesh::Texture>
+    LoadMaterialTextures(aiMaterial* material, aiTextureType type, std::string_view typeName);
 };
 
 }

@@ -1,18 +1,25 @@
 #pragma once
+
 #include "gl/engine.h"
 #include <GL/glew.h>
 #include "gl/shader.h"
 #include "gl/vertex_array.h"
 
-namespace gl{
+namespace gl
+{
 class HelloTriangle : public core::Program
 {
 public:
     void Init() override;
+
     void Update(core::seconds dt) override;
+
     void Destroy() override;
+
     void OnEvent(SDL_Event& event) override;
+
     void DrawImGui() override;
+
 private:
 
     struct BasicTriangleProgram
@@ -21,7 +28,7 @@ private:
         float vertices[9] = {
                 -0.5f, -0.5f, 0.0f,
                 0.5f, -0.5f, 0.0f,
-                0.0f,  0.5f, 0.0f
+                0.0f, 0.5f, 0.0f
         };
         GLuint VBO = 0;
         GLuint VAO = 0;
@@ -43,4 +50,5 @@ private:
         Length
     };
     ProgramType currentProgram_ = ProgramType::Triangle;
-};}
+};
+}

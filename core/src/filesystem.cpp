@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "log.h"
+
 namespace fs = std::filesystem;
 
 namespace core
@@ -56,8 +57,7 @@ BufferFile Filesystem::LoadFile(std::string_view path) const
         if (!is)
         {
             LogError(fmt::format("[Error] Could not open file: {}  for BufferFile", path));
-        }
-        else
+        } else
         {
             is.seekg(0, is.end);
             newFile.dataLength = is.tellg();

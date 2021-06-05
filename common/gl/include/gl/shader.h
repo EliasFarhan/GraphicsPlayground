@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include "filesystem.h"
@@ -27,26 +27,39 @@ public:
         COMPUTE = 1u << 5u,
         DEFAULT = VERTEX | FRAGMENT
     };
+
     ~ShaderProgram();
+
     void FreeProgram();
+
     void CreateDefaultProgram(std::string_view vertexPath, std::string_view fragmentPath);
 
     void SetFloat(std::string_view uniformName, float f);
+
     void SetInt(std::string_view uniformName, int i);
+
     void SetVec2(std::string_view uniformName, glm::vec2 v);
+
     void SetVec3(std::string_view uniformName, glm::vec3 v);
+
     void SetVec4(std::string_view uniformName, glm::vec4 v);
+
     void Bind() const;
+
     void SetTexture(std::string_view uniformName, const Texture& texture, int textureUnit);
+
 private:
 
     static constexpr unsigned INVALID_SHADER = 0;
     unsigned int program_ = 0;
-    std::map<std::string, int> uniformMap_;
+    std::unordered_map<std::string, int> uniformMap_;
 
     int GetUniformLocation(std::string_view uniformName);
+
     static unsigned CreateShaderProgram(unsigned vertexShader, unsigned fragmentShader);
+
     unsigned LoadShader(core::BufferFile&& bufferFile, int shaderType) const;
+
     static unsigned LoadShader(char* shaderContent, unsigned shaderType);
 
 };

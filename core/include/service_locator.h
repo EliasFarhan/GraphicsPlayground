@@ -5,37 +5,36 @@
 namespace core
 {
 
-    template<class T, class TNull>
-    class Locator
+template<class T, class TNull>
+class Locator
+{
+    static_assert(std::is_base_of<T, TNull>::value, "TNull has to be a subtype of T");
+public:
+
+    static T& get()
     {
-        static_assert(std::is_base_of<T, TNull>::value, "TNull has to be a subtype of T");
-    public:
+        return *service_;
+    }
 
-        static T& get()
+    static void provide(T* service)
+    {
+        if (service == nullptr)
         {
-            return *service_;
-        }
-
-        static void provide(T* service)
+            // Revert to null service.
+            service_ = &nullService_;
+        } else
         {
-            if (service == nullptr)
-            {
-                // Revert to null service.
-                service_ = &nullService_;
-            }
-            else
-            {
-                service_ = service;
-            }
+            service_ = service;
         }
+    }
 
-    protected:
-        static T* service_;
-        static TNull nullService_;
-    };
+protected:
+    static T* service_;
+    static TNull nullService_;
+};
 
-    template <class T, class TNull> TNull Locator<T, TNull> ::nullService_;
-    template <class T, class TNull> T* Locator<T, TNull> ::service_ = &Locator<T, TNull>::nullService_;
+template<class T, class TNull> TNull Locator<T, TNull>::nullService_;
+template<class T, class TNull> T* Locator<T, TNull>::service_ = &Locator<T, TNull>::nullService_;
 
 
 }

@@ -115,7 +115,7 @@ Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type, std::strin
         const auto texturePath = fmt::format("{}/{}", directory_, str.C_Str());
         const auto textureHash = std::hash<std::string>{}(texturePath);
         const auto it = std::ranges::find(textureHashes_, textureHash);
-        if(it == textureHashes_.end())
+        if (it == textureHashes_.end())
         {
             Texture newTexture;
             newTexture.LoadTexture(texturePath);
@@ -137,6 +137,14 @@ Model::~Model()
 
 void Model::Destroy()
 {
+    for (auto& mesh : meshes_)
+    {
+        mesh.Destroy();
+    }
 
+    for (auto& texture : textures_)
+    {
+        texture.Destroy();
+    }
 }
 }

@@ -1,61 +1,78 @@
 #pragma once
+
 #include <string_view>
 #include <service_locator.h>
 
 namespace core
 {
 
-    /**
-     * \brief Non-copyable RAII structure that represents a file buffered in RAM
-     */
-    struct BufferFile
-    {
-        BufferFile() = default;
-        ~BufferFile();
-        BufferFile(BufferFile&& bufferFile) noexcept;
-        BufferFile& operator=(BufferFile&& bufferFile) noexcept;
-        BufferFile(const BufferFile&) = delete;
-        BufferFile& operator= (const BufferFile&) = delete;
+/**
+ * \brief Non-copyable RAII structure that represents a file buffered in RAM
+ */
+struct BufferFile
+{
+    BufferFile() = default;
 
-        unsigned char* dataBuffer = nullptr;
-        size_t dataLength = 0;
-        void Destroy();
+    ~BufferFile();
 
-    };
+    BufferFile(BufferFile&& bufferFile) noexcept;
 
-    class FilesystemInterface
-    {
-    public:
-        virtual ~FilesystemInterface() = default;
-        [[nodiscard]] virtual BufferFile LoadFile(std::string_view path) const = 0;
-        [[nodiscard]] virtual bool FileExists(std::string_view) const = 0;
-        [[nodiscard]] virtual bool IsRegularFile(std::string_view) const = 0;
-        [[nodiscard]] virtual bool IsDirectory(std::string_view) const = 0;
-    };
+    BufferFile& operator=(BufferFile&& bufferFile) noexcept;
 
-    class NullFilesystem : public FilesystemInterface
-    {
-        [[nodiscard]] BufferFile LoadFile(std::string_view path) const override { return {}; }
+    BufferFile(const BufferFile&) = delete;
 
-        [[nodiscard]] bool FileExists(std::string_view view) const override { return false; }
+    BufferFile& operator=(const BufferFile&) = delete;
 
-        [[nodiscard]] bool IsRegularFile(std::string_view view) const override { return false; }
+    unsigned char* dataBuffer = nullptr;
+    size_t dataLength = 0;
 
-        [[nodiscard]] bool IsDirectory(std::string_view view) const override { return false; }
-    };
+    void Destroy();
 
-    class Filesystem : public FilesystemInterface
-    {
-    public:
-        Filesystem();
-        [[nodiscard]] BufferFile LoadFile(std::string_view path) const override;
+};
 
-        [[nodiscard]] bool FileExists(std::string_view path) const override;
+class FilesystemInterface
+{
+public:
+    virtual ~FilesystemInterface() = default;
 
-        [[nodiscard]] bool IsRegularFile(std::string_view path) const override;
+    [[nodiscard]] virtual BufferFile LoadFile(std::string_view path) const = 0;
 
-        [[nodiscard]] bool IsDirectory(std::string_view path) const override;
+    [[nodiscard]] virtual bool FileExists(std::string_view) const = 0;
 
-    };
-    using FilesystemLocator = Locator<FilesystemInterface, NullFilesystem>;
+    [[nodiscard]] virtual bool IsRegularFile(std::string_view) const = 0;
+
+    [[nodiscard]] virtual bool IsDirectory(std::string_view) const = 0;
+};
+
+class NullFilesystem : public FilesystemInterface
+{
+    [[nodiscard]] BufferFile LoadFile(std::string_view path) const override
+    { return {}; }
+
+    [[nodiscard]] bool FileExists(std::string_view view) const override
+    { return false; }
+
+    [[nodiscard]] bool IsRegularFile(std::string_view view) const override
+    { return false; }
+
+    [[nodiscard]] bool IsDirectory(std::string_view view) const override
+    { return false; }
+};
+
+class Filesystem : public FilesystemInterface
+{
+public:
+    Filesystem();
+
+    [[nodiscard]] BufferFile LoadFile(std::string_view path) const override;
+
+    [[nodiscard]] bool FileExists(std::string_view path) const override;
+
+    [[nodiscard]] bool IsRegularFile(std::string_view path) const override;
+
+    [[nodiscard]] bool IsDirectory(std::string_view path) const override;
+
+};
+
+using FilesystemLocator = Locator<FilesystemInterface, NullFilesystem>;
 }

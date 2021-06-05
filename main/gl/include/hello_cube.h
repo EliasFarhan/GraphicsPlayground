@@ -8,24 +8,24 @@
 
 namespace gl
 {
-    class HelloCube : public core::Program
-    {
-    public:
-        void Init() override;
+class HelloCube : public core::Program
+{
+public:
+    void Init() override;
 
-        void Update(core::seconds dt) override;
+    void Update(core::seconds dt) override;
 
-        void Destroy() override;
+    void Destroy() override;
 
-        void OnEvent(SDL_Event &event) override;
+    void OnEvent(SDL_Event& event) override;
 
-        void DrawImGui() override;
+    void DrawImGui() override;
 
-    private:
-        Cuboid cuboid_{glm::vec3(1.0f), glm::vec3(0.0f)};
-        ShaderProgram shader_;
-        Texture cubeTexture_{};
-        constexpr static int cubeNmb = 10;
+private:
+    Cuboid cuboid_{glm::vec3(1.0f), glm::vec3(0.0f)};
+    ShaderProgram shader_;
+    Texture cubeTexture_{};
+    constexpr static int cubeNmb = 10;
 
-    };
+};
 }

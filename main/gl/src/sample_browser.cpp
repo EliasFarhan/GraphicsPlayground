@@ -34,7 +34,7 @@ void SampleBrowser::Destroy()
     samples_[currentIndex_].sample->Destroy();
 }
 
-void SampleBrowser::OnEvent(SDL_Event &event)
+void SampleBrowser::OnEvent(SDL_Event& event)
 {
     samples_[currentIndex_].sample->OnEvent(event);
 }
@@ -49,13 +49,13 @@ void SampleBrowser::DrawImGui()
         for (int i = 0; i < samples_.size(); i++)
         {
             const bool isSelected = currentIndex_ == i;
-            if(ImGui::Selectable(samples_[i].sampleName.c_str(), isSelected))
+            if (ImGui::Selectable(samples_[i].sampleName.c_str(), isSelected))
             {
                 samples_[currentIndex_].sample->Destroy();
                 samples_[i].sample->Init();
                 currentIndex_ = i;
             }
-            if(isSelected)
+            if (isSelected)
             {
                 ImGui::SetItemDefaultFocus();
             }
