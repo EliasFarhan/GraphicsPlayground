@@ -12,20 +12,11 @@ public:
 
     Texture(const Texture& other) = delete;
 
-    Texture(Texture&& other) noexcept
-    {
-        textureName_ = std::exchange(other.textureName_, 0);
-        textureSize_ = other.textureSize_;
-    }
+    Texture(Texture&& other) noexcept = default;
 
     Texture& operator=(const Texture& other) = delete;
 
-    Texture& operator=(Texture&& other) noexcept
-    {
-        std::swap(textureName_, other.textureName_);
-        std::swap(textureSize_, other.textureSize_);
-        return *this;
-    }
+    Texture& operator=(Texture&& other) noexcept = default;
 
     ~Texture();
 
@@ -37,7 +28,7 @@ public:
 
     void Destroy();
 
-    unsigned int GetName() const
+    [[nodiscard]] unsigned int GetName() const
     { return textureName_; }
 
 private:

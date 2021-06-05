@@ -18,6 +18,9 @@ Texture::~Texture()
 
 void Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap, bool smooth, bool clamp_wrap)
 {
+
+    stbi_set_flip_vertically_on_load(true);
+
     auto& filesystem = core::FilesystemLocator::get();
     if (!filesystem.FileExists(path))
     {

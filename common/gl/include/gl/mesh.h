@@ -25,7 +25,7 @@ public:
 
     struct Texture
     {
-        unsigned int textureName;
+        unsigned int textureName = 0;
         std::string type;
     };
 

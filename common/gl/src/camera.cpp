@@ -148,7 +148,10 @@ void Camera3D::Destroy()
 
 void Camera3D::OnEvent(const SDL_Event& event)
 {
-
+    if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+    {
+        SetAspect(glm::vec2(event.window.data1, event.window.data2));
+    }
 }
 }
 }

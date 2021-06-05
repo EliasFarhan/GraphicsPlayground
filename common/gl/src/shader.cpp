@@ -24,7 +24,10 @@ void ShaderProgram::Destroy()
 unsigned ShaderProgram::LoadShader(core::BufferFile&& bufferFile, int shaderType) const
 {
     if (bufferFile.dataBuffer == nullptr)
+    {
+        core::LogError("Shader file is empty...");
         return INVALID_SHADER;
+    }
     return LoadShader(reinterpret_cast<char*>(bufferFile.dataBuffer), shaderType);
 }
 
@@ -61,7 +64,7 @@ void ShaderProgram::CreateDefaultProgram(std::string_view vertexPath, std::strin
     const GLuint vertexShader = LoadShader(std::move(vertexFile), GL_VERTEX_SHADER);
     if (vertexShader == INVALID_SHADER)
     {
-        std::cerr << fmt::format("[Error] Loading vertex shader: {} unsuccessful", vertexPath) << '\n';
+        core::LogError(fmt::format("[Error] Loading vertex shader: {} unsuccessful", vertexPath));
         return;
     }
     core::BufferFile fragmentFile = filesystem.LoadFile(fragmentPath);

@@ -7,8 +7,10 @@
 #include "hello_texture.h"
 #include "hello_cube.h"
 #include "hello_light.h"
+#include "hello_model.h"
 
 #include "imgui.h"
+
 
 namespace gl
 {
@@ -19,6 +21,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"02 Hello Texture", std::make_unique<HelloTexture>()});
     samples_.push_back({"03 Hello Cube", std::make_unique<HelloCube>()});
     samples_.push_back({"04 Hello Light", std::make_unique<HelloLight>()});
+    samples_.push_back({"07 Hello Model", std::make_unique<HelloModel>()});
 }
 
 void SampleBrowser::Init()

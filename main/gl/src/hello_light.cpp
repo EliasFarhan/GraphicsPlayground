@@ -19,6 +19,12 @@ void HelloLight::Init()
     litProgram_.CreateDefaultProgram("data/shaders/04_hello_light/light.vert",
                                      "data/shaders/04_hello_light/light.frag");
     glEnable(GL_DEPTH_TEST);
+
+    auto* window = Engine::GetInstance().GetWindow();
+    int width, height;
+    SDL_GetWindowSize(window, &width, &height);
+
+    camera_.SetAspect(glm::vec2(width, height));
 }
 
 void HelloLight::Update(core::seconds dt)
@@ -61,11 +67,7 @@ void HelloLight::Update(core::seconds dt)
     litProgram_.SetMat4("inverseTransposeModel", inverseTransposeModel);
     cube_.Draw();
 
-    auto* window = Engine::GetInstance().GetWindow();
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
 
-    camera_.SetAspect(glm::vec2(width, height));
 }
 
 void HelloLight::Destroy()

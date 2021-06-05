@@ -47,7 +47,13 @@ void Mesh::Draw(ShaderProgram& shader)
     unsigned int specularNr = 1;
     for (unsigned int i = 0; i < textures_.size(); i++)
     {
+        if(textures_[i].textureName == 0)
+        {
+            core::LogWarning("Invalid Texture in Mesh");
+            continue;
+        }
         glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
+        CheckError(__FILE__, __LINE__);
         // retrieve texture number (the N in diffuse_textureN)
         std::string number;
         std::string name = textures_[i].type;
@@ -60,16 +66,19 @@ void Mesh::Draw(ShaderProgram& shader)
             number = fmt::format("{}", specularNr);
             specularNr++;
         }
-        const auto uniformName = fmt::format("material.{}{}", name, number);
+        const auto uniformName = fmt::format("{}{}", name, number);
         shader.SetInt(uniformName.c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures_[i].textureName);
         CheckError(__FILE__, __LINE__);
     }
     glActiveTexture(GL_TEXTURE0);
+    CheckError(__FILE__, __LINE__);
 
     // draw mesh
     glBindVertexArray(vao_);
+    CheckError(__FILE__, __LINE__);
     glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, 0);
+    CheckError(__FILE__, __LINE__);
     glBindVertexArray(0);
     CheckError(__FILE__, __LINE__);
 }
@@ -86,6 +95,7 @@ void Mesh::Destroy()
         glDeleteVertexArrays(1, &vao_);
         glDeleteBuffers(1, &vbo_);
         glDeleteBuffers(1, &ebo_);
+        CheckError(__FILE__, __LINE__);
         vao_ = 0;
     }
 }
