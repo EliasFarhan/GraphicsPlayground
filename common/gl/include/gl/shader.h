@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <string>
+#include <glm/ext/matrix_float4x4.hpp>
 
 #include "filesystem.h"
 #include "texture.h"
@@ -30,7 +31,7 @@ public:
 
     ~ShaderProgram();
 
-    void FreeProgram();
+    void Destroy();
 
     void CreateDefaultProgram(std::string_view vertexPath, std::string_view fragmentPath);
 
@@ -47,6 +48,8 @@ public:
     void Bind() const;
 
     void SetTexture(std::string_view uniformName, const Texture& texture, int textureUnit);
+
+    void SetMat4(std::string_view uniformName, const glm::mat4& mat);
 
 private:
 

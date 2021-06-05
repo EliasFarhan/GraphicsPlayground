@@ -9,8 +9,12 @@
 
 namespace gl
 {
+
+Engine* Engine::instance_ = nullptr;
+
 Engine::Engine(core::Program& program) : program_(program), window_(nullptr), glRenderContext_(nullptr)
 {
+    instance_ = this;
 }
 
 void Engine::Init()

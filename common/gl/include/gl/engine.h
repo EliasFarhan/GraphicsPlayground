@@ -16,6 +16,12 @@ public:
 
     void Run();
 
+    SDL_Window* GetWindow() const
+    { return window_; }
+
+    static Engine& GetInstance()
+    { return *instance_; }
+
 private:
     void Init();
 
@@ -28,5 +34,6 @@ private:
     SDL_GLContext glRenderContext_;
     glm::vec2 windowSize_{1024, 720};
     float deltaTime_ = 0.0f;
+    static Engine* instance_;
 };
 } // namespace gl

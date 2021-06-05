@@ -6,6 +6,9 @@
 #include "gl/texture.h"
 #include "gl/vertex_array.h"
 
+#include "glm/gtc/quaternion.hpp"
+#include "glm/vec3.hpp"
+
 namespace gl
 {
 class HelloCube : public core::Program
@@ -26,6 +29,10 @@ private:
     ShaderProgram shader_;
     Texture cubeTexture_{};
     constexpr static int cubeNmb = 10;
+    std::array<glm::vec3, cubeNmb> positions_{};
+    std::array<glm::quat, cubeNmb> quaternions_{};
+    glm::vec2 screenSize_;
+    float time_ = 0.0f;
 
 };
 }

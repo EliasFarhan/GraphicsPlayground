@@ -37,6 +37,10 @@ void SampleBrowser::Destroy()
 void SampleBrowser::OnEvent(SDL_Event& event)
 {
     samples_[currentIndex_].sample->OnEvent(event);
+    if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+    {
+        glViewport(0,0,event.window.data1, event.window.data2);
+    }
 }
 
 void SampleBrowser::DrawImGui()

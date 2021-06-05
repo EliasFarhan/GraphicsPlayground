@@ -8,10 +8,10 @@ namespace gl
 {
 ShaderProgram::~ShaderProgram()
 {
-    FreeProgram();
+    Destroy();
 }
 
-void ShaderProgram::FreeProgram()
+void ShaderProgram::Destroy()
 {
     if (program_ != 0)
     {
@@ -117,6 +117,12 @@ void ShaderProgram::SetVec4(std::string_view uniformName, glm::vec4 v)
     CheckError(__FILE__, __LINE__);
 }
 
+void ShaderProgram::SetMat4(std::string_view uniformName, const glm::mat4& mat)
+{
+    glUniformMatrix4fv(GetUniformLocation(uniformName), 1, 0, &mat[0][0]);
+    CheckError(__FILE__, __LINE__);
+}
+
 void ShaderProgram::Bind() const
 {
     glUseProgram(program_);
@@ -171,4 +177,5 @@ unsigned ShaderProgram::CreateShaderProgram(unsigned vertexShader, unsigned frag
     }
     return program;
 }
+
 }

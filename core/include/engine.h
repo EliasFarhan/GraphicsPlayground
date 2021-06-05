@@ -19,6 +19,12 @@ public:
     virtual void Destroy() = 0;
 };
 
+class SdlEventSystemInterface
+{
+public:
+    virtual void OnEvent(const SDL_Event& event) = 0;
+};
+
 class Program : public SystemInterface
 {
 public:
