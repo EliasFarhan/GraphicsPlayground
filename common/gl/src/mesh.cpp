@@ -10,6 +10,27 @@ Mesh::Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, 
 
 }
 
+Mesh::Mesh(Mesh&& other) noexcept
+{
+    vertices_ = std::move(other.vertices_);
+    indices_ = std::move(other.indices_);
+    textures_ = std::move(other.textures_);
+    std::swap(vao_, other.vao_);
+    std::swap(vbo_, other.vbo_);
+    std::swap(ebo_, other.ebo_);
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept
+{
+    vertices_ = std::move(other.vertices_);
+    indices_ = std::move(other.indices_);
+    textures_ = std::move(other.textures_);
+    std::swap(vao_, other.vao_);
+    std::swap(vbo_, other.vbo_);
+    std::swap(ebo_, other.ebo_);
+    return *this;
+}
+
 void Mesh::SetupMesh()
 {
     glGenVertexArrays(1, &vao_);
@@ -85,7 +106,10 @@ void Mesh::Draw(ShaderProgram& shader)
 
 Mesh::~Mesh()
 {
-    Destroy();
+    if(vao_)
+    {
+        core::LogWarning("Mesh is not free");
+    }
 }
 
 void Mesh::Destroy()

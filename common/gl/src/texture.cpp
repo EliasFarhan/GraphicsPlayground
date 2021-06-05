@@ -13,13 +13,16 @@ namespace gl
 {
 Texture::~Texture()
 {
-    Destroy();
+    if(textureName_)
+    {
+        core::LogWarning("Texture is not free");
+    }
 }
 
 void Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap, bool smooth, bool clamp_wrap)
 {
 
-    stbi_set_flip_vertically_on_load(true);
+    //stbi_set_flip_vertically_on_load(true);
 
     auto& filesystem = core::FilesystemLocator::get();
     if (!filesystem.FileExists(path))
@@ -108,7 +111,7 @@ void Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipma
 
 void Texture::Destroy()
 {
-    if (textureName_ == 0)
+    if (textureName_ != 0)
     {
         glDeleteTextures(1, &textureName_);
         textureName_ = 0;

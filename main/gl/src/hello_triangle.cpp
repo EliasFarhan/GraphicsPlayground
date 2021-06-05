@@ -58,6 +58,10 @@ void HelloTriangle::Destroy()
     glDeleteVertexArrays(1, &basicTriangleProgram_.VAO);
     glDeleteBuffers(1, &basicTriangleProgram_.VBO);
 
+    basicTriangleProgram_.shaderProgram.Destroy();
+
+    basicQuadProgram_.quad.Destroy();
+    basicQuadProgram_.shaderProgram.Destroy();
 }
 
 void HelloTriangle::OnEvent(SDL_Event& event)

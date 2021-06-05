@@ -12,11 +12,22 @@ public:
 
     Texture(const Texture& other) = delete;
 
-    Texture(Texture&& other) noexcept = default;
+    Texture(Texture&& other) noexcept
+    {
+        textureName_ = other.textureName_;
+        other.textureName_ = 0;
+        textureSize_ = other.textureSize_;
+    }
 
     Texture& operator=(const Texture& other) = delete;
 
-    Texture& operator=(Texture&& other) noexcept = default;
+    Texture& operator=(Texture&& other) noexcept
+    {
+        textureName_ = other.textureName_;
+        other.textureName_ = 0;
+        textureSize_ = other.textureSize_;
+        return *this;
+    }
 
     ~Texture();
 

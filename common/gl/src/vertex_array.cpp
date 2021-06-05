@@ -8,7 +8,10 @@ namespace gl
 {
 VertexArray::~VertexArray()
 {
-    FreeVao();
+    if (vao_)
+    {
+        core::LogWarning("Vertex Array is not free");
+    }
 }
 
 void VertexArray::GenerateVao()
@@ -19,7 +22,7 @@ void VertexArray::GenerateVao()
 
 void VertexArray::FreeVao()
 {
-    if (vao_)
+    if (vao_ != 0)
     {
         glDeleteVertexArrays(1, &vao_);
         vao_ = 0;
@@ -33,7 +36,10 @@ Quad::Quad(glm::vec2 size, glm::vec2 offset) : size_(size), offset_(offset)
 
 Quad::~Quad()
 {
-    FreeBuffers();
+    if(ebo_)
+    {
+        core::LogWarning("Quad is not free");
+    }
 }
 
 void Quad::Init()
@@ -117,8 +123,8 @@ void Quad::Init()
 
 void Quad::Destroy()
 {
-    FreeBuffers();
     FreeVao();
+    FreeBuffers();
 }
 
 void Quad::Draw()
@@ -134,6 +140,7 @@ void Quad::FreeBuffers()
     {
         glDeleteBuffers(4, &vbo_[0]);
         glDeleteBuffers(1, &ebo_);
+        ebo_ = 0;
         CheckError(__FILE__, __LINE__);
     }
 }
@@ -144,7 +151,11 @@ Cuboid::Cuboid(glm::vec3 size, glm::vec3 offset) : size_(size), offset_(offset)
 
 Cuboid::~Cuboid()
 {
-    FreeBuffers();
+    if(vbo_[0])
+    {
+        core::LogWarning("Cube is not free");
+        
+    }
 }
 
 void Cuboid::Init()
@@ -344,7 +355,11 @@ void Cuboid::Draw()
 
 void Cuboid::FreeBuffers()
 {
-    glDeleteBuffers(4, &vbo_[0]);
-    CheckError(__FILE__, __LINE__);
+    if (vbo_[0] != 0)
+    {
+        glDeleteBuffers(4, &vbo_[0]);
+        vbo_[0] = 0;
+        CheckError(__FILE__, __LINE__);
+    }
 }
 }

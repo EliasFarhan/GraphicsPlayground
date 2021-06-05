@@ -126,10 +126,10 @@ Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type,
         const auto it = std::ranges::find(textureHashes_, textureHash);
         if (it == textureHashes_.end())
         {
-            Texture newTexture;
+            textures_.emplace_back();
+            auto& newTexture = textures_.back();
             newTexture.LoadTexture(texturePath);
             texture.textureName = newTexture.GetName();
-            textures_.push_back(std::move(newTexture));
             textureHashes_.push_back(textureHash);
         }
         else

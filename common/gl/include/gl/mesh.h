@@ -37,11 +37,11 @@ public:
 
     Mesh(const Mesh& other) = delete;
 
-    Mesh(Mesh&& other) noexcept = default;
+    Mesh(Mesh&& other) noexcept;
 
     Mesh& operator=(const Mesh& other) = delete;
 
-    Mesh& operator=(Mesh&& other) noexcept = default;
+    Mesh& operator=(Mesh&& other) noexcept;
 
     void SetupMesh();
 

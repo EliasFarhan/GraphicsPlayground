@@ -8,7 +8,10 @@ namespace gl
 {
 ShaderProgram::~ShaderProgram()
 {
-    Destroy();
+    if(program_)
+    {
+        core::LogWarning("Shader program is not free");
+    }
 }
 
 void ShaderProgram::Destroy()

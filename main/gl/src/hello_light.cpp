@@ -2,10 +2,8 @@
 // Created by efarhan on 6/5/21.
 //
 
-#include "hello_light.h"
-
-#define _USE_MATH_DEFINES
 #include <cmath>
+#include "hello_light.h"
 namespace gl
 {
 

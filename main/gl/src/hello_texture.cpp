@@ -24,6 +24,9 @@ void HelloTexture::Update(core::seconds dt)
 
 void HelloTexture::Destroy()
 {
+    quad_.Destroy();
+    shader_.Destroy();
+    texture_.Destroy();
 }
 
 void HelloTexture::OnEvent(SDL_Event& event)
