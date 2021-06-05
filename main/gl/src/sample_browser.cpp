@@ -6,6 +6,7 @@
 #include "hello_triangle.h"
 #include "hello_texture.h"
 #include "hello_cube.h"
+#include "hello_light.h"
 
 #include "imgui.h"
 
@@ -17,6 +18,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"01 Hello Triangle", std::make_unique<HelloTriangle>()});
     samples_.push_back({"02 Hello Texture", std::make_unique<HelloTexture>()});
     samples_.push_back({"03 Hello Cube", std::make_unique<HelloCube>()});
+    samples_.push_back({"04 Hello Light", std::make_unique<HelloLight>()});
 }
 
 void SampleBrowser::Init()

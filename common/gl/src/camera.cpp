@@ -62,7 +62,6 @@ void Camera3D::Init()
 
 void Camera3D::Update(core::seconds dt)
 {
-    const auto mouseState = SDL_GetMouseState(nullptr, nullptr);
 
     //Checking if keys are down
     const Uint8* keys = SDL_GetKeyboardState(nullptr);
@@ -130,7 +129,8 @@ void Camera3D::Update(core::seconds dt)
              -direction * cameraMove.y) *
             (cameraMovement_ & ACCELERATE ? cameraFast_ : cameraSpeed_);
 
-    cameraMovement_ = mouseState & SDL_BUTTON(3) ?
+    const auto mouseState = SDL_GetMouseState(nullptr, nullptr);
+    cameraMovement_ = mouseState & SDL_BUTTON(2) ?
                       cameraMovement_ | MOUSE_MOVE :
                       cameraMovement_ & ~MOUSE_MOVE;
     if (cameraMovement_ & MOUSE_MOVE && glm::dot(mouseMotion_, mouseMotion_) > 0.001f)
