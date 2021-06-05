@@ -1,5 +1,6 @@
 #pragma once
 #include "SDL_events.h"
+#include <chrono>
 
 namespace core
 {

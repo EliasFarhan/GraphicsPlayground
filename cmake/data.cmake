@@ -55,6 +55,8 @@ file(GLOB_RECURSE DATA_FILES
 		"${main_folder}/data/*.jpg"
 		"${main_folder}/data/*.bmp"
 		"${main_folder}/data/*.hdr"
+		"${main_folder}/data/*.obj"
+		"${main_folder}/data/*.mtl"
 		)
 		source_group("Data" FILES ${DATA_FILES})
 foreach(DATA ${DATA_FILES})

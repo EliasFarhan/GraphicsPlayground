@@ -7,6 +7,20 @@ namespace gl
 class Texture
 {
 public:
+    Texture() = default;
+    Texture(const Texture& other) = delete;
+    Texture(Texture&& other) noexcept
+    {
+        textureName_ = std::exchange(other.textureName_, 0);
+        textureSize_ = other.textureSize_;
+    }
+    Texture& operator=(const Texture& other) = delete;
+    Texture& operator=(Texture&& other) noexcept
+    {
+        std::swap(textureName_, other.textureName_);
+        std::swap(textureSize_, other.textureSize_);
+        return *this;
+    }
     ~Texture();
     void LoadTexture(std::string_view path, 
         int channelsDesired = 0, 
