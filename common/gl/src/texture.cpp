@@ -157,4 +157,17 @@ void Texture::Destroy()
         CheckError(__FILE__, __LINE__);
     }
 }
+
+void Texture::CreateWhiteTexture()
+{
+    glGenTextures(1, &textureName_);
+    glBindTexture(GL_TEXTURE_2D, textureName_);
+    unsigned char white[] = { 255, 255, 255 };
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, white);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    CheckError(__FILE__, __LINE__);
+}
 }

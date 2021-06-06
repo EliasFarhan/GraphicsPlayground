@@ -29,7 +29,7 @@ void Engine::Init()
 #ifdef TRACY_ENABLE
     ZoneScopedN("Engine Init");
 #endif
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 //#ifdef WIN32
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         SDL_GL_CONTEXT_PROFILE_CORE);

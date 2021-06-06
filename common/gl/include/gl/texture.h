@@ -42,6 +42,8 @@ public:
     [[nodiscard]] unsigned int GetName() const
     { return textureName_; }
 
+    void CreateWhiteTexture();
+
 private:
     unsigned int textureName_ = 0;
     glm::vec2 textureSize_;

@@ -4,6 +4,9 @@
 
 #include "gl/camera.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <fmt/core.h>
+
+#include "log.h"
 
 namespace gl
 {
@@ -16,12 +19,15 @@ glm::mat4 Camera::GetView() const
 void Camera::LookAt(glm::vec3 target, glm::vec3 lookUp)
 {
     direction = glm::normalize(target-position);
+    leftDir = glm::normalize(glm::cross(direction, lookUp));
+    upDir = glm::normalize(glm::cross(direction, leftDir));
 }
 
 void Camera::Rotate(glm::vec3 eulerAngle)
 {
     const auto quaternion = glm::quat(eulerAngle);
     direction = quaternion * direction;
+    LookAt(position + direction);
 }
 
 glm::mat4 Camera2D::GetProjection() const
@@ -125,18 +131,19 @@ void Camera3D::Update(core::seconds dt)
     }
 
     position +=
-            (leftDir * cameraMove.x -
+            (-leftDir * cameraMove.x -
              -direction * cameraMove.y) *
             (cameraMovement_ & ACCELERATE ? cameraFast_ : cameraSpeed_);
 
     const auto mouseState = SDL_GetMouseState(nullptr, nullptr);
-    cameraMovement_ = mouseState & SDL_BUTTON(2) ?
+    cameraMovement_ = mouseState & SDL_BUTTON(3) ?
                       cameraMovement_ | MOUSE_MOVE :
                       cameraMovement_ & ~MOUSE_MOVE;
+    //core::LogDebug(fmt::format("Mouse movements {} {} clicked on button: {}", mouseMotion_.x, mouseMotion_.y, cameraMovement_));
     if (cameraMovement_ & MOUSE_MOVE && glm::dot(mouseMotion_, mouseMotion_) > 0.001f)
     {
         const auto rotate = glm::vec2(mouseMotion_.x, mouseMotion_.y)  * cameraRotationSpeed_ * dt.count();
-        Rotate(glm::vec3 (rotate.y,rotate.x,0.0f));
+        Rotate(glm::vec3 (rotate.y,-rotate.x,0.0f));
         mouseMotion_ = glm::vec2();
     }
 }
@@ -148,9 +155,29 @@ void Camera3D::Destroy()
 
 void Camera3D::OnEvent(const SDL_Event& event)
 {
-    if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+    switch (event.type)
     {
-        SetAspect(glm::vec2(event.window.data1, event.window.data2));
+    case SDL_WINDOWEVENT:
+    {
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+        {
+            SetAspect(glm::vec2(event.window.data1, event.window.data2));
+        }
+        break;
+    }
+    case SDL_MOUSEMOTION:
+    {
+        mouseMotion_ = glm::vec2(event.motion.xrel, event.motion.yrel) / mouseMotionRatio_;
+        break;
+    }
+    case SDL_FINGERDOWN:
+        break;
+    case SDL_FINGERUP:
+        break;
+    case SDL_FINGERMOTION:
+        break;
+    default:
+        break;
     }
 }
 }

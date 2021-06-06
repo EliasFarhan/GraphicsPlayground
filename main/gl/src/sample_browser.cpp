@@ -8,6 +8,7 @@
 #include "hello_cube.h"
 #include "hello_light.h"
 #include "hello_model.h"
+#include "hello_cutoff.h"
 
 #include "imgui.h"
 
@@ -22,6 +23,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"03 Hello Cube", std::make_unique<HelloCube>()});
     samples_.push_back({"04 Hello Light", std::make_unique<HelloLight>()});
     samples_.push_back({"07 Hello Model", std::make_unique<HelloModel>()});
+    samples_.push_back({"08 Hello Cutoff", std::make_unique<HelloCutoff>()});
 }
 
 void SampleBrowser::Init()
