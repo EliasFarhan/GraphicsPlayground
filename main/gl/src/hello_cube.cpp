@@ -2,6 +2,10 @@
 #include "hello_cube.h"
 #include "gl/error.h"
 #include "imgui.h"
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+#endif
 
 namespace gl
 {
@@ -38,6 +42,9 @@ void HelloCube::Init()
 
 void HelloCube::Update(core::seconds dt)
 {
+#ifdef TRACY_ENABLE
+    ZoneScopedN("Cube Sample Loop");
+#endif
     time_ += dt.count();
 
     for(auto& quaternion : quaternions_)

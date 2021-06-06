@@ -10,15 +10,24 @@ namespace gl
 
 void Model::LoadModel(std::string_view path)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(cubeInit, "Load Model", true);
+#endif
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path.data(), aiProcess_Triangulate |
-                                                        aiProcess_FlipUVs);
-
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-        !scene->mRootNode)
+    const aiScene* scene = nullptr;
     {
-        core::LogError(fmt::format("Assimp: {}", import.GetErrorString()));
-        return;
+#ifdef TRACY_ENABLE
+        ZoneNamedN(cubeInit, "Import With Assimp", true);
+#endif
+        scene = import.ReadFile(path.data(),aiProcess_Triangulate |
+                                               aiProcess_FlipUVs);
+
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+            !scene->mRootNode)
+        {
+            core::LogError(fmt::format("Assimp: {}", import.GetErrorString()));
+            return;
+        }
     }
     directory_ = path.substr(0, path.find_last_of('/'));
 
@@ -29,6 +38,10 @@ void Model::LoadModel(std::string_view path)
 
 void Model::Draw(ShaderProgram& shader)
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+    TracyGpuZone("Draw Model");
+#endif
     for (auto& mesh : meshes_)
     {
         mesh.Draw(shader);
@@ -37,6 +50,9 @@ void Model::Draw(ShaderProgram& shader)
 
 void Model::ProcessNode(aiNode* node, const aiScene* scene)
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     // process all the node's meshes (if any)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
@@ -52,6 +68,9 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene)
 
 Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     std::vector<Mesh::Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Mesh::Texture> textures;
@@ -115,6 +134,10 @@ std::vector<Mesh::Texture>
 Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type,
                             std::string_view typeName)
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+    TracyGpuZone("Load Material Textures");
+#endif
     std::vector<Mesh::Texture> textures;
     for (unsigned int i = 0; i < material->GetTextureCount(type); i++)
     {
@@ -151,6 +174,10 @@ Model::~Model()
 
 void Model::Destroy()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(modelDestroy, "Model Destroy", true);
+    TracyGpuNamedZone(modelDestroyGpu, "Model Destroy", true);
+#endif
     for (auto& mesh : meshes_)
     {
         mesh.Destroy();

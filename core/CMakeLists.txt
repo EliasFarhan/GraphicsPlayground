@@ -1,6 +1,8 @@
 
 find_package(SDL2 CONFIG REQUIRED)
 file(GLOB_RECURSE CoreFiles src/*cpp include/*.h)
+
+list(APPEND CoreFiles "${TRACY_FOLDER}/TracyClient.cpp" "${TRACY_FOLDER}/Tracy.hpp")
 add_library(Core STATIC ${CoreFiles})
 
 target_link_libraries(Core PUBLIC fmt::fmt)

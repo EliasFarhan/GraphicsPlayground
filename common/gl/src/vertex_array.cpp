@@ -16,6 +16,10 @@ VertexArray::~VertexArray()
 
 void VertexArray::GenerateVao()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(generateVao, "Generate VAO", true);
+    TracyGpuNamedZone(generateVaoGpu, "Generate VAO", true);
+#endif
     glGenVertexArrays(1, &vao_);
     CheckError(__FILE__, __LINE__);
 }
@@ -24,6 +28,10 @@ void VertexArray::FreeVao()
 {
     if (vao_ != 0)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(freeVao, "Free VAO", true);
+        TracyGpuNamedZone(freeVaoGpu, "Free VAO", true);
+#endif
         glDeleteVertexArrays(1, &vao_);
         vao_ = 0;
         CheckError(__FILE__, __LINE__);
@@ -44,7 +52,10 @@ Quad::~Quad()
 
 void Quad::Init()
 {
-
+#ifdef TRACY_ENABLE
+    ZoneNamedN(quadInit, "Quad Init", true);
+    TracyGpuNamedZone(quadInitGpu, "Quad Init", true);
+#endif
     const glm::vec2 vertices[4] = {
             glm::vec2(0.5f, 0.5f) * size_ + offset_,  // top right
             glm::vec2(0.5f, -0.5f) * size_ + offset_,  // bottom right
@@ -129,6 +140,10 @@ void Quad::Destroy()
 
 void Quad::Draw()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(drawQuad, "Draw Quad", true);
+    TracyGpuNamedZone(drawQuadGpu, "Draw Quad", true);
+#endif
     glBindVertexArray(vao_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     CheckError(__FILE__, __LINE__);
@@ -138,6 +153,10 @@ void Quad::FreeBuffers()
 {
     if (ebo_ != 0)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(freeBuffers, "Free Buffers", true);
+        TracyGpuNamedZone(freeBuffersGpu, "Free Buffers", true);
+#endif
         glDeleteBuffers(4, &vbo_[0]);
         glDeleteBuffers(1, &ebo_);
         ebo_ = 0;
@@ -160,7 +179,10 @@ Cuboid::~Cuboid()
 
 void Cuboid::Init()
 {
-
+#ifdef TRACY_ENABLE
+    ZoneNamedN(cubeInit, "Cube Init", true);
+    TracyGpuNamedZone(cubeInitGpu, "Cube Init", true);
+#endif
     glm::vec3 position[36] =
             {
                     //Right face
@@ -348,6 +370,10 @@ void Cuboid::Destroy()
 
 void Cuboid::Draw()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(drawCube, "Draw Cube", true);
+    TracyGpuNamedZone(drawCubeGpu, "Draw Cube", true);
+#endif
     glBindVertexArray(vao_);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     CheckError(__FILE__, __LINE__);
@@ -357,6 +383,10 @@ void Cuboid::FreeBuffers()
 {
     if (vbo_[0] != 0)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(freeBuffers, "Free Buffers", true);
+        TracyGpuNamedZone(freeBuffersGpu, "Free Buffers", true);
+#endif
         glDeleteBuffers(4, &vbo_[0]);
         vbo_[0] = 0;
         CheckError(__FILE__, __LINE__);

@@ -18,6 +18,10 @@ void ShaderProgram::Destroy()
 {
     if (program_ != 0)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(shaderDestroy, "Shader Destroy", true);
+        TracyGpuNamedZone(shaderDestroyGpu, "Shader Destroy", true);
+#endif
         glDeleteProgram(program_);
         program_ = 0;
         CheckError(__FILE__, __LINE__);
@@ -36,6 +40,10 @@ unsigned ShaderProgram::LoadShader(core::BufferFile&& bufferFile, int shaderType
 
 unsigned ShaderProgram::LoadShader(char* shaderContent, unsigned shaderType)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(shaderLoad, "Shader Load", true);
+    TracyGpuNamedZone(shaderDLoadGpu, "Shader Load", true);
+#endif
     const GLuint shader = glCreateShader(shaderType);
 
     CheckError(__FILE__, __LINE__);
@@ -61,6 +69,10 @@ unsigned ShaderProgram::LoadShader(char* shaderContent, unsigned shaderType)
 
 void ShaderProgram::CreateDefaultProgram(std::string_view vertexPath, std::string_view fragmentPath)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(shaderProgramCreate, "Shader Program Create", true);
+    TracyGpuNamedZone(shaderProgramCreateGpu, "Shader Program Create", true);
+#endif
     auto& filesystem = core::FilesystemLocator::get();
     core::BufferFile vertexFile = filesystem.LoadFile(vertexPath);
 
@@ -146,6 +158,10 @@ void ShaderProgram::SetTexture(std::string_view uniformName, const Texture& text
 
 int ShaderProgram::GetUniformLocation(std::string_view uniformName)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(uniformLocationTrace, "Get Uniform Location", true);
+    TracyGpuNamedZone(uniformLocationGpuTrace, "Get Uniform Location", true);
+#endif
     const auto uniformIt = uniformMap_.find(uniformName.data());
     GLint uniformLocation;
     if (uniformIt == uniformMap_.end())
@@ -162,6 +178,10 @@ int ShaderProgram::GetUniformLocation(std::string_view uniformName)
 
 unsigned ShaderProgram::CreateShaderProgram(unsigned vertexShader, unsigned fragmentShader)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(createShaderProgram, "Link Shader Program", true);
+    TracyGpuNamedZone(createShaderProgramGpu, "Link Shader Program", true);
+#endif
     GLuint program = glCreateProgram();
     CheckError(__FILE__, __LINE__);
     glAttachShader(program, vertexShader);
@@ -175,10 +195,10 @@ unsigned ShaderProgram::CreateShaderProgram(unsigned vertexShader, unsigned frag
     {
         char infoLog[512];
         glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cerr << fmt::format("[Error] Shader program with vertex {} and fragment {}: LINK_FAILED with infoLog:\n{}",
+        core::LogError(fmt::format("[Error] Shader program with vertex {} and fragment {}: LINK_FAILED with infoLog:\n{}",
                                  vertexShader,
                                  fragmentShader,
-                                 infoLog) << '\n';
+                                 infoLog));
         return 0;
     }
     return program;

@@ -8,6 +8,8 @@ find_package(assimp CONFIG REQUIRED)
 
 
 file(GLOB_RECURSE CommonGL_FILES src/* include/*)
+
+list(APPEND CommonGL_FILES "${TRACY_FOLDER}/TracyOpenGL.hpp")
 add_library(CommonGL STATIC ${CommonGL_FILES})
 target_link_libraries(CommonGL PUBLIC imgui::imgui)
 target_link_libraries(CommonGL PUBLIC GLEW::GLEW)

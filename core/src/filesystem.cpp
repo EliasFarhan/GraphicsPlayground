@@ -7,6 +7,10 @@
 
 #include "log.h"
 
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#endif
+
 namespace fs = std::filesystem;
 
 namespace core
@@ -50,6 +54,9 @@ Filesystem::Filesystem()
 
 BufferFile Filesystem::LoadFile(std::string_view path) const
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     BufferFile newFile;
     if (FileExists(path))
     {

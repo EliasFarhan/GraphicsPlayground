@@ -33,6 +33,10 @@ Mesh& Mesh::operator=(Mesh&& other) noexcept
 
 void Mesh::SetupMesh()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+    TracyGpuZone("Setup Mesh");
+#endif
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
     glGenBuffers(1, &ebo_);
@@ -64,6 +68,10 @@ void Mesh::SetupMesh()
 
 void Mesh::Draw(ShaderProgram& shader)
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+    TracyGpuZone("Draw Mesh");
+#endif
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
     for (unsigned int i = 0; i < textures_.size(); i++)
@@ -116,6 +124,10 @@ void Mesh::Destroy()
 {
     if (vao_ != 0)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(textureDestroy, "Mesh Destroy", true);
+        TracyGpuNamedZone(textureDestroyGpu, "Mesh Destroy", true);
+#endif
         glDeleteVertexArrays(1, &vao_);
         glDeleteBuffers(1, &vbo_);
         glDeleteBuffers(1, &ebo_);
