@@ -159,9 +159,14 @@ void Engine::Run()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         CheckError(__FILE__, __LINE__);
         program_.Update(dt);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        CheckError(__FILE__, __LINE__);
-
+        {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(imguiRender, "ImGui Render Data", true);
+            TracyGpuNamedZone(gpuImguiRender, "ImGui Render Data", true);
+#endif
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            CheckError(__FILE__, __LINE__);
+        }
 #ifdef TRACY_ENABLE
         ZoneNamedN(swapWindow, "Swap Window", true);
         TracyGpuNamedZone(gpuSwapWindow, "Swap Window", true);

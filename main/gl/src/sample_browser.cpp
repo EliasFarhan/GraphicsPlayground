@@ -11,6 +11,7 @@
 #include "hello_light.h"
 #include "hello_model.h"
 #include "hello_cutoff.h"
+#include <hello_framebuffer.h>
 
 #include "imgui.h"
 
@@ -20,13 +21,17 @@ namespace gl
 
 SampleBrowser::SampleBrowser()
 {
-    samples_.push_back({"01 Hello Triangle", std::make_unique<HelloTriangle>()});
+    samples_.push_back(
+            {"01 Hello Triangle", std::make_unique<HelloTriangle>()});
     samples_.push_back({"02 Hello Texture", std::make_unique<HelloTexture>()});
     samples_.push_back({"03 Hello Cube", std::make_unique<HelloCube>()});
     samples_.push_back({"04 Hello Light", std::make_unique<HelloLight>()});
     samples_.push_back({"07 Hello Model", std::make_unique<HelloModel>()});
     samples_.push_back({"08 Hello Cutoff", std::make_unique<HelloCutoff>()});
-    samples_.push_back({"08 Hello Blending", std::make_unique<HelloBlending>()});
+    samples_.push_back(
+            {"09 Hello Blending", std::make_unique<HelloBlending>()});
+    samples_.push_back(
+            {"10 Hello Framebuffer", std::make_unique<HelloFramebuffer>()});
 }
 
 void SampleBrowser::Init()
@@ -47,9 +52,10 @@ void SampleBrowser::Destroy()
 void SampleBrowser::OnEvent(SDL_Event& event)
 {
     samples_[currentIndex_].sample->OnEvent(event);
-    if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+    if (event.type == SDL_WINDOWEVENT &&
+        event.window.event == SDL_WINDOWEVENT_RESIZED)
     {
-        glViewport(0,0,event.window.data1, event.window.data2);
+        glViewport(0, 0, event.window.data1, event.window.data2);
     }
 }
 

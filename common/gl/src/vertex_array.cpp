@@ -1,9 +1,15 @@
 #include <algorithm>
 #include <array>
+#include "log.h"
 #include <gl/vertex_array.h>
-
+#include "gl/error.h"
 #include "GL/glew.h"
+#ifdef TRACY_ENABLE
 
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+
+#endif
 namespace gl
 {
 VertexArray::~VertexArray()

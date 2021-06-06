@@ -6,3 +6,13 @@ GENERATEGLDATA(${CMAKE_CURRENT_SOURCE_DIR} gl_samples)
 add_dependencies(gl_samples "gl_samples_DATA")
 
 set_target_properties(gl_samples PROPERTIES UNITY_BUILD ON)
+
+if(UNIX)
+    IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" )
+    add_custom_command(
+            TARGET gl_samples
+            POST_BUILD
+            COMMAND ${CMAKE_STRIP} gl_samples
+    )
+    ENDIF()
+endif()

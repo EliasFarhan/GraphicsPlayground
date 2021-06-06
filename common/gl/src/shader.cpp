@@ -3,7 +3,12 @@
 
 #include <GL/glew.h>
 #include <fmt/core.h>
+#ifdef TRACY_ENABLE
 
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+
+#endif
 namespace gl
 {
 ShaderProgram::~ShaderProgram()

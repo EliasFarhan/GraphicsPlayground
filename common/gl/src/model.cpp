@@ -4,7 +4,12 @@
 #include <assimp/postprocess.h>
 #include "gl/texture.h"
 #include <algorithm>
+#ifdef TRACY_ENABLE
 
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+
+#endif
 namespace gl
 {
 
