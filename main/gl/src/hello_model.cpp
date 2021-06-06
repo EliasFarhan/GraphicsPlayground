@@ -9,13 +9,6 @@ void HelloModel::Init()
     shader_.CreateDefaultProgram("data/shaders/07_hello_model/model.vert",
                                  "data/shaders/07_hello_model/model.frag");
     camera_.Init();
-    auto* window = Engine::GetInstance().GetWindow();
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
-
-    camera_.SetAspect(glm::vec2(width, height));
-
-    glEnable(GL_DEPTH_TEST);
 }
 
 void HelloModel::Update(core::seconds dt)

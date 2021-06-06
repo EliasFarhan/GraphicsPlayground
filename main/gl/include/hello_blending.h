@@ -24,5 +24,23 @@ public:
     void DrawImGui() override;
 
 private:
+    enum BlendingFlags
+    {
+        NONE = 0u,
+        ENABLE_BLENDING = 1u,
+        ENABLE_SORTING = 1u << 1u
+    };
+
+    Quad plane_{ glm::vec2(1.0f), glm::vec2() };
+    Cuboid cube_{ glm::vec3(1.0f), glm::vec3() };
+    ShaderProgram blendingProgram_;
+    Texture windowTexture_{};
+    Texture cubeTexture_{};
+    Texture whiteTexture_{};
+    sdl::Camera3D camera_{};
+    unsigned int flags_ = NONE;
+
 };
+
+
 }

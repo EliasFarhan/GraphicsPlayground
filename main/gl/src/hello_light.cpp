@@ -18,11 +18,6 @@ void HelloLight::Init()
                                      "data/shaders/04_hello_light/light.frag");
     glEnable(GL_DEPTH_TEST);
 
-    auto* window = Engine::GetInstance().GetWindow();
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
-
-    camera_.SetAspect(glm::vec2(width, height));
 }
 
 void HelloLight::Update(core::seconds dt)

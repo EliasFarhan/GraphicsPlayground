@@ -3,6 +3,8 @@
 //
 
 #include "sample_browser.h"
+
+#include "hello_blending.h"
 #include "hello_triangle.h"
 #include "hello_texture.h"
 #include "hello_cube.h"
@@ -24,6 +26,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"04 Hello Light", std::make_unique<HelloLight>()});
     samples_.push_back({"07 Hello Model", std::make_unique<HelloModel>()});
     samples_.push_back({"08 Hello Cutoff", std::make_unique<HelloCutoff>()});
+    samples_.push_back({"08 Hello Blending", std::make_unique<HelloBlending>()});
 }
 
 void SampleBrowser::Init()

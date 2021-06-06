@@ -33,11 +33,7 @@ void HelloCube::Init()
     };
     std::ranges::fill(quaternions_, glm::identity<glm::quat>());
 
-    auto* window = Engine::GetInstance().GetWindow();
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
 
-    screenSize_ = {width, height};
 }
 
 void HelloCube::Update(core::seconds dt)

@@ -1,4 +1,5 @@
 #include <hello_cutoff.h>
+#include <imgui.h>
 
 namespace gl
 {
@@ -13,11 +14,6 @@ void HelloCutoff::Init()
     cubeTexture_.LoadTexture("data/textures/container.jpg");
     whiteTexture_.CreateWhiteTexture();
     camera_.Init();
-	auto* window = Engine::GetInstance().GetWindow();
-	int width, height;
-	SDL_GetWindowSize(window, &width, &height);
-
-	camera_.SetAspect(glm::vec2(width, height));
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -82,6 +78,7 @@ void HelloCutoff::Destroy()
     cutoffProgram_.Destroy();
 	cubeTexture_.Destroy();
     whiteTexture_.Destroy();
+	grassTexture_.Destroy();
 }
 
 void HelloCutoff::OnEvent(SDL_Event& event)
