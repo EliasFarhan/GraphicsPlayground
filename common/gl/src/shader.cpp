@@ -155,7 +155,7 @@ void ShaderProgram::Bind() const
 void ShaderProgram::SetTexture(std::string_view uniformName, const Texture& texture, int textureUnit)
 {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(GL_TEXTURE_2D, texture.GetName());
+    glBindTexture(texture.GetType(), texture.GetName());
     glUniform1i(GetUniformLocation(uniformName), textureUnit);
     CheckError(__FILE__, __LINE__);
 

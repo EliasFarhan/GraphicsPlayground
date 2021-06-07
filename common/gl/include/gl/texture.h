@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <vector>
 #include <glm/vec2.hpp>
 
 namespace gl
@@ -8,26 +9,15 @@ namespace gl
 class Texture
 {
 public:
-    Texture() = default;
+    Texture();
 
     Texture(const Texture& other) = delete;
 
-    Texture(Texture&& other) noexcept
-    {
-        textureName_ = other.textureName_;
-        other.textureName_ = 0;
-        textureSize_ = other.textureSize_;
-    }
+    Texture(Texture&& other) noexcept;
 
     Texture& operator=(const Texture& other) = delete;
 
-    Texture& operator=(Texture&& other) noexcept
-    {
-        textureName_ = other.textureName_;
-        other.textureName_ = 0;
-        textureSize_ = other.textureSize_;
-        return *this;
-    }
+    Texture& operator=(Texture&& other) noexcept;
 
     ~Texture();
 
@@ -37,6 +27,8 @@ public:
                      bool smooth = true,
                      bool clamp_wrap = true);
 
+    void LoadCubemap(const std::vector<std::string_view>& paths);
+
     void Destroy();
 
     [[nodiscard]] unsigned int GetName() const
@@ -44,8 +36,11 @@ public:
 
     void CreateWhiteTexture();
 
+    [[nodiscard]] unsigned int GetType() const;
+
 private:
     unsigned int textureName_ = 0;
+    unsigned int textureType_;
     glm::vec2 textureSize_;
 };
 }
