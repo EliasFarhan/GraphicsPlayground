@@ -2,5 +2,7 @@
 
 namespace vk
 {
-    
+    void Engine::CreateInstance()
+    {
+    }
 }

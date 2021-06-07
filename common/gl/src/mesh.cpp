@@ -1,5 +1,7 @@
 #include "gl/mesh.h"
 #include "fmt/core.h"
+
+#include <GL/glew.h>
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"

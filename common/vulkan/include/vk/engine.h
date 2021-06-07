@@ -51,8 +51,11 @@ namespace vk
         void Init();
         void Destroy();
 
+        void CreateInstance();
+
         core::Program& program_;
         Driver driver_{};
         Swapchain swapchain_{};
     };
+    
 }
