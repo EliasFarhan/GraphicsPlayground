@@ -2,11 +2,12 @@
 
 #include "vk/engine.h"
 #include "hello_triangle.h"
+#include "hello_input_buffer.h"
 
 int main(int argc, char** argv)
 {
     core::Filesystem filesystem;
-    vk::HelloTriangle program_;
+    vk::HelloInputBuffer program_;
     vk::Engine engine(program_);
     engine.Run();
     return EXIT_SUCCESS;
