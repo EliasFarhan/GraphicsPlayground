@@ -23,44 +23,26 @@ void HelloInputBuffer::Update(core::seconds dt)
     auto& driver = engine.GetDriver();
     auto& swapchain = engine.GetSwapchain();
     auto& renderer = engine.GetRenderer();
-    std::uint32_t imageIndex;
-    vkAcquireNextImageKHR(driver.device, swapchain.swapChain, UINT64_MAX, renderer.imageAvailableSemaphore,
-                          VK_NULL_HANDLE,
-                          &imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {renderer.imageAvailableSemaphore};
+    VkSemaphore waitSemaphores[] = {renderer.imageAvailableSemaphores[renderer.currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &renderer.commandBuffers[imageIndex];
+    submitInfo.pCommandBuffers = &renderer.commandBuffers[renderer.imageIndex];
 
-    VkSemaphore signalSemaphores[] = {renderer.renderFinishedSemaphore};
+    VkSemaphore signalSemaphores[] = {renderer.renderFinishedSemaphores[renderer.currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
-    if (vkQueueSubmit(driver.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    if (vkQueueSubmit(driver.graphicsQueue, 1, &submitInfo, renderer.inFlightFences[renderer.currentFrame]) != VK_SUCCESS)
     {
         core::LogError("Failed to submit draw command buffer!");
         std::terminate();
     }
-
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
-    VkSwapchainKHR swapChains[] = {swapchain.swapChain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = nullptr; // Optional
-    vkQueuePresentKHR(driver.presentQueue, &presentInfo);
-    vkDeviceWaitIdle(driver.device);
 }
 
 void HelloInputBuffer::Destroy()

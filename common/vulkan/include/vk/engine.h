@@ -36,8 +36,11 @@ struct Swapchain
 struct Renderer
 {
     VkRenderPass renderPass;
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+    std::vector<VkFence> imagesInFlight;
+    std::size_t currentFrame = 0;
     std::uint32_t imageIndex = 0;
     std::vector<VkFramebuffer> framebuffers;
     VkCommandPool commandPool;
@@ -81,6 +84,7 @@ public:
     void RecreateSwapchain() override;
 
 
+    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
 
     void Init();
@@ -109,7 +113,7 @@ private:
 
     void CreateRenderPass();
 
-    void CreateSemaphores();
+    void CreateSyncObjects();
 
     void CreateFramebuffers();
 

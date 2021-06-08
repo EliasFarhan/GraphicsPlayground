@@ -45,14 +45,41 @@ void Engine::Run()
                 {
                     isOpen = false;
                 }
-                if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+                if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
                 {
                     RecreateSwapchain();
                 }
                 program_.OnEvent(event);
             }
         }
+        vkWaitForFences(driver_.device, 1, &renderer_.inFlightFences[renderer_.currentFrame], VK_TRUE, UINT64_MAX);
+
+
+        vkAcquireNextImageKHR(driver_.device, swapchain_.swapChain, UINT64_MAX, renderer_.imageAvailableSemaphores[renderer_.currentFrame],
+                              VK_NULL_HANDLE,
+                              &renderer_.imageIndex);
+        if (renderer_.imagesInFlight[renderer_.imageIndex] != VK_NULL_HANDLE) {
+            vkWaitForFences(driver_.device, 1, &renderer_.imagesInFlight[renderer_.imageIndex], VK_TRUE, UINT64_MAX);
+        }
+        renderer_.imagesInFlight[renderer_.imageIndex] = renderer_.inFlightFences[renderer_.currentFrame];
+        vkResetFences(driver_.device, 1, &renderer_.inFlightFences[renderer_.currentFrame]);
         program_.Update(dt);
+
+        VkSemaphore signalSemaphores[] = {renderer_.renderFinishedSemaphores[renderer_.currentFrame]};
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        VkSwapchainKHR swapChains[] = {swapchain_.swapChain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &renderer_.imageIndex;
+        presentInfo.pResults = nullptr; // Optional
+        vkQueuePresentKHR(driver_.presentQueue, &presentInfo);
+
+        renderer_.currentFrame = (renderer_.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     Destroy();
@@ -77,7 +104,7 @@ void Engine::Init()
     CreateFramebuffers();
     CreateCommandPool();
     CreateCommandBuffers();
-    CreateSemaphores();
+    CreateSyncObjects();
 
     program_.Init();
 }
@@ -89,8 +116,11 @@ void Engine::Destroy()
     program_.Destroy();
     CleanupSwapchain();
 
-    vkDestroySemaphore(driver_.device, renderer_.renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(driver_.device, renderer_.imageAvailableSemaphore, nullptr);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroySemaphore(driver_.device, renderer_.renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(driver_.device, renderer_.imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(driver_.device, renderer_.inFlightFences[i], nullptr);
+    }
     vmaDestroyAllocator(allocator_);
 
     vkDestroyDevice(driver_.device, nullptr);
@@ -378,7 +408,7 @@ void Engine::CreateImageViews()
 
 void Engine::CleanupSwapchain()
 {
-    for (auto & framebuffer : renderer_.framebuffers)
+    for (auto& framebuffer : renderer_.framebuffers)
     {
         vkDestroyFramebuffer(driver_.device, framebuffer, nullptr);
     }
@@ -478,19 +508,34 @@ void Engine::CreateRenderPass()
     }
 }
 
-void Engine::CreateSemaphores()
+void Engine::CreateSyncObjects()
 {
-    core::LogDebug("Create Semaphore");
+    core::LogDebug("Create Sync Objects");
+    renderer_.imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    renderer_.renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    renderer_.inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    renderer_.imagesInFlight.resize(swapchain_.images.size(), VK_NULL_HANDLE);
+
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    if (vkCreateSemaphore(driver_.device, &semaphoreInfo, nullptr,
-                          &renderer_.imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(driver_.device, &semaphoreInfo, nullptr,
-                          &renderer_.renderFinishedSemaphore) != VK_SUCCESS)
-    {
 
-        core::LogError("Failed to create semaphores!");
-        std::terminate();
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    for (std::size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        if (vkCreateSemaphore(driver_.device, &semaphoreInfo, nullptr,
+                              &renderer_.imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(driver_.device, &semaphoreInfo, nullptr,
+                              &renderer_.renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(driver_.device, &fenceInfo, nullptr,
+                          &renderer_.inFlightFences[i]) != VK_SUCCESS)
+        {
+
+            core::LogError("Failed to create sync objects!");
+            std::terminate();
+        }
     }
 }
 
