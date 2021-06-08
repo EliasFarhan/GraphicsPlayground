@@ -45,10 +45,22 @@ struct Renderer
 
 };
 
-class Engine
+class VulkanSwapchainRecreationInterface
 {
 public:
-    Engine(core::Program& program);
+    virtual void CleanupSwapchain() = 0;
+    virtual void RecreateSwapchain() = 0;
+};
+
+class Program : public core::Program, public VulkanSwapchainRecreationInterface
+{
+
+};
+
+class Engine : public VulkanSwapchainRecreationInterface
+{
+public:
+    Engine(Program& program);
 
 
     void Run();
@@ -65,6 +77,8 @@ public:
     Renderer& GetRenderer();
 
     VmaAllocator& GetAllocator();
+
+    void RecreateSwapchain() override;
 
 
 private:
@@ -87,7 +101,7 @@ private:
 
     void CreateImageViews();
 
-    void CleanupSwapChain();
+    void CleanupSwapchain() override;
 
     void CreateAllocator();
 
@@ -105,7 +119,7 @@ private:
 
     static Engine* instance_;
     SDL_Window* window_ = nullptr;
-    core::Program& program_;
+    Program& program_;
     Driver driver_{};
     Swapchain swapchain_{};
     Renderer renderer_{};

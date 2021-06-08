@@ -21,7 +21,8 @@ void HelloTriangle::Update(core::seconds dt)
     auto& swapchain = engine.GetSwapchain();
     auto& renderer = engine.GetRenderer();
     std::uint32_t imageIndex;
-    vkAcquireNextImageKHR(driver.device, swapchain.swapChain, UINT64_MAX, renderer.imageAvailableSemaphore, VK_NULL_HANDLE,
+    vkAcquireNextImageKHR(driver.device, swapchain.swapChain, UINT64_MAX, renderer.imageAvailableSemaphore,
+                          VK_NULL_HANDLE,
                           &imageIndex);
 
     VkSubmitInfo submitInfo{};
@@ -38,7 +39,8 @@ void HelloTriangle::Update(core::seconds dt)
     VkSemaphore signalSemaphores[] = {renderer.renderFinishedSemaphore};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
-    if (vkQueueSubmit(driver.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(driver.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
         core::LogError("Failed to submit draw command buffer!");
         std::terminate();
     }
@@ -60,10 +62,7 @@ void HelloTriangle::Update(core::seconds dt)
 
 void HelloTriangle::Destroy()
 {
-    auto& engine = Engine::GetInstance();
-    auto& driver = engine.GetDriver();
-    vkDestroyPipeline(driver.device, graphicsPipeline_, nullptr);
-    vkDestroyPipelineLayout(driver.device, pipelineLayout_, nullptr);
+    CleanupSwapchain();
 }
 
 void HelloTriangle::OnEvent(SDL_Event& event)
@@ -272,6 +271,20 @@ void HelloTriangle::CreateCommands()
             std::terminate();
         }
     }
+}
+
+void HelloTriangle::CleanupSwapchain()
+{
+    auto& engine = Engine::GetInstance();
+    auto& driver = engine.GetDriver();
+    vkDestroyPipeline(driver.device, graphicsPipeline_, nullptr);
+    vkDestroyPipelineLayout(driver.device, pipelineLayout_, nullptr);
+}
+
+void HelloTriangle::RecreateSwapchain()
+{
+    CreateGraphicsPipeline();
+    CreateCommands();
 }
 
 }

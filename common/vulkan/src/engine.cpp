@@ -17,7 +17,7 @@ namespace vk
 
 Engine* Engine::instance_ = nullptr;
 
-Engine::Engine(core::Program& program) : program_(program)
+Engine::Engine(Program& program) : program_(program)
 {
     instance_ = this;
 }
@@ -44,6 +44,10 @@ void Engine::Run()
                 if (event.type == SDL_QUIT)
                 {
                     isOpen = false;
+                }
+                if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+                {
+                    RecreateSwapchain();
                 }
                 program_.OnEvent(event);
             }
@@ -83,20 +87,12 @@ void Engine::Destroy()
 
     vkDeviceWaitIdle(driver_.device);
     program_.Destroy();
-    vmaDestroyAllocator(allocator_);
-    for (auto & framebuffer : renderer_.framebuffers)
-    {
-        vkDestroyFramebuffer(driver_.device, framebuffer, nullptr);
-    }
-    vkFreeCommandBuffers(driver_.device, renderer_.commandPool,
-                         static_cast<uint32_t>(renderer_.commandBuffers.size()),
-                         renderer_.commandBuffers.data());
+    CleanupSwapchain();
 
-    vkDestroyCommandPool(driver_.device, renderer_.commandPool, nullptr);
     vkDestroySemaphore(driver_.device, renderer_.renderFinishedSemaphore, nullptr);
     vkDestroySemaphore(driver_.device, renderer_.imageAvailableSemaphore, nullptr);
-    vkDestroyRenderPass(driver_.device, renderer_.renderPass, nullptr);
-    CleanupSwapChain();
+    vmaDestroyAllocator(allocator_);
+
     vkDestroyDevice(driver_.device, nullptr);
     if (enableDebugMessenger_ && enableValidationLayers_)
     {
@@ -123,7 +119,7 @@ void Engine::CreateInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Graphics Playground";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_HEADER_VERSION_COMPLETE;
 
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -380,8 +376,19 @@ void Engine::CreateImageViews()
     }
 }
 
-void Engine::CleanupSwapChain()
+void Engine::CleanupSwapchain()
 {
+    for (auto & framebuffer : renderer_.framebuffers)
+    {
+        vkDestroyFramebuffer(driver_.device, framebuffer, nullptr);
+    }
+
+    vkFreeCommandBuffers(driver_.device, renderer_.commandPool,
+                         static_cast<uint32_t>(renderer_.commandBuffers.size()), renderer_.commandBuffers.data());
+
+    vkDestroyCommandPool(driver_.device, renderer_.commandPool, nullptr);
+    vkDestroyRenderPass(driver_.device, renderer_.renderPass, nullptr);
+
     for (auto& imageView : swapchain_.imageViews)
     {
         vkDestroyImageView(driver_.device, imageView, nullptr);
@@ -575,6 +582,22 @@ Renderer& Engine::GetRenderer()
 VmaAllocator& Engine::GetAllocator()
 {
     return allocator_;
+}
+
+void Engine::RecreateSwapchain()
+{
+    vkDeviceWaitIdle(driver_.device);
+
+    program_.CleanupSwapchain();
+    CleanupSwapchain();
+
+    CreateSwapChain();
+    CreateImageViews();
+    CreateRenderPass();
+    CreateFramebuffers();
+    CreateCommandPool();
+    CreateCommandBuffers();
+    program_.RecreateSwapchain();
 }
 
 

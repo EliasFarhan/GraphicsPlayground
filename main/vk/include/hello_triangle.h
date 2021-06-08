@@ -5,7 +5,7 @@
 
 namespace vk
 {
-class HelloTriangle : public core::Program
+class HelloTriangle : public Program
 {
     void Init() override;
 
@@ -17,11 +17,16 @@ class HelloTriangle : public core::Program
 
     void DrawImGui() override;
 
+    void CleanupSwapchain() override;
+
+    void RecreateSwapchain() override;
+
 private:
     void CreateGraphicsPipeline();
+
     void CreateCommands();
 
-    VkPipelineLayout pipelineLayout_;
-    VkPipeline graphicsPipeline_;
+    VkPipelineLayout pipelineLayout_{};
+    VkPipeline graphicsPipeline_{};
 };
 }
