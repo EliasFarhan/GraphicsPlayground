@@ -8,7 +8,9 @@
 #include "SDL.h"
 
 #ifdef TRACY_ENABLE
+
 #include "TracyVulkan.hpp"
+
 #endif
 
 namespace vk
@@ -49,6 +51,7 @@ struct Renderer
     std::vector<VkFramebuffer> framebuffers;
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
+    VkCommandBuffer transferCmdBuffer;
 
 };
 
@@ -56,6 +59,7 @@ class VulkanSwapchainRecreationInterface
 {
 public:
     virtual void CleanupSwapchain() = 0;
+
     virtual void RecreateSwapchain() = 0;
 };
 
@@ -88,8 +92,17 @@ public:
     void RecreateSwapchain() override;
 
 #ifdef TRACY_ENABLE
-    std::vector<TracyVkCtx>& GetTracyCtx() {return tracyContexts_;}
+
+    std::vector<TracyVkCtx>& GetTracyCtx()
+    { return tracyContexts_; }
+
 #endif
+
+    void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
+                      VmaAllocation& allocation);
+
+
+    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size);
 
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
@@ -140,6 +153,7 @@ private:
     VkDebugUtilsMessengerEXT debugMessenger_;
 #ifdef TRACY_ENABLE
     std::vector<TracyVkCtx> tracyContexts_;
+    TracyVkCtx tracyTransferContext_;
 #endif
 };
 

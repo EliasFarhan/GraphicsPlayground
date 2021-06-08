@@ -7,7 +7,9 @@
 #include "fmt/core.h"
 
 #ifdef TRACY_ENABLE
+
 #include "Tracy.hpp"
+
 #endif
 namespace vk
 {
@@ -149,7 +151,8 @@ void Engine::Destroy()
     program_.Destroy();
     CleanupSwapchain();
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         vkDestroySemaphore(driver_.device, renderer_.renderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(driver_.device, renderer_.imageAvailableSemaphores[i], nullptr);
         vkDestroyFence(driver_.device, renderer_.inFlightFences[i], nullptr);
@@ -472,14 +475,15 @@ void Engine::CleanupSwapchain()
         vkDestroyFramebuffer(driver_.device, framebuffer, nullptr);
     }
 #ifdef TRACY_ENABLE
-    for(int i = 0; i < tracyContexts_.size(); i++)
+    for (int i = 0; i < tracyContexts_.size(); i++)
     {
         TracyVkDestroy(tracyContexts_[i]);
     }
+    TracyVkDestroy(tracyTransferContext_);
 #endif
     vkFreeCommandBuffers(driver_.device, renderer_.commandPool,
                          static_cast<uint32_t>(renderer_.commandBuffers.size()), renderer_.commandBuffers.data());
-
+    vkFreeCommandBuffers(driver_.device, renderer_.commandPool, 1, &renderer_.transferCmdBuffer);
     vkDestroyCommandPool(driver_.device, renderer_.commandPool, nullptr);
     vkDestroyRenderPass(driver_.device, renderer_.renderPass, nullptr);
 
@@ -685,16 +689,30 @@ void Engine::CreateCommandBuffers()
         std::terminate();
     }
 
+    allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = renderer_.commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    vkAllocateCommandBuffers(driver_.device, &allocInfo, &renderer_.transferCmdBuffer);
+
 #ifdef TRACY_ENABLE
     tracyContexts_.resize(renderer_.commandBuffers.size());
-    for(int i = 0; i < renderer_.commandBuffers.size(); i++)
+    for (int i = 0; i < renderer_.commandBuffers.size(); i++)
     {
         tracyContexts_[i] = TracyVkContext(
-                                driver_.physicalDevice,
-                                driver_.device,
-                                driver_.graphicsQueue,
-                                renderer_.commandBuffers[i]);
+                                    driver_.physicalDevice,
+                                    driver_.device,
+                                    driver_.graphicsQueue,
+                                    renderer_.commandBuffers[i]);
     }
+    tracyTransferContext_ = TracyVkContext(
+            driver_.physicalDevice,
+            driver_.device,
+            driver_.graphicsQueue,
+            renderer_.transferCmdBuffer
+            );
 #endif
 }
 
@@ -737,6 +755,61 @@ void Engine::RecreateSwapchain()
     CreateCommandPool();
     CreateCommandBuffers();
     program_.RecreateSwapchain();
+}
+
+void
+Engine::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
+                     VmaAllocation& allocation)
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    allocInfo.requiredFlags = properties;
+    if (vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr) != VK_SUCCESS)
+    {
+        core::LogError("Failed to create a buffer");
+        std::terminate();
+    }
+}
+
+void Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size)
+{
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    {
+        vkBeginCommandBuffer(renderer_.transferCmdBuffer, &beginInfo);
+#ifdef TRACY_ENABLE
+        TracyVkZone(tracyTransferContext_, renderer_.transferCmdBuffer, "Copy Buffer to GPU");
+#endif
+        VkBufferCopy copyRegion{};
+        copyRegion.srcOffset = 0; // Optional
+        copyRegion.dstOffset = 0; // Optional
+        copyRegion.size = size;
+        vkCmdCopyBuffer(renderer_.transferCmdBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+    }
+    vkEndCommandBuffer(renderer_.transferCmdBuffer);
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &renderer_.transferCmdBuffer;
+
+    vkQueueSubmit(driver_.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(driver_.graphicsQueue);
+
+#ifdef TRACY_ENABLE
+    TracyVkCollect(tracyTransferContext_, renderer_.commandBuffers[renderer_.imageIndex])
+#endif
+
 }
 
 

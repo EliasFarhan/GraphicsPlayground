@@ -17,7 +17,6 @@ void LogWarning(const std::string_view msg)
 
 void LogError(const std::string_view msg)
 {
-
     spdlog::error(msg);
 }
 }

@@ -51,9 +51,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData)
 {
-    if (messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    if (messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
         return VK_FALSE;
-    const auto msg = fmt::format("Validation layer: {}", pCallbackData->pMessage);
+    const auto msg = pCallbackData->pMessage;
     switch (messageSeverity)
     {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
