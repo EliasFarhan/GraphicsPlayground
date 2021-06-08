@@ -10,12 +10,18 @@ namespace vk
 
 void HelloTriangle::Init()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     CreateGraphicsPipeline();
     CreateCommands();
 }
 
 void HelloTriangle::Update(core::seconds dt)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(triangleLoop, "Triangle Loop", true);
+#endif
     auto& engine = Engine::GetInstance();
     auto& driver = engine.GetDriver();
     auto& swapchain = engine.GetSwapchain();
@@ -64,6 +70,9 @@ void HelloTriangle::DrawImGui()
 
 void HelloTriangle::CreateGraphicsPipeline()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create Graphics Pipeline");
     const auto& filesystem = core::FilesystemLocator::get();
     auto& engine = Engine::GetInstance();
@@ -214,7 +223,9 @@ void HelloTriangle::CreateGraphicsPipeline()
 
 void HelloTriangle::CreateCommands()
 {
-
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create Commands");
     auto& engine = Engine::GetInstance();
     auto& renderer = engine.GetRenderer();
@@ -226,32 +237,35 @@ void HelloTriangle::CreateCommands()
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
         {
-            core::LogError("Failed to begin recording command buffer!");
-            std::terminate();
+            if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
+            {
+                core::LogError("Failed to begin recording command buffer!");
+                std::terminate();
+            }
+#ifdef TRACY_ENABLE
+            auto& tracyCtx = engine.GetTracyCtx();
+            TracyVkZone(tracyCtx[i], renderer.commandBuffers[i], "Hello Triangle");
+#endif
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = renderer.renderPass;
+            renderPassInfo.framebuffer = renderer.framebuffers[i];
+            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.extent = swapchain.extent;
+
+            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+            renderPassInfo.clearValueCount = 1;
+            renderPassInfo.pClearValues = &clearColor;
+
+            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+
+            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+            vkCmdEndRenderPass(commandBuffers[i]);
         }
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderer.renderPass;
-        renderPassInfo.framebuffer = renderer.framebuffers[i];
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = swapchain.extent;
-
-        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearColor;
-
-        vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-
-        vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-
-        vkCmdEndRenderPass(commandBuffers[i]);
-
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
         {
             core::LogError("Failed to record command buffer!");

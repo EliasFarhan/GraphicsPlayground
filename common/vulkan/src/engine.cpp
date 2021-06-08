@@ -7,9 +7,7 @@
 #include "fmt/core.h"
 
 #ifdef TRACY_ENABLE
-
 #include "Tracy.hpp"
-
 #endif
 namespace vk
 {
@@ -30,6 +28,9 @@ void Engine::Run()
             std::chrono::system_clock::now();
     while (isOpen)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(engineLoop, "Engine Loop", true);
+#endif
         const auto start = std::chrono::system_clock::now();
         const auto dt = std::chrono::duration_cast<core::seconds>(
                 start - clock);
@@ -52,33 +53,62 @@ void Engine::Run()
                 program_.OnEvent(event);
             }
         }
-        vkWaitForFences(driver_.device, 1, &renderer_.inFlightFences[renderer_.currentFrame], VK_TRUE, UINT64_MAX);
+        {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(fenceWait, "Wait For Fence", true);
+#endif
+            vkWaitForFences(driver_.device, 1, &renderer_.inFlightFences[renderer_.currentFrame], VK_TRUE, UINT64_MAX);
 
-
-        vkAcquireNextImageKHR(driver_.device, swapchain_.swapChain, UINT64_MAX, renderer_.imageAvailableSemaphores[renderer_.currentFrame],
-                              VK_NULL_HANDLE,
-                              &renderer_.imageIndex);
-        if (renderer_.imagesInFlight[renderer_.imageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(driver_.device, 1, &renderer_.imagesInFlight[renderer_.imageIndex], VK_TRUE, UINT64_MAX);
+        }
+        {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(acquireImage, "Acquire Image", true);
+#endif
+            vkAcquireNextImageKHR(driver_.device, swapchain_.swapChain, UINT64_MAX,
+                                  renderer_.imageAvailableSemaphores[renderer_.currentFrame],
+                                  VK_NULL_HANDLE,
+                                  &renderer_.imageIndex);
+        }
+        {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(fenceWait, "Wait Fence If Image Flight", true);
+#endif
+            if (renderer_.imagesInFlight[renderer_.imageIndex] != VK_NULL_HANDLE)
+            {
+                vkWaitForFences(driver_.device, 1, &renderer_.imagesInFlight[renderer_.imageIndex], VK_TRUE,
+                                UINT64_MAX);
+            }
         }
         renderer_.imagesInFlight[renderer_.imageIndex] = renderer_.inFlightFences[renderer_.currentFrame];
         vkResetFences(driver_.device, 1, &renderer_.inFlightFences[renderer_.currentFrame]);
-        program_.Update(dt);
 
-        VkSemaphore signalSemaphores[] = {renderer_.renderFinishedSemaphores[renderer_.currentFrame]};
-        VkPresentInfoKHR presentInfo{};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(presentImage, "Program Update", true);
+#endif
+            program_.Update(dt);
+        }
+        {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(presentImage, "Present Image", true);
+#endif
+            VkSemaphore signalSemaphores[] = {renderer_.renderFinishedSemaphores[renderer_.currentFrame]};
+            VkPresentInfoKHR presentInfo{};
+            presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
+            presentInfo.waitSemaphoreCount = 1;
+            presentInfo.pWaitSemaphores = signalSemaphores;
 
-        VkSwapchainKHR swapChains[] = {swapchain_.swapChain};
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-        presentInfo.pImageIndices = &renderer_.imageIndex;
-        presentInfo.pResults = nullptr; // Optional
-        vkQueuePresentKHR(driver_.presentQueue, &presentInfo);
-
+            VkSwapchainKHR swapChains[] = {swapchain_.swapChain};
+            presentInfo.swapchainCount = 1;
+            presentInfo.pSwapchains = swapChains;
+            presentInfo.pImageIndices = &renderer_.imageIndex;
+            presentInfo.pResults = nullptr; // Optional
+            vkQueuePresentKHR(driver_.presentQueue, &presentInfo);
+        }
+#ifdef TRACY_ENABLE
+        TracyVkCollect(tracyContexts_[renderer_.imageIndex], renderer_.commandBuffers[renderer_.imageIndex])
+#endif
         renderer_.currentFrame = (renderer_.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
@@ -87,6 +117,9 @@ void Engine::Run()
 
 void Engine::Init()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     //Window Init
     CreateWindow();
     CreateInstance();
@@ -137,6 +170,9 @@ void Engine::Destroy()
 
 void Engine::CreateInstance()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Creating Instance");
     if (enableValidationLayers_ && !CheckValidationLayerSupport())
     {
@@ -219,6 +255,9 @@ void Engine::CreateInstance()
 
 void Engine::CreateWindow()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     window_ = SDL_CreateWindow(
             "Vulkan Playground",
             SDL_WINDOWPOS_UNDEFINED,
@@ -231,6 +270,9 @@ void Engine::CreateWindow()
 
 void Engine::SetupDebugMessenger()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     if (!enableDebugMessenger_ || !enableValidationLayers_)
     {
         return;
@@ -247,6 +289,9 @@ void Engine::SetupDebugMessenger()
 
 void Engine::CreateLogicalDevice()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Creating Logical Device");
     QueueFamilyIndices indices = FindQueueFamilies(driver_.physicalDevice, driver_.surface);
 
@@ -294,10 +339,15 @@ void Engine::CreateLogicalDevice()
     }
     vkGetDeviceQueue(driver_.device, indices.graphicsFamily.value(), 0, &driver_.graphicsQueue);
     vkGetDeviceQueue(driver_.device, indices.presentFamily.value(), 0, &driver_.presentQueue);
+
+
 }
 
 void Engine::CreateSurface()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Creating Surface");
     if (!SDL_Vulkan_CreateSurface(window_, driver_.instance, &driver_.surface))
     {
@@ -308,6 +358,9 @@ void Engine::CreateSurface()
 
 void Engine::CreateSwapChain()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create SwapChain");
     SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(driver_.physicalDevice,
                                                                      driver_.surface);
@@ -380,6 +433,9 @@ void Engine::CreateSwapChain()
 
 void Engine::CreateImageViews()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     swapchain_.imageViews.resize(swapchain_.images.size());
     for (size_t i = 0; i < swapchain_.images.size(); i++)
     {
@@ -408,11 +464,19 @@ void Engine::CreateImageViews()
 
 void Engine::CleanupSwapchain()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     for (auto& framebuffer : renderer_.framebuffers)
     {
         vkDestroyFramebuffer(driver_.device, framebuffer, nullptr);
     }
-
+#ifdef TRACY_ENABLE
+    for(int i = 0; i < tracyContexts_.size(); i++)
+    {
+        TracyVkDestroy(tracyContexts_[i]);
+    }
+#endif
     vkFreeCommandBuffers(driver_.device, renderer_.commandPool,
                          static_cast<uint32_t>(renderer_.commandBuffers.size()), renderer_.commandBuffers.data());
 
@@ -430,6 +494,9 @@ void Engine::CleanupSwapchain()
 
 void Engine::CreateAllocator()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     VmaAllocatorCreateInfo allocatorInfo = {};
     allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_0;
     allocatorInfo.physicalDevice = driver_.physicalDevice;
@@ -463,6 +530,9 @@ VkExtent2D Engine::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities
 
 void Engine::CreateRenderPass()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create Render Pass");
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = swapchain_.imageFormat;
@@ -510,6 +580,9 @@ void Engine::CreateRenderPass()
 
 void Engine::CreateSyncObjects()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create Sync Objects");
     renderer_.imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderer_.renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -541,6 +614,9 @@ void Engine::CreateSyncObjects()
 
 void Engine::CreateFramebuffers()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create Framebuffers");
     renderer_.framebuffers.resize(swapchain_.imageViews.size());
     for (size_t i = 0; i < swapchain_.imageViews.size(); i++)
@@ -569,6 +645,9 @@ void Engine::CreateFramebuffers()
 
 void Engine::CreateCommandPool()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create Command Pool");
     QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(driver_.physicalDevice,
                                                               driver_.surface);
@@ -587,6 +666,9 @@ void Engine::CreateCommandPool()
 
 void Engine::CreateCommandBuffers()
 {
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
     core::LogDebug("Create Command Buffers");
     renderer_.commandBuffers.resize(renderer_.framebuffers.size());
 
@@ -602,6 +684,18 @@ void Engine::CreateCommandBuffers()
         core::LogError("Failed to allocate command buffers!\n");
         std::terminate();
     }
+
+#ifdef TRACY_ENABLE
+    tracyContexts_.resize(renderer_.commandBuffers.size());
+    for(int i = 0; i < renderer_.commandBuffers.size(); i++)
+    {
+        tracyContexts_[i] = TracyVkContext(
+                                driver_.physicalDevice,
+                                driver_.device,
+                                driver_.graphicsQueue,
+                                renderer_.commandBuffers[i]);
+    }
+#endif
 }
 
 SDL_Window* Engine::GetWindow() const

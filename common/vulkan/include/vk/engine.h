@@ -7,6 +7,10 @@
 
 #include "SDL.h"
 
+#ifdef TRACY_ENABLE
+#include "TracyVulkan.hpp"
+#endif
+
 namespace vk
 {
 struct Driver
@@ -83,6 +87,9 @@ public:
 
     void RecreateSwapchain() override;
 
+#ifdef TRACY_ENABLE
+    std::vector<TracyVkCtx>& GetTracyCtx() {return tracyContexts_;}
+#endif
 
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
@@ -131,6 +138,9 @@ private:
     bool enableDebugMessenger_ = true;
     VmaAllocator allocator_;
     VkDebugUtilsMessengerEXT debugMessenger_;
+#ifdef TRACY_ENABLE
+    std::vector<TracyVkCtx> tracyContexts_;
+#endif
 };
 
 }
