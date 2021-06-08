@@ -16,6 +16,7 @@
       "name": "imgui",
       "features": [ "sdl2-binding", "opengl3-glew-binding", "vulkan-binding" ]
     },
-    "vulkan-memory-allocator"
+    "vulkan-memory-allocator",
+    "spdlog"
   ]
 }

@@ -1,21 +1,23 @@
 #include <log.h>
-#include <iostream>
+#include "spdlog/spdlog.h"
 
 namespace core
 {
-void LogDebug(std::string_view msg)
+
+
+void LogDebug(const std::string_view msg)
 {
-    std::cout << "[Debug] " << msg << '\n';
+    spdlog::info(msg);
 }
 
-void LogWarning(std::string_view msg)
+void LogWarning(const std::string_view msg)
 {
-    std::cerr << "[Warning] " << msg << '\n';
+    spdlog::warn(msg);
 }
 
-void LogError(std::string_view msg)
+void LogError(const std::string_view msg)
 {
 
-    std::cerr << "[Error] " << msg << '\n';
+    spdlog::error(msg);
 }
 }
