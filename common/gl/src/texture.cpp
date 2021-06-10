@@ -31,7 +31,6 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
                      bool smooth, bool clamp_wrap)
 {
 
-    //stbi_set_flip_vertically_on_load(true);
 #ifdef TRACY_ENABLE
     ZoneNamedN(loadTexture, "Texture Loading", true);
     TracyGpuNamedZone(loadTextureGpu, "Texture Loading", true);

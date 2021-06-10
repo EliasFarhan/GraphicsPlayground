@@ -151,7 +151,7 @@ void Quad::Draw()
     TracyGpuNamedZone(drawQuadGpu, "Draw Quad", true);
 #endif
     glBindVertexArray(vao_);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     CheckError(__FILE__, __LINE__);
 }
 

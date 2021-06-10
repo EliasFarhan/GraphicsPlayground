@@ -9,6 +9,7 @@ void HelloModel::Init()
     shader_.CreateDefaultProgram("data/shaders/07_hello_model/model.vert",
                                  "data/shaders/07_hello_model/model.frag");
     camera_.Init();
+    glEnable(GL_DEPTH_TEST);
 }
 
 void HelloModel::Update(core::seconds dt)
@@ -29,7 +30,6 @@ void HelloModel::Update(core::seconds dt)
 
 void HelloModel::Destroy()
 {
-
     glDisable(GL_DEPTH_TEST);
     model_.Destroy();
     shader_.Destroy();

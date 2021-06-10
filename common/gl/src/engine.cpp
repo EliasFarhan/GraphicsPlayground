@@ -1,6 +1,7 @@
 #include <gl/engine.h>
 #include <GL/glew.h>
 #include <gl/error.h>
+#include <stb_image.h>
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -103,6 +104,8 @@ void Engine::Init()
     ImGui_ImplOpenGL3_Init("#version 300 es");
 
     CheckError(__FILE__, __LINE__);
+
+    //stbi_set_flip_vertically_on_load(true);
     program_.Init();
 }
 
@@ -203,5 +206,12 @@ void Engine::DrawImGui()
     ImGui::Text("FPS: %f", 1.0f / deltaTime_);
     ImGui::End();
     program_.DrawImGui();
+}
+
+std::array<int, 2> Engine::GetWindowSize() const
+{
+    std::array<int, 2> size{};
+    SDL_GetWindowSize(window_, &size[0], &size[1]);
+    return size;
 }
 }

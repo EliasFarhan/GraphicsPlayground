@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <engine.h>
+#include <array>
 
 #include "SDL.h"
 
@@ -16,8 +17,7 @@ public:
 
     void Run();
 
-    SDL_Window* GetWindow() const
-    { return window_; }
+    [[nodiscard]] std::array<int, 2> GetWindowSize() const;
 
     static Engine& GetInstance()
     { return *instance_; }

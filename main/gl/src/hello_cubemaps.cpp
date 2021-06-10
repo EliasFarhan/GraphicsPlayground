@@ -3,7 +3,7 @@
 //
 
 #include "hello_cubemaps.h"
-#include "imgui.h"
+#include <imgui.h>
 
 namespace gl
 {
@@ -65,6 +65,7 @@ void HelloCubemaps::Update(core::seconds dt)
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
             modelShader_.SetMat4("model", model);
+            modelShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             modelShader_.SetTexture("texture_diffuse1", cubeTexture_, 0);
             cube_.Draw();
             break;
@@ -85,6 +86,7 @@ void HelloCubemaps::Update(core::seconds dt)
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
             modelReflectionShader_.SetMat4("model", model);
+            modelReflectionShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             modelReflectionShader_.SetTexture("texture_diffuse1", cubeTexture_, 0);
             cube_.Draw();
             break;
@@ -107,6 +109,7 @@ void HelloCubemaps::Update(core::seconds dt)
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
             modelRefractionShader_.SetMat4("model", model);
+            modelRefractionShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, cubeTexture_.GetName());
             cube_.Draw();

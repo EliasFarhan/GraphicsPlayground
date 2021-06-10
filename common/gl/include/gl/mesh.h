@@ -18,9 +18,9 @@ class Mesh
 public:
     struct Vertex
     {
-        glm::vec3 Position;
-        glm::vec3 Normal;
-        glm::vec2 TexCoords;
+        glm::vec3 position;
+        glm::vec2 texCoords;
+        glm::vec3 normal;
     };
 
     struct Texture

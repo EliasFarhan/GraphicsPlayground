@@ -4,6 +4,7 @@
 #include <assimp/postprocess.h>
 #include "gl/texture.h"
 #include <algorithm>
+
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"
@@ -24,8 +25,10 @@ void Model::LoadModel(std::string_view path)
 #ifdef TRACY_ENABLE
         ZoneNamedN(cubeInit, "Import With Assimp", true);
 #endif
-        scene = import.ReadFile(path.data(),aiProcess_Triangulate |
-                                               aiProcess_FlipUVs);
+        scene = import.ReadFile(path.data(),
+                                aiProcess_Triangulate | aiProcess_FlipUVs |
+                                aiProcess_GenNormals |
+                                aiProcess_CalcTangentSpace);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
             !scene->mRootNode)
@@ -83,27 +86,28 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     vertices.reserve(mesh->mNumVertices);
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
-        Mesh::Vertex vertex;
+        Mesh::Vertex vertex{};
         // process vertex positions, normals and texture coordinates
         glm::vec3 vector;
         vector.x = mesh->mVertices[i].x;
         vector.y = mesh->mVertices[i].y;
         vector.z = mesh->mVertices[i].z;
-        vertex.Position = vector;
+        vertex.position = vector;
 
         vector.x = mesh->mNormals[i].x;
         vector.y = mesh->mNormals[i].y;
         vector.z = mesh->mNormals[i].z;
-        vertex.Normal = vector;
+        vertex.normal = vector;
 
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
         {
-            glm::vec2 vec;
+            glm::vec2 vec{};
             vec.x = mesh->mTextureCoords[0][i].x;
             vec.y = mesh->mTextureCoords[0][i].y;
-            vertex.TexCoords = vec;
-        } else
-            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.texCoords = vec;
+        }
+        else
+            vertex.texCoords = glm::vec2(0.0f, 0.0f);
 
         vertices.push_back(vertex);
     }
@@ -156,7 +160,7 @@ Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type,
         {
             textures_.emplace_back();
             auto& newTexture = textures_.back();
-            newTexture.LoadTexture(texturePath);
+            newTexture.LoadTexture(texturePath, 0, true, true, false);
             texture.textureName = newTexture.GetName();
             textureHashes_.push_back(textureHash);
         }

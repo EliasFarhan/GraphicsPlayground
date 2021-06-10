@@ -65,11 +65,8 @@ void Camera3D::Init()
     position = cameraOriginPos;
     LookAt(glm::vec3());
 
-    auto* window = Engine::GetInstance().GetWindow();
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
-
-    SetAspect(glm::vec2(width, height));
+    const auto windowSize = Engine::GetInstance().GetWindowSize();
+    SetAspect(glm::vec2(windowSize[0], windowSize[1]));
 }
 
 void Camera3D::Update(core::seconds dt)

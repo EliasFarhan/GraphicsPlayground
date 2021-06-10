@@ -7,7 +7,7 @@
 int main(int argc, char** argv)
 {
     core::Filesystem filesystem;
-    vk::HelloStagingBuffer program_;
+    vk::HelloIndexBuffer program_;
     vk::Engine engine(program_);
     engine.Run();
     return EXIT_SUCCESS;

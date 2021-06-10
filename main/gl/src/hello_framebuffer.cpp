@@ -14,10 +14,8 @@ void HelloFramebuffer::Init()
     containerTexture_.LoadTexture("data/textures/container.jpg");
     camera_.Init();
 
-    auto* window = Engine::GetInstance().GetWindow();
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
-    framebuffer_.SetSize({width, height});
+    const auto windowSize = Engine::GetInstance().GetWindowSize();
+    framebuffer_.SetSize({windowSize[0], windowSize[1]});
     framebuffer_.Create();
 
     modelShader_.CreateDefaultProgram(

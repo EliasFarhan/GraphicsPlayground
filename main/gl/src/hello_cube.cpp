@@ -32,11 +32,9 @@ void HelloCube::Init()
             glm::vec3(-1.3f, 1.0f, -1.5f)
     };
     std::ranges::fill(quaternions_, glm::identity<glm::quat>());
-    auto* window = Engine::GetInstance().GetWindow();
-    int width, height;
-    SDL_GetWindowSize(window, &width, &height);
+    const auto windowSize = Engine::GetInstance().GetWindowSize();
 
-    screenSize_ = glm::vec2(width, height);
+    screenSize_ = glm::vec2(windowSize[0], windowSize[1]);
 
 }
 
