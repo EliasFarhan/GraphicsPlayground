@@ -55,7 +55,7 @@ void HelloFramebuffer::Update(core::seconds dt)
     modelShader_.SetMat4("view", camera_.GetView());
     modelShader_.SetMat4("projection", camera_.GetProjection());
 
-    modelShader_.SetTexture("texture_diffuse1",containerTexture_, 0);
+    modelShader_.SetTexture("texture_diffuse1", containerTexture_, 0);
     cube_.Draw();
 
     ShaderProgram* currentShader = nullptr;

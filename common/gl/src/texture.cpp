@@ -97,7 +97,7 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
     }
     else
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                         smooth ? GL_LINEAR : GL_NEAREST);
         CheckError(__FILE__, __LINE__);
     }

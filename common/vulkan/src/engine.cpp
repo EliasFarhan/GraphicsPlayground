@@ -188,7 +188,7 @@ void Engine::CreateInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Graphics Playground";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_HEADER_VERSION_COMPLETE;
+    appInfo.apiVersion = VK_MAKE_VERSION(1,2,0);
 
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
