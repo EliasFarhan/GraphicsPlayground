@@ -63,7 +63,7 @@ mono_crash.*
 /[Ll]og/
 /[Ll]ogs/
 .vs/
-
+tmp/
 # Files built by Visual Studio
 *_i.c
 *_p.c
