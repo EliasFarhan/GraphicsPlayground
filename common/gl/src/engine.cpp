@@ -84,7 +84,7 @@ void Engine::Init()
         core::LogError("Failed to initialize GLEW");
         std::terminate();
     }
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 #ifdef TRACY_ENABLE
     TracyGpuContext
 #endif
@@ -103,7 +103,7 @@ void Engine::Init()
     ImGui_ImplSDL2_InitForOpenGL(window_, glRenderContext_);
     ImGui_ImplOpenGL3_Init("#version 300 es");
 
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
     //stbi_set_flip_vertically_on_load(true);
     program_.Init();
@@ -160,7 +160,7 @@ void Engine::Run()
         ImGui::Render();
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
         program_.Update(dt);
         {
 #ifdef TRACY_ENABLE
@@ -168,7 +168,7 @@ void Engine::Run()
             TracyGpuNamedZone(gpuImguiRender, "ImGui Render Data", true);
 #endif
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-            CheckError(__FILE__, __LINE__);
+            glCheckError();
         }
 #ifdef TRACY_ENABLE
         ZoneNamedN(swapWindow, "Swap Window", true);
@@ -179,7 +179,7 @@ void Engine::Run()
         TracyGpuCollect
         FrameMark
 #endif
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
 
     }
 
@@ -190,7 +190,7 @@ void Engine::Destroy()
 {
     program_.Destroy();
     ImGui_ImplOpenGL3_Shutdown();
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     // Delete our OpengL context
     SDL_GL_DeleteContext(glRenderContext_);
     ImGui_ImplSDL2_Shutdown();

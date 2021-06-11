@@ -27,7 +27,7 @@ void VertexArray::GenerateVao()
     TracyGpuNamedZone(generateVaoGpu, "Generate VAO", true);
 #endif
     glGenVertexArrays(1, &vao_);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void VertexArray::FreeVao()
@@ -40,7 +40,7 @@ void VertexArray::FreeVao()
 #endif
         glDeleteVertexArrays(1, &vao_);
         vao_ = 0;
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
 }
 
@@ -108,7 +108,7 @@ void Quad::Init()
     //Initialize the EBO program
     glGenBuffers(4, &vbo_[0]);
     glGenBuffers(1, &ebo_);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
     glBindVertexArray(vao_);
     // 2. copy our vertices array in a buffer for OpenGL to use
@@ -135,7 +135,7 @@ void Quad::Init()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glBindVertexArray(0);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void Quad::Destroy()
@@ -152,7 +152,7 @@ void Quad::Draw()
 #endif
     glBindVertexArray(vao_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void Quad::FreeBuffers()
@@ -166,7 +166,7 @@ void Quad::FreeBuffers()
         glDeleteBuffers(4, &vbo_[0]);
         glDeleteBuffers(1, &ebo_);
         ebo_ = 0;
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
 }
 
@@ -340,7 +340,7 @@ void Cuboid::Init()
     }
     GenerateVao();
     glGenBuffers(4, &vbo_[0]);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
     glBindVertexArray(vao_);
     // position attribute
@@ -365,7 +365,7 @@ void Cuboid::Init()
     glEnableVertexAttribArray(3);
 
     glBindVertexArray(0);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void Cuboid::Destroy()
@@ -382,7 +382,7 @@ void Cuboid::Draw()
 #endif
     glBindVertexArray(vao_);
     glDrawArrays(GL_TRIANGLES, 0, 36);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void Cuboid::FreeBuffers()
@@ -395,7 +395,7 @@ void Cuboid::FreeBuffers()
 #endif
         glDeleteBuffers(4, &vbo_[0]);
         vbo_[0] = 0;
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
 }
 }

@@ -48,7 +48,7 @@ void Mesh::SetupMesh()
     glGenBuffers(1, &vbo_);
     glGenBuffers(1, &ebo_);
 
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
 
@@ -56,7 +56,7 @@ void Mesh::SetupMesh()
 
 
 
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     // vertex positions
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) nullptr);
@@ -72,7 +72,7 @@ void Mesh::SetupMesh()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_.size() * sizeof(unsigned int),
                  indices_.data(), GL_STATIC_DRAW);
     glBindVertexArray(0);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void Mesh::Draw(ShaderProgram& shader)
@@ -91,7 +91,7 @@ void Mesh::Draw(ShaderProgram& shader)
             continue;
         }
         glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
         // retrieve texture number (the N in diffuse_textureN)
         std::string number;
         std::string name = textures_[i].type;
@@ -107,18 +107,18 @@ void Mesh::Draw(ShaderProgram& shader)
         const auto uniformName = fmt::format("{}{}", name, number);
         shader.SetInt(uniformName.c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures_[i].textureName);
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
     glActiveTexture(GL_TEXTURE0);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
     // draw mesh
     glBindVertexArray(vao_);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, nullptr);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     glBindVertexArray(0);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 Mesh::~Mesh()
@@ -140,7 +140,7 @@ void Mesh::Destroy()
         glDeleteVertexArrays(1, &vao_);
         glDeleteBuffers(1, &vbo_);
         glDeleteBuffers(1, &ebo_);
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
         vao_ = 0;
     }
 }

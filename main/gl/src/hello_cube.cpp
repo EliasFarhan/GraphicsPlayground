@@ -17,7 +17,7 @@ void HelloCube::Init()
     shader_.CreateDefaultProgram("data/shaders/03_hello_rotate_cube/cube.vert",
                                  "data/shaders/03_hello_rotate_cube/cube.frag");
     glEnable(GL_DEPTH_TEST);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
     positions_ = {
             glm::vec3(0.0f, 0.0f, 0.0f),
@@ -75,7 +75,7 @@ void HelloCube::Update(core::seconds dt)
 void HelloCube::Destroy()
 {
     glDisable(GL_DEPTH_TEST);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     shader_.Destroy();
     cuboid_.Destroy();
     cubeTexture_.Destroy();

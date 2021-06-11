@@ -29,7 +29,7 @@ void ShaderProgram::Destroy()
 #endif
         glDeleteProgram(program_);
         program_ = 0;
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
 }
 
@@ -51,12 +51,12 @@ unsigned ShaderProgram::LoadShader(char* shaderContent, unsigned shaderType)
 #endif
     const GLuint shader = glCreateShader(shaderType);
 
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
 
     glShaderSource(shader, 1, &shaderContent, nullptr);
     glCompileShader(shader);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     //Check success status of shader compilation
     GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -97,59 +97,59 @@ void ShaderProgram::CreateDefaultProgram(std::string_view vertexPath, std::strin
         return;
     }
 
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     program_ = CreateShaderProgram(vertexShader, fragmentShader);
     if (program_ == 0)
     {
         std::cerr << fmt::format("[Error] Loading shader program with vertex: {} and fragment {}",
                                  vertexPath, fragmentPath) << '\n';
     }
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::SetFloat(std::string_view uniformName, float f)
 {
     glUniform1f(GetUniformLocation(uniformName), f);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::SetInt(std::string_view uniformName, int i)
 {
     glUniform1i(GetUniformLocation(uniformName), i);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::SetVec2(std::string_view uniformName, glm::vec2 v)
 {
     glUniform2fv(GetUniformLocation(uniformName), 1, &v[0]);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::SetVec3(std::string_view uniformName, glm::vec3 v)
 {
     glUniform3fv(GetUniformLocation(uniformName), 1, &v[0]);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::SetVec4(std::string_view uniformName, glm::vec4 v)
 {
     glUniform4fv(GetUniformLocation(uniformName), 1, &v[0]);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::SetMat4(std::string_view uniformName, const glm::mat4& mat)
 {
     glUniformMatrix4fv(GetUniformLocation(uniformName), 1, 0, &mat[0][0]);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::Bind() const
 {
     glUseProgram(program_);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 }
 
 void ShaderProgram::SetTexture(std::string_view uniformName, const Texture& texture, int textureUnit)
@@ -157,7 +157,7 @@ void ShaderProgram::SetTexture(std::string_view uniformName, const Texture& text
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(texture.GetType(), texture.GetName());
     glUniform1i(GetUniformLocation(uniformName), textureUnit);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
 }
 
@@ -177,7 +177,7 @@ int ShaderProgram::GetUniformLocation(std::string_view uniformName)
     {
         uniformLocation = uniformIt->second;
     }
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     return uniformLocation;
 }
 
@@ -188,11 +188,11 @@ unsigned ShaderProgram::CreateShaderProgram(unsigned vertexShader, unsigned frag
     TracyGpuNamedZone(createShaderProgramGpu, "Link Shader Program", true);
 #endif
     GLuint program = glCreateProgram();
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     //Check if shader program was linked correctly
     GLint success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);

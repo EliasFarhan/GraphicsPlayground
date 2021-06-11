@@ -39,6 +39,7 @@ public:
     [[nodiscard]] unsigned int GetType() const;
 
 private:
+    void LoadFromKtx(core::BufferFile&& file);
     unsigned int textureName_ = 0;
     unsigned int textureType_;
     glm::vec2 textureSize_;

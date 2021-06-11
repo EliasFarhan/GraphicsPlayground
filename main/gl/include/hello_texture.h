@@ -21,5 +21,7 @@ private:
     Quad quad_{glm::vec2(1.0f), glm::vec2(0.0f)};
     ShaderProgram shader_;
     Texture texture_{};
+    Texture ktxTexture_{};
+    bool usingKtxTexture_ = false;
 };
 }

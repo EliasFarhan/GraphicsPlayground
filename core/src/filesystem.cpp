@@ -95,4 +95,10 @@ bool Filesystem::IsDirectory(std::string_view path) const
     const fs::path p = path;
     return fs::is_directory(p);
 }
+
+std::string FilesystemInterface::GetExtension(std::string_view path)
+{
+    const fs::path p = path;
+    return p.extension().generic_string();
+}
 }

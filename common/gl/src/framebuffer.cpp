@@ -28,10 +28,10 @@ void Framebuffer::Create()
     ZoneScoped;
     TracyGpuZone("Create Framebuffer");
 #endif
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     glGenFramebuffers(1, &fbo_);
     Bind();
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
 
     if (frameBufferType_ & DEPTH_ATTACHMENT)
     {
@@ -51,7 +51,7 @@ void Framebuffer::Create()
         glDrawBuffers(1, &drawBuffers);
         glReadBuffer(GL_NONE);
         glBindTexture(GL_TEXTURE_2D, 0);
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
     else if (frameBufferType_ & DEPTH_RBO)
     {
@@ -62,14 +62,14 @@ void Framebuffer::Create()
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                   GL_RENDERBUFFER, depthRbo_);
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
     if (frameBufferType_ & NO_DRAW)
     {
         GLenum drawBuffers = GL_NONE;
         glDrawBuffers(1, &drawBuffers);
         glReadBuffer(GL_NONE);
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
     else if (frameBufferType_ & COLOR_ATTACHMENT_0)
     {
@@ -85,7 +85,7 @@ void Framebuffer::Create()
         glBindTexture(GL_TEXTURE_2D, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                GL_TEXTURE_2D, colorBuffer_, 0);
-        CheckError(__FILE__, __LINE__);
+        glCheckError();
     }
 
     CheckFramebuffer(__FILE__, __LINE__);
@@ -119,7 +119,7 @@ void Framebuffer::Destroy()
         glDeleteTextures(1, &depthBuffer_);
     if (depthRbo_)
         glDeleteRenderbuffers(1, &depthRbo_);
-    CheckError(__FILE__, __LINE__);
+    glCheckError();
     fbo_ = 0;
     colorBuffer_ = 0;
     depthBuffer_ = 0;

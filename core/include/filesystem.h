@@ -42,6 +42,8 @@ public:
     [[nodiscard]] virtual bool IsRegularFile(std::string_view) const = 0;
 
     [[nodiscard]] virtual bool IsDirectory(std::string_view) const = 0;
+
+    [[nodiscard]] static std::string GetExtension(std::string_view path);
 };
 
 class NullFilesystem : public FilesystemInterface
