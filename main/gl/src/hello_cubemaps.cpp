@@ -22,6 +22,7 @@ void HelloCubemaps::Init()
                                        "data/textures/skybox/front.jpg",
                                        "data/textures/skybox/back.jpg",
                                });
+    ktxTexture_.LoadTexture("data/textures/skybox/skybox.ktx");
 
     model_.LoadModel("data/model/nanosuit2/nanosuit.obj");
     modelShader_.CreateDefaultProgram(
@@ -81,7 +82,7 @@ void HelloCubemaps::Update(core::seconds dt)
             modelReflectionShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             modelReflectionShader_.SetVec3("cameraPos", camera_.position);
             modelReflectionShader_.SetFloat("reflectionValue", reflectionValue_);
-            modelReflectionShader_.SetTexture("skybox", skyboxTexture_, 2);
+            modelReflectionShader_.SetTexture("skybox", usingKtxTexture_?ktxTexture_:skyboxTexture_, 2);
             model_.Draw(modelReflectionShader_);
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
@@ -104,7 +105,7 @@ void HelloCubemaps::Update(core::seconds dt)
             modelRefractionShader_.SetFloat("refractiveIndex", refractiveIndex_);
             modelRefractionShader_.SetFloat("refractionValue", refractionValue_);
             modelRefractionShader_.SetVec3("cameraPos", camera_.position);
-            modelRefractionShader_.SetTexture("skybox", skyboxTexture_, 2);
+            modelRefractionShader_.SetTexture("skybox", usingKtxTexture_?ktxTexture_:skyboxTexture_, 2);
             model_.Draw(modelRefractionShader_);
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
@@ -123,7 +124,7 @@ void HelloCubemaps::Update(core::seconds dt)
     skyboxShader_.Bind();
     skyboxShader_.SetMat4("view", glm::mat4(glm::mat3(view)));
     skyboxShader_.SetMat4("projection", projection);
-    skyboxShader_.SetTexture("skybox", skyboxTexture_, 0);
+    skyboxShader_.SetTexture("skybox", usingKtxTexture_?ktxTexture_:skyboxTexture_, 0);
     skyboxCube_.Draw();
     glDepthFunc(GL_LESS);
 }
@@ -132,6 +133,7 @@ void HelloCubemaps::Destroy()
 {
     glDisable(GL_DEPTH_TEST);
     skyboxTexture_.Destroy();
+    ktxTexture_.Destroy();
     skyboxShader_.Destroy();
     skyboxCube_.Destroy();
 
@@ -174,6 +176,7 @@ void HelloCubemaps::DrawImGui()
         default:
             break;
     }
+    ImGui::Checkbox("Using KTX", &usingKtxTexture_);
     ImGui::End();
 }
 }

@@ -126,25 +126,45 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
         switch (channelNb)
         {
             case 1:
+            {
+#ifdef TRACY_ENABLE
+                TracyGpuNamedZone(textureRUpload, "Texture RED Upload", true);
+#endif
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imageWidth, imageHeight,
                              0,
                              GL_RED, GL_UNSIGNED_BYTE, imageData);
                 break;
+            }
             case 2:
+            {
+#ifdef TRACY_ENABLE
+                TracyGpuNamedZone(textureRGUpload, "Texture RG Upload", true);
+#endif
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, imageWidth, imageHeight,
                              0,
                              GL_RG, GL_UNSIGNED_BYTE, imageData);
                 break;
+            }
             case 3:
+            {
+#ifdef TRACY_ENABLE
+                TracyGpuNamedZone(textureRGBUpload, "Texture RGB Upload", true);
+#endif
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
                              0,
                              GL_RGB, GL_UNSIGNED_BYTE, imageData);
                 break;
+            }
             case 4:
+            {
+#ifdef TRACY_ENABLE
+                TracyGpuNamedZone(textureRGBAUpload, "Texture RGBA Upload", true);
+#endif
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight,
                              0,
                              GL_RGBA, GL_UNSIGNED_BYTE, imageData);
                 break;
+            }
             default:
                 break;
         }
@@ -217,6 +237,10 @@ Texture::Texture() : textureType_(GL_TEXTURE_2D), textureSize_(glm::vec2())
 
 void Texture::LoadCubemap(const std::vector<std::string_view>& paths)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(loadTexture, "Cubemap Texture Loading", true);
+    TracyGpuNamedZone(loadTextureGpu, "Cubemap Texture Loading", true);
+#endif
     glGenTextures(1, &textureName_);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureName_);
     textureType_ = GL_TEXTURE_CUBE_MAP;
@@ -225,8 +249,8 @@ void Texture::LoadCubemap(const std::vector<std::string_view>& paths)
     for (unsigned int i = 0; i < paths.size(); i++)
     {
 #ifdef TRACY_ENABLE
-        ZoneNamedN(loadTexture, "Texture Loading", true);
-        TracyGpuNamedZone(loadTextureGpu, "Texture Loading", true);
+        ZoneNamedN(loadFaceTexture, "Cubemap Texture Face Loading", true);
+        TracyGpuNamedZone(loadFaceTextureGpu, "Cubemap Texture Face Loading", true);
 #endif
         auto& filesystem = core::FilesystemLocator::get();
         if (!filesystem.FileExists(paths[i]))
@@ -254,6 +278,11 @@ void Texture::LoadCubemap(const std::vector<std::string_view>& paths)
         textureFile.Destroy();
         if (imageData != nullptr)
         {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(uploadFaceTexture, "Cubemap Texture Face Uploading", true);
+            TracyGpuNamedZone(uploadFaceTextureGpu, "Cubemap Texture Face Uploading",
+                              true);
+#endif
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                          0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB,
                          GL_UNSIGNED_BYTE, imageData
@@ -301,13 +330,16 @@ void Texture::LoadFromKtx(core::BufferFile&& textureFile)
                                                        texture.swizzles());
 
     GLenum target = glProfile.translate(texture.target());
+
+    glm::tvec3<GLsizei> extent{texture.extent()};
     core::LogDebug(fmt::format(
-            "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}",
+            "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}, extends: {},{}",
             (int) texture.format(),
             (int) texture.target(),
             is_compressed(texture.format()),
             texture.layers(),
-            texture.faces()));
+            texture.faces(),
+            extent.x, extent.y));
 
     glGenTextures(1, &textureName_);
     glBindTexture(target, textureName_);
@@ -321,30 +353,41 @@ void Texture::LoadFromKtx(core::BufferFile&& textureFile)
     glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, format.Swizzles[2]);
     glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, format.Swizzles[3]);
     glCheckError();
-    glm::tvec3<GLsizei> extent{texture.extent()};
     glTexStorage2D(target, static_cast<GLint>(texture.levels()),
                    format.Internal, extent.x, extent.y);
-
+    textureType_ = target;
     glCheckError();
-    for (std::size_t level = 0; level < texture.levels(); ++level)
+    for (std::size_t face = 0; face < texture.faces(); ++face)
     {
-        glm::tvec3<GLsizei> levelExtent(texture.extent(level));
-        if (gli::is_compressed(texture.format()))
+        for (std::size_t level = 0; level < texture.levels(); ++level)
         {
-            glCompressedTexSubImage2D(
-                    target, static_cast<GLint>(level), 0, 0, levelExtent.x,
-                    levelExtent.y,
-                    format.Internal, static_cast<GLsizei>(texture.size(level)),
-                    texture.data(0, 0, level));
+#ifdef TRACY_ENABLE
+            ZoneNamedN(loadFaceTexture, "KTX Face Loading", true);
+            TracyGpuNamedZone(loadFaceTextureGpu, " KTX Face Loading", true);
+#endif
+            target = gli::is_target_cube(texture.target()) ?
+                     GL_TEXTURE_CUBE_MAP_POSITIVE_X + face :
+                     target;
+            glm::tvec3<GLsizei> levelExtent(texture.extent(level));
+            if (gli::is_compressed(texture.format()))
+            {
+                glCompressedTexSubImage2D(
+                        target, static_cast<GLint>(level), 0, 0, levelExtent.x,
+                        levelExtent.y,
+                        format.Internal,
+                        static_cast<GLsizei>(texture.size(level)),
+                        texture.data(0, face, level));
+            }
+            else
+            {
+                glTexSubImage2D(
+                        target, static_cast<GLint>(level), 0, 0, levelExtent.x,
+                        levelExtent.y,
+                        format.External, format.Type,
+                        texture.data(0, face, level));
+            }
+            glCheckError();
         }
-        else
-        {
-            glTexSubImage2D(
-                    target, static_cast<GLint>(level), 0, 0, levelExtent.x,
-                    levelExtent.y,
-                    format.External, format.Type, texture.data(0, 0, level));
-        }
-        glCheckError();
     }
     glCheckError();
 }

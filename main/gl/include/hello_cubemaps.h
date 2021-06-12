@@ -35,6 +35,7 @@ private:
     Cuboid skyboxCube_{glm::vec3(2.0f), glm::vec3()};
     ShaderProgram skyboxShader_;
     Texture skyboxTexture_;
+    Texture ktxTexture_;
 
     ShaderProgram modelShader_;
     ShaderProgram modelReflectionShader_;
@@ -48,6 +49,8 @@ private:
     float reflectionValue_ = 1.0f;
     float refractionValue_ = 1.0f;
     float refractiveIndex_ = 1.52f;
+
+    bool usingKtxTexture_ = false;
 
 };
 }
