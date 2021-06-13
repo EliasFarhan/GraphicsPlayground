@@ -17,6 +17,7 @@
       "features": [ "sdl2-binding", "opengl3-glew-binding", "vulkan-binding" ]
     },
     "vulkan-memory-allocator",
-    "spdlog"
+    "spdlog",
+    "argh"
   ]
 }

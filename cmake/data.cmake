@@ -10,6 +10,8 @@ file(GLOB_RECURSE DATA_FILES
 		"${main_folder}/data/*.dds"
 		"${main_folder}/data/*.obj"
 		"${main_folder}/data/*.mtl"
+		"${main_folder}/data/*.gltf"
+		"${main_folder}/data/*.bin"
 		)
 		source_group("Data" FILES ${DATA_FILES})
 foreach(DATA ${DATA_FILES})

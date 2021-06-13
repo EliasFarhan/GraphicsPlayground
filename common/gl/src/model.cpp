@@ -23,7 +23,7 @@ void Model::LoadModel(std::string_view path)
     const aiScene* scene = nullptr;
     {
 #ifdef TRACY_ENABLE
-        ZoneNamedN(cubeInit, "Import With Assimp", true);
+        ZoneNamedN(importWithAssimp, "Import With Assimp", true);
 #endif
         scene = import.ReadFile(path.data(),
                                 aiProcess_Triangulate | aiProcess_FlipUVs |
@@ -37,6 +37,9 @@ void Model::LoadModel(std::string_view path)
             return;
         }
     }
+#ifdef TRACY_ENABLE
+    ZoneNamedN(ProcessNodes, "Process Nodes", true);
+#endif
     directory_ = path.substr(0, path.find_last_of('/'));
 
     ProcessNode(scene->mRootNode, scene);

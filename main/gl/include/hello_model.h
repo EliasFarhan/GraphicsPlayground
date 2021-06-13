@@ -26,8 +26,10 @@ public:
 
 private:
     Model model_;
+    Model gltfModel_;
     sdl::Camera3D camera_;
 
     ShaderProgram shader_;
+    bool usingGltf_ = false;
 };
 }
