@@ -32,10 +32,18 @@ private:
         LENGTH
     };
 
+    enum class TextureExtension
+    {
+        NONE,
+        KTX,
+        DDS
+    };
+
     Cuboid skyboxCube_{glm::vec3(2.0f), glm::vec3()};
     ShaderProgram skyboxShader_;
     Texture skyboxTexture_;
     Texture ktxTexture_;
+    Texture ddsTexture_;
 
     ShaderProgram modelShader_;
     ShaderProgram modelReflectionShader_;
@@ -50,7 +58,7 @@ private:
     float refractionValue_ = 1.0f;
     float refractiveIndex_ = 1.52f;
 
-    bool usingKtxTexture_ = false;
+    TextureExtension textureExtension_ = TextureExtension::NONE;
 
 };
 }

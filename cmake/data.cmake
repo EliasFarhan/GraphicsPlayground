@@ -7,6 +7,7 @@ file(GLOB_RECURSE DATA_FILES
 		"${main_folder}/data/*.bmp"
 		"${main_folder}/data/*.hdr"
 		"${main_folder}/data/*.ktx"
+		"${main_folder}/data/*.dds"
 		"${main_folder}/data/*.obj"
 		"${main_folder}/data/*.mtl"
 		)

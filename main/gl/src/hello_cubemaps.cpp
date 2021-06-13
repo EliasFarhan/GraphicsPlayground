@@ -7,33 +7,32 @@
 
 namespace gl
 {
-
 void HelloCubemaps::Init()
 {
     skyboxCube_.Init();
     skyboxShader_.CreateDefaultProgram(
-            "data/shaders/11_hello_cubemaps/skybox.vert",
-            "data/shaders/11_hello_cubemaps/skybox.frag");
+        "data/shaders/11_hello_cubemaps/skybox.vert",
+        "data/shaders/11_hello_cubemaps/skybox.frag");
     skyboxTexture_.LoadCubemap({
-                                       "data/textures/skybox/right.jpg",
-                                       "data/textures/skybox/left.jpg",
-                                       "data/textures/skybox/top.jpg",
-                                       "data/textures/skybox/bottom.jpg",
-                                       "data/textures/skybox/front.jpg",
-                                       "data/textures/skybox/back.jpg",
-                               });
+        "data/textures/skybox/right.jpg",
+        "data/textures/skybox/left.jpg",
+        "data/textures/skybox/top.jpg",
+        "data/textures/skybox/bottom.jpg",
+        "data/textures/skybox/front.jpg",
+        "data/textures/skybox/back.jpg",
+    });
     ktxTexture_.LoadTexture("data/textures/skybox/skybox.ktx");
-
+    ddsTexture_.LoadTexture("data/textures/skybox/skybox.dds");
     model_.LoadModel("data/model/nanosuit2/nanosuit.obj");
     modelShader_.CreateDefaultProgram(
-            "data/shaders/11_hello_cubemaps/model.vert",
-            "data/shaders/11_hello_cubemaps/model.frag");
+        "data/shaders/11_hello_cubemaps/model.vert",
+        "data/shaders/11_hello_cubemaps/model.frag");
     modelReflectionShader_.CreateDefaultProgram(
-            "data/shaders/11_hello_cubemaps/model.vert",
-            "data/shaders/11_hello_cubemaps/model_reflection.frag");
+        "data/shaders/11_hello_cubemaps/model.vert",
+        "data/shaders/11_hello_cubemaps/model_reflection.frag");
     modelRefractionShader_.CreateDefaultProgram(
-            "data/shaders/11_hello_cubemaps/model.vert",
-            "data/shaders/11_hello_cubemaps/model_refraction.frag");
+        "data/shaders/11_hello_cubemaps/model.vert",
+        "data/shaders/11_hello_cubemaps/model_refraction.frag");
 
     cube_.Init();
     cubeTexture_.LoadTexture("data/textures/container.jpg");
@@ -52,7 +51,7 @@ void HelloCubemaps::Update(core::seconds dt)
     //Draw model
     switch (currentRenderMode_)
     {
-        case ModelRenderMode::NONE:
+    case ModelRenderMode::NONE:
         {
             modelShader_.Bind();
             modelShader_.SetMat4("view", view);
@@ -64,14 +63,14 @@ void HelloCubemaps::Update(core::seconds dt)
 
             model_.Draw(modelShader_);
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
+            model = glm::translate(model, glm::vec3(-1, 0, 0) * 2.0f);
             modelShader_.SetMat4("model", model);
             modelShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             modelShader_.SetTexture("texture_diffuse1", cubeTexture_, 0);
             cube_.Draw();
             break;
         }
-        case ModelRenderMode::REFLECTION:
+    case ModelRenderMode::REFLECTION:
         {
             modelReflectionShader_.Bind();
             modelReflectionShader_.SetMat4("view", view);
@@ -82,17 +81,23 @@ void HelloCubemaps::Update(core::seconds dt)
             modelReflectionShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             modelReflectionShader_.SetVec3("cameraPos", camera_.position);
             modelReflectionShader_.SetFloat("reflectionValue", reflectionValue_);
-            modelReflectionShader_.SetTexture("skybox", usingKtxTexture_?ktxTexture_:skyboxTexture_, 2);
+
+            modelReflectionShader_.SetTexture("skybox",
+                                              textureExtension_ == TextureExtension::NONE
+                                                  ? skyboxTexture_
+                                                  : textureExtension_ == TextureExtension::KTX
+                                                  ? ktxTexture_
+                                                  : ddsTexture_, 2);
             model_.Draw(modelReflectionShader_);
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
+            model = glm::translate(model, glm::vec3(-1, 0, 0) * 2.0f);
             modelReflectionShader_.SetMat4("model", model);
             modelReflectionShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             modelReflectionShader_.SetTexture("texture_diffuse1", cubeTexture_, 0);
             cube_.Draw();
             break;
         }
-        case ModelRenderMode::REFRACTION:
+    case ModelRenderMode::REFRACTION:
         {
             modelRefractionShader_.Bind();
             modelRefractionShader_.SetMat4("view", view);
@@ -105,10 +110,14 @@ void HelloCubemaps::Update(core::seconds dt)
             modelRefractionShader_.SetFloat("refractiveIndex", refractiveIndex_);
             modelRefractionShader_.SetFloat("refractionValue", refractionValue_);
             modelRefractionShader_.SetVec3("cameraPos", camera_.position);
-            modelRefractionShader_.SetTexture("skybox", usingKtxTexture_?ktxTexture_:skyboxTexture_, 2);
+            modelRefractionShader_.SetTexture("skybox", textureExtension_ == TextureExtension::NONE
+                                                            ? skyboxTexture_
+                                                            : textureExtension_ == TextureExtension::KTX
+                                                            ? ktxTexture_
+                                                            : ddsTexture_, 2);
             model_.Draw(modelRefractionShader_);
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(-1,0,0) * 2.0f);
+            model = glm::translate(model, glm::vec3(-1, 0, 0) * 2.0f);
             modelRefractionShader_.SetMat4("model", model);
             modelRefractionShader_.SetMat4("transposeInverseModel", glm::transpose(glm::inverse(model)));
             glActiveTexture(GL_TEXTURE0);
@@ -116,7 +125,7 @@ void HelloCubemaps::Update(core::seconds dt)
             cube_.Draw();
             break;
         }
-        default:;
+    default: ;
     }
 
     //Draw skybox
@@ -124,7 +133,19 @@ void HelloCubemaps::Update(core::seconds dt)
     skyboxShader_.Bind();
     skyboxShader_.SetMat4("view", glm::mat4(glm::mat3(view)));
     skyboxShader_.SetMat4("projection", projection);
-    skyboxShader_.SetTexture("skybox", usingKtxTexture_?ktxTexture_:skyboxTexture_, 0);
+    switch (textureExtension_)
+    {
+    case TextureExtension::NONE:
+        skyboxShader_.SetTexture("skybox", skyboxTexture_, 0);
+        break;
+    case TextureExtension::KTX:
+        skyboxShader_.SetTexture("skybox", ktxTexture_, 0);
+        break;
+    case TextureExtension::DDS:
+        skyboxShader_.SetTexture("skybox", ddsTexture_, 0);
+        break;
+    default: ;
+    }
     skyboxCube_.Draw();
     glDepthFunc(GL_LESS);
 }
@@ -134,6 +155,7 @@ void HelloCubemaps::Destroy()
     glDisable(GL_DEPTH_TEST);
     skyboxTexture_.Destroy();
     ktxTexture_.Destroy();
+    ddsTexture_.Destroy();
     skyboxShader_.Destroy();
     skyboxCube_.Destroy();
 
@@ -154,11 +176,11 @@ void HelloCubemaps::DrawImGui()
 {
     ImGui::Begin("Hello Cubemaps");
     const char* renderModeNames_[static_cast<int>(ModelRenderMode::LENGTH)] =
-            {
-                    "None",
-                    "Reflection",
-                    "Refraction"
-            };
+    {
+        "None",
+        "Reflection",
+        "Refraction"
+    };
     int currentItem = static_cast<int>(currentRenderMode_);
     if (ImGui::Combo("Render Mode", &currentItem, renderModeNames_, static_cast<int>(ModelRenderMode::LENGTH)))
     {
@@ -166,17 +188,19 @@ void HelloCubemaps::DrawImGui()
     }
     switch (currentRenderMode_)
     {
-        case ModelRenderMode::REFLECTION:
-            ImGui::SliderFloat("Reflection Value", &reflectionValue_, 0.0f, 1.0f);
-            break;
-        case ModelRenderMode::REFRACTION:
-            ImGui::SliderFloat("Refraction Value", &refractionValue_, 0.0f, 1.0f);
-            ImGui::SliderFloat("Refractive Index", &refractiveIndex_, 1.0f, 3.0f);
-            break;
-        default:
-            break;
+    case ModelRenderMode::REFLECTION:
+        ImGui::SliderFloat("Reflection Value", &reflectionValue_, 0.0f, 1.0f);
+        break;
+    case ModelRenderMode::REFRACTION:
+        ImGui::SliderFloat("Refraction Value", &refractionValue_, 0.0f, 1.0f);
+        ImGui::SliderFloat("Refractive Index", &refractiveIndex_, 1.0f, 3.0f);
+        break;
+    default:
+        break;
     }
-    ImGui::Checkbox("Using KTX", &usingKtxTexture_);
+    int currentExtension = static_cast<int>(textureExtension_);
+    ImGui::Combo("Texture Extension", &currentExtension, "NONE\0KTX\0DDS\0");
+    textureExtension_ = static_cast<TextureExtension>(currentExtension);
     ImGui::End();
 }
 }

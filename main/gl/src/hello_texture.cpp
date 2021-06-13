@@ -1,7 +1,7 @@
 #include <SDL_main.h>
 
 #include "filesystem.h"
-#include "hello_texture.h"
+#include <hello_texture.h>
 
 namespace gl
 {
@@ -13,12 +13,25 @@ void HelloTexture::Init()
             "data/shaders/02_hello_texture/texture_quad.frag");
     texture_.LoadTexture("data/textures/brickwall.jpg");
     ktxTexture_.LoadTexture("data/textures/brickwall.ktx");
+    ddsTexture_.LoadTexture("data/textures/brickwall.dds");
 }
 
 void HelloTexture::Update(core::seconds dt)
 {
     shader_.Bind();
-    shader_.SetTexture("ourTexture", usingKtxTexture_?ktxTexture_:texture_, 0);
+    switch(textureType_)
+    {
+    case TextureType::NONE:
+        shader_.SetTexture("ourTexture", texture_, 0);
+        break;
+    case TextureType::KTX:
+        shader_.SetTexture("ourTexture", ktxTexture_, 0);
+        break;
+    case TextureType::DDS:
+        shader_.SetTexture("ourTexture", ddsTexture_, 0);
+        break;
+    }
+    
     quad_.Draw();
 }
 
@@ -37,7 +50,9 @@ void HelloTexture::OnEvent(SDL_Event& event)
 void HelloTexture::DrawImGui()
 {
     ImGui::Begin("Texture");
-    ImGui::Checkbox("KTX", &usingKtxTexture_);
+    int currentTextureExtension = static_cast<int>(textureType_);
+    ImGui::Combo("Texture Extension", &currentTextureExtension, "None\0KTX\0DDS\0");
+    textureType_ = static_cast<TextureType>(currentTextureExtension);
     ImGui::End();
 
 }

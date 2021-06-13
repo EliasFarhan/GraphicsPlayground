@@ -18,10 +18,17 @@ public:
     void OnEvent(SDL_Event& event) override;
     void DrawImGui() override;
 private:
+    enum class TextureType
+    {
+        NONE,
+        KTX,
+        DDS
+    };
     Quad quad_{glm::vec2(1.0f), glm::vec2(0.0f)};
     ShaderProgram shader_;
     Texture texture_{};
     Texture ktxTexture_{};
-    bool usingKtxTexture_ = false;
+    Texture ddsTexture_{};
+    TextureType textureType_ = TextureType::NONE;
 };
 }

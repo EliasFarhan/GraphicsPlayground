@@ -6,16 +6,13 @@
 #include "fmt/core.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-
 #include "stb_image.h"
 
 #include "gli/gli.hpp"
 
 #ifdef TRACY_ENABLE
-
 #include "Tracy.hpp"
 #include "TracyOpenGL.hpp"
-
 #endif
 
 namespace gl
@@ -51,9 +48,9 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
     {
         hdr = true;
     }
-    else if (extension == ".ktx")
+    else if (extension == ".ktx" || extension == ".dds")
     {
-        LoadFromKtx(std::move(textureFile));
+        LoadCompressedTexture(std::move(textureFile));
         return;
     }
     int imageWidth, imageHeight;
@@ -63,7 +60,7 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
     if (hdr)
     {
         hdrImageData = stbi_loadf_from_memory(
-                (unsigned char*) (textureFile.dataBuffer),
+                static_cast<unsigned char*>(textureFile.dataBuffer),
                 textureFile.dataLength, &imageWidth,
                 &imageHeight, &channelNb, channelsDesired);
     }
@@ -309,7 +306,7 @@ unsigned int Texture::GetType() const
     return textureType_;
 }
 
-void Texture::LoadFromKtx(core::BufferFile&& textureFile)
+void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
 {
 #ifdef TRACY_ENABLE
     ZoneNamedN(loadTexture, "KTX Texture Loading", true);
