@@ -33,7 +33,8 @@ public:
 
     ~Mesh();
 
-    Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, std::vector<Texture>&& textures);
+    Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices,
+         std::vector<Texture>&& textures);
 
     Mesh(const Mesh& other) = delete;
 
@@ -48,6 +49,13 @@ public:
     void Draw(ShaderProgram& shader);
 
     void Destroy();
+
+    [[nodiscard]] unsigned int GetVao() const
+    { return vao_; }
+
+    [[nodiscard]] std::size_t GetIndicesCount() const;
+
+    void BindTextures(ShaderProgram& shader) const;
 
 private:
     std::vector<Vertex> vertices_;

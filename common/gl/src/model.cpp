@@ -200,4 +200,9 @@ void Model::Destroy()
         texture.Destroy();
     }
 }
+
+const Mesh& Model::GetMesh(std::size_t i) const
+{
+    return meshes_[i];
+}
 }

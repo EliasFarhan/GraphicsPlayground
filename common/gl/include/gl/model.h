@@ -19,6 +19,8 @@ public:
 
     void Destroy();
 
+    [[nodiscard]] const Mesh& GetMesh(std::size_t i) const;
+
 private:
     std::vector<Mesh> meshes_;
     std::string directory_;

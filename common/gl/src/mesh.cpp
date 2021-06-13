@@ -2,6 +2,7 @@
 #include "fmt/core.h"
 
 #include <GL/glew.h>
+
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"
@@ -11,8 +12,10 @@
 namespace gl
 {
 
-Mesh::Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, std::vector<Texture>&& textures) :
-        vertices_(std::move(vertices)), indices_(std::move(indices)), textures_(std::move(textures))
+Mesh::Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices,
+           std::vector<Texture>&& textures) :
+        vertices_(std::move(vertices)), indices_(std::move(indices)),
+        textures_(std::move(textures))
 {
 
 }
@@ -52,24 +55,28 @@ void Mesh::SetupMesh()
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
 
-    glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(Vertex), vertices_.data(), GL_STATIC_DRAW);
-
+    glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(Vertex),
+                 vertices_.data(), GL_STATIC_DRAW);
 
 
     glCheckError();
     // vertex positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (void*) nullptr);
 
     // vertex texture coords
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoords));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (void*) offsetof(Vertex, texCoords));
 
     // vertex normals
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (void*) offsetof(Vertex, normal));
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_.size() * sizeof(unsigned int),
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 indices_.size() * sizeof(unsigned int),
                  indices_.data(), GL_STATIC_DRAW);
     glBindVertexArray(0);
     glCheckError();
@@ -81,36 +88,7 @@ void Mesh::Draw(ShaderProgram& shader)
     ZoneScoped;
     TracyGpuZone("Draw Mesh");
 #endif
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    for (unsigned int i = 0; i < textures_.size(); i++)
-    {
-        if(textures_[i].textureName == 0)
-        {
-            core::LogWarning("Invalid Texture in Mesh");
-            continue;
-        }
-        glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
-        glCheckError();
-        // retrieve texture number (the N in diffuse_textureN)
-        std::string number;
-        std::string name = textures_[i].type;
-        if (name == "texture_diffuse")
-        {
-            number = fmt::format("{}", diffuseNr);
-            diffuseNr++;
-        } else if (name == "texture_specular")
-        {
-            number = fmt::format("{}", specularNr);
-            specularNr++;
-        }
-        const auto uniformName = fmt::format("{}{}", name, number);
-        shader.SetInt(uniformName.c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, textures_[i].textureName);
-        glCheckError();
-    }
-    glActiveTexture(GL_TEXTURE0);
-    glCheckError();
+    BindTextures(shader);
 
     // draw mesh
     glBindVertexArray(vao_);
@@ -123,7 +101,7 @@ void Mesh::Draw(ShaderProgram& shader)
 
 Mesh::~Mesh()
 {
-    if(vao_)
+    if (vao_)
     {
         core::LogWarning("Mesh is not free");
     }
@@ -143,6 +121,53 @@ void Mesh::Destroy()
         glCheckError();
         vao_ = 0;
     }
+}
+
+std::size_t Mesh::GetIndicesCount() const
+{
+    return indices_.size();
+}
+
+void Mesh::BindTextures(ShaderProgram& shader) const
+{
+#ifdef TRACY_ENABLE
+    ZoneNamedN(bindTextures, "Bind Textures",
+               true);
+    TracyGpuNamedZone(bindTexturesGPU,
+                      "Bind Textures", true);
+#endif
+    unsigned int diffuseNr = 1;
+    unsigned int specularNr = 1;
+    for (unsigned int i = 0; i < textures_.size(); i++)
+    {
+        if (textures_[i].textureName == 0)
+        {
+            core::LogWarning("Invalid Texture in Mesh");
+            continue;
+        }
+        glActiveTexture(
+                GL_TEXTURE0 + i); // activate proper texture unit before binding
+        glCheckError();
+        // retrieve texture number (the N in diffuse_textureN)
+        std::string number;
+        std::string name = textures_[i].type;
+        if (name == "texture_diffuse")
+        {
+            number = fmt::format("{}", diffuseNr);
+            diffuseNr++;
+        }
+        else if (name == "texture_specular")
+        {
+            number = fmt::format("{}", specularNr);
+            specularNr++;
+        }
+        const auto uniformName = fmt::format("{}{}", name, number);
+        shader.SetInt(uniformName.c_str(), i);
+        glBindTexture(GL_TEXTURE_2D, textures_[i].textureName);
+        glCheckError();
+    }
+    glActiveTexture(GL_TEXTURE0);
+    glCheckError();
 }
 
 }
