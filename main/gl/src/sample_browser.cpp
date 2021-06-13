@@ -13,6 +13,7 @@
 #include "hello_cutoff.h"
 #include <hello_framebuffer.h>
 #include <hello_cubemaps.h>
+#include <hello_culling.h>
 
 #include "imgui.h"
 
@@ -34,6 +35,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back(
             {"10 Hello Framebuffer", std::make_unique<HelloFramebuffer>()});
     samples_.push_back({"11 Hello Cubemaps", std::make_unique<HelloCubemaps>()});
+    samples_.push_back({"12 Hello Culling", std::make_unique<HelloCulling>()});
 }
 
 void SampleBrowser::Init()
