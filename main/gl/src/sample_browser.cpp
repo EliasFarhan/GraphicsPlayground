@@ -14,6 +14,7 @@
 #include <hello_instancing.h>
 #include <hello_frustum.h>
 
+#include "hello_normal.h"
 #include "imgui.h"
 
 

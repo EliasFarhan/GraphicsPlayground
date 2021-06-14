@@ -5,6 +5,8 @@
 #include <imgui_impl_sdl.h>
 #include "hello_normal.h"
 
+#include <functional>
+
 namespace gl
 {
 
@@ -33,7 +35,7 @@ void HelloNormal::Update(core::seconds dt)
     lightPos_ = glm::vec3(std::cos(dt_), 1.0f, std::sin(dt_)) * 3.0f;
     camera_.Update(dt);
 
-    const std::function<void(NormalFlags)> draw = [this](NormalFlags flag)
+    const auto draw = [this](NormalFlags flag)
     {
         auto model = glm::mat4(1.0f);
         if (flag == ENABLE_MODEL)
@@ -162,7 +164,7 @@ void HelloNormal::DrawImGui()
     bool enableSphere = flags_ & ENABLE_SPHERE;
     if (ImGui::Checkbox("Use Sphere", &enableSphere))
     {
-        flags_ = enableSphere ? flags_ | ENABLE_SPHERE : flags_ & ENABLE_SPHERE;
+        flags_ = enableSphere ? flags_ | ENABLE_SPHERE : flags_ & ~ENABLE_SPHERE;
     }
     bool enableNormal = flags_ & ENABLE_NORMAL_MAP;
     if (ImGui::Checkbox("Enable Normal Map", &enableNormal))

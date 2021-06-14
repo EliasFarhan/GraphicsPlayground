@@ -74,7 +74,7 @@ void HelloFrustum::Update(core::seconds dt)
 
     const auto& asteroidMesh = rockModel_.GetMesh(0);
     asteroidMesh.BindTextures(vertexInstancingDrawShader_);
-    const std::function<void()> drawAsteroids = [this, &asteroidMesh]() {
+    const auto drawAsteroids = [this, &asteroidMesh]() {
         const auto actualAsteroidNmb = asteroidCulledPositions_.size();
 
         for (std::size_t chunk = 0; chunk < actualAsteroidNmb / instanceChunkSize_ + 1; chunk++)
