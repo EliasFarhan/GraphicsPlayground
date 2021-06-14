@@ -105,6 +105,11 @@ void Mesh::SetupMesh()
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                           (void*) offsetof(Vertex, normal));
+
+    // vertex normals tangent
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (void*) offsetof(Vertex, tangent));
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                  indices_.size() * sizeof(unsigned int),
@@ -169,6 +174,7 @@ void Mesh::BindTextures(ShaderProgram& shader) const
 #endif
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
+    unsigned int normalNr = 1;
     for (unsigned int i = 0; i < textures_.size(); i++)
     {
         if (textures_[i].textureName == 0)
@@ -191,6 +197,11 @@ void Mesh::BindTextures(ShaderProgram& shader) const
         {
             number = fmt::format("{}", specularNr);
             specularNr++;
+        }
+        else if (name == "texture_normal")
+        {
+            number = fmt::format("{}", normalNr);
+            normalNr++;
         }
         const auto uniformName = fmt::format("{}{}", name, number);
         shader.SetInt(uniformName.c_str(), i);

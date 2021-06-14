@@ -4,6 +4,8 @@
 #include <gl/vertex_array.h>
 #include "gl/error.h"
 #include "GL/glew.h"
+#include <cmath>
+
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"
@@ -50,7 +52,7 @@ Quad::Quad(glm::vec2 size, glm::vec2 offset) : size_(size), offset_(offset)
 
 Quad::~Quad()
 {
-    if(ebo_)
+    if (ebo_)
     {
         core::LogWarning("Quad is not free");
     }
@@ -176,10 +178,10 @@ Cuboid::Cuboid(glm::vec3 size, glm::vec3 offset) : size_(size), offset_(offset)
 
 Cuboid::~Cuboid()
 {
-    if(vbo_[0])
+    if (vbo_[0])
     {
         core::LogWarning("Cube is not free");
-        
+
     }
 }
 
@@ -396,6 +398,157 @@ void Cuboid::FreeBuffers()
         glDeleteBuffers(4, &vbo_[0]);
         vbo_[0] = 0;
         glCheckError();
+    }
+}
+
+void Sphere::Init()
+{
+    glCheckError();
+    GenerateVao();
+
+    glGenBuffers(1, &vbo_[0]);
+    glGenBuffers(1, &ebo_);
+
+    std::vector<glm::vec3> positions;
+    positions.reserve((segment_ + 1) * (segment_ + 1));
+    std::vector<glm::vec2> uv;
+    uv.reserve((segment_ + 1) * (segment_ + 1));
+    std::vector<glm::vec3> normals;
+    normals.reserve((segment_ + 1) * (segment_ + 1));
+    std::vector<glm::vec3> tangent;
+    tangent.resize((segment_ + 1) * (segment_ + 1));
+    std::vector<unsigned int> indices;
+    indices.reserve((segment_ + 1) * segment_);
+    for (unsigned int y = 0; y <= segment_; ++y)
+    {
+        for (unsigned int x = 0; x <= segment_; ++x)
+        {
+            float xSegment = static_cast<float>(x) / static_cast<float>(segment_);
+            float ySegment = static_cast<float>(y) / static_cast<float>(segment_);
+            float xPos = offset_.x + radius_ * std::cos(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI);
+            float yPos = offset_.y + radius_ * std::cos(ySegment * M_PI);
+            float zPos = offset_.z + radius_ * std::sin(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI);
+
+            positions.emplace_back(xPos, yPos, zPos);
+            uv.emplace_back(xSegment, ySegment);
+            normals.emplace_back(xPos, yPos, zPos);
+        }
+    }
+
+    bool oddRow = false;
+    for (unsigned int y = 0; y < segment_; ++y)
+    {
+        if (!oddRow) // even rows: y == 0, y == 2; and so on
+        {
+            for (unsigned int x = 0; x <= segment_; ++x)
+            {
+                indices.push_back(y * (segment_ + 1) + x);
+                indices.push_back((y + 1) * (segment_ + 1) + x);
+            }
+        }
+        else
+        {
+            for (int x = segment_; x >= 0; --x)
+            {
+                indices.push_back((y + 1) * (segment_ + 1) + x);
+                indices.push_back(y * (segment_ + 1) + x);
+            }
+        }
+        oddRow = !oddRow;
+    }
+    indexCount_ = indices.size();
+    for (size_t i = 0; i < indexCount_ - 2; i++)
+    {
+        const glm::vec3 edge1 = positions[indices[i + 1]] - positions[indices[i]];
+        const glm::vec3 edge2 = positions[indices[i + 2]] - positions[indices[i]];
+        const glm::vec2 deltaUV1 = uv[indices[i + 1]] - uv[indices[i]];
+        const glm::vec2 deltaUV2 = uv[indices[i + 2]] - uv[indices[i]];
+
+        const float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        tangent[indices[i]].x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent[indices[i]].y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent[indices[i]].z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+    }
+
+    std::vector<float> data;
+    data.reserve(
+            positions.size() * sizeof(glm::vec3) + uv.size() * sizeof(glm::vec2) + normals.size() * sizeof(glm::vec3));
+    for (unsigned int i = 0; i < positions.size(); ++i)
+    {
+        data.push_back(positions[i].x);
+        data.push_back(positions[i].y);
+        data.push_back(positions[i].z);
+        if (!uv.empty())
+        {
+            data.push_back(uv[i].x);
+            data.push_back(uv[i].y);
+        }
+        if (!normals.empty())
+        {
+            data.push_back(normals[i].x);
+            data.push_back(normals[i].y);
+            data.push_back(normals[i].z);
+        }
+        if (!tangent.empty())
+        {
+            data.push_back(tangent[i].x);
+            data.push_back(tangent[i].y);
+            data.push_back(tangent[i].z);
+        }
+    }
+    glBindVertexArray(vao_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_[0]);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+    const auto stride = (3 + 2 + 3 + 3) * sizeof(float);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*) (5 * sizeof(float)));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*) (8 * sizeof(float)));
+    glBindVertexArray(0);
+    glCheckError();
+}
+
+void Sphere::Destroy()
+{
+    FreeVao();
+    FreeBuffers();
+}
+
+void Sphere::Draw()
+{
+    glBindVertexArray(vao_);
+    glDrawElements(GL_TRIANGLE_STRIP, indexCount_, GL_UNSIGNED_INT, 0);
+}
+
+Sphere::Sphere(float radius, glm::vec3 offset, std::size_t segment) : radius_(radius), segment_(segment),
+                                                                      offset_(offset)
+{
+
+}
+
+Sphere::~Sphere()
+{
+    if (vao_ || vbo_[0] || ebo_)
+    {
+        core::LogWarning("Sphere is not free");
+    }
+}
+
+void Sphere::FreeBuffers()
+{
+    if (ebo_)
+    {
+        glDeleteBuffers(1, &ebo_);
+        glDeleteBuffers(4, &vbo_[0]);
+        ebo_ = 0;
+        std::ranges::fill(vbo_, 0);
     }
 }
 }

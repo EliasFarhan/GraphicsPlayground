@@ -73,4 +73,28 @@ protected:
     glm::vec3 offset_;
 };
 
+class Sphere final : public VertexArray
+{
+public:
+    Sphere(float radius, glm::vec3 offset, std::size_t segment=64);
+
+    ~Sphere() override;
+
+    void Init() override;
+
+    void Destroy() override;
+
+    void Draw() override;
+
+private:
+    void FreeBuffers();
+
+    std::array<unsigned int, 4> vbo_{};
+    unsigned int ebo_ = 0;
+    glm::vec3 offset_;
+    float radius_ = 0.0f;
+    std::size_t segment_ = 0;
+    std::size_t indexCount_ = 0;
+};
+
 }

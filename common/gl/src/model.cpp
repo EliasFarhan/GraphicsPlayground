@@ -102,6 +102,11 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         vector.z = mesh->mNormals[i].z;
         vertex.normal = vector;
 
+        vector.x = mesh->mTangents[i].x;
+        vector.y = mesh->mTangents[i].y;
+        vector.z = mesh->mTangents[i].z;
+        vertex.tangent = vector;
+
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
         {
             glm::vec2 vec{};
@@ -138,6 +143,14 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         textures.insert(textures.end(),
                         std::make_move_iterator(specularMaps.begin()),
                         std::make_move_iterator(specularMaps.end()));
+
+        std::vector<Mesh::Texture> normalMaps = LoadMaterialTextures(material,
+                                                                     aiTextureType_HEIGHT,
+                                                                     "texture_normal");
+        textures.insert(textures.end(),
+                        std::make_move_iterator(normalMaps.begin()),
+                        std::make_move_iterator(normalMaps.end()));
+
     }
     return Mesh(std::move(vertices), std::move(indices), std::move(textures));
 }

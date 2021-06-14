@@ -1,6 +1,3 @@
-//
-// Created by efarhan on 5/27/21.
-//
 
 #include "sample_browser.h"
 
@@ -40,6 +37,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"12 Hello Culling", std::make_unique<HelloCulling>()});
     samples_.push_back({"13 Hello Instancing", std::make_unique<HelloInstancing>()});
     samples_.push_back({"14 Hello Frustum Culling", std::make_unique<HelloFrustum>()});
+    samples_.push_back({"15 Hello Normal", std::make_unique<HelloNormal>()});
 }
 
 void SampleBrowser::Init()
