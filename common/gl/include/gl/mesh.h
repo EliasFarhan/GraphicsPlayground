@@ -57,11 +57,14 @@ public:
 
     void BindTextures(ShaderProgram& shader) const;
 
+    [[nodiscard]] glm::vec3 GetMax() const {return maxExtend;}
+    [[nodiscard]] glm::vec3 GetMin() const {return minExtend;}
+
 private:
     std::vector<Vertex> vertices_;
     std::vector<unsigned int> indices_;
     std::vector<Texture> textures_;
-
+    glm::vec3 maxExtend{std::numeric_limits<float>::lowest()}, minExtend{std::numeric_limits<float>::max()};
     unsigned vao_ = 0, vbo_ = 0, ebo_ = 0;
 };
 

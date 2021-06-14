@@ -15,6 +15,7 @@
 #include <hello_cubemaps.h>
 #include <hello_culling.h>
 #include <hello_instancing.h>
+#include <hello_frustum.h>
 
 #include "imgui.h"
 
@@ -38,6 +39,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"11 Hello Cubemaps", std::make_unique<HelloCubemaps>()});
     samples_.push_back({"12 Hello Culling", std::make_unique<HelloCulling>()});
     samples_.push_back({"13 Hello Instancing", std::make_unique<HelloInstancing>()});
+    samples_.push_back({"14 Hello Frustum Culling", std::make_unique<HelloFrustum>()});
 }
 
 void SampleBrowser::Init()

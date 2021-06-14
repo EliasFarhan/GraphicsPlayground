@@ -47,6 +47,37 @@ void Mesh::SetupMesh()
     ZoneScoped;
     TracyGpuZone("Setup Mesh");
 #endif
+
+    for(const auto& vertex : vertices_)
+    {
+        if(vertex.position.x > maxExtend.x)
+        {
+            maxExtend.x = vertex.position.x;
+        }
+        if(vertex.position.y > maxExtend.y)
+        {
+            maxExtend.y = vertex.position.y;
+        }
+        if(vertex.position.z > maxExtend.z)
+        {
+            maxExtend.z = vertex.position.z;
+        }
+
+        if(vertex.position.x < minExtend.x)
+        {
+            minExtend.x = vertex.position.x;
+        }
+        if(vertex.position.y < minExtend.y)
+        {
+            minExtend.y = vertex.position.y;
+        }
+        if(vertex.position.z < minExtend.z)
+        {
+            minExtend.z = vertex.position.z;
+        }
+
+    }
+
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
     glGenBuffers(1, &ebo_);
@@ -169,5 +200,7 @@ void Mesh::BindTextures(ShaderProgram& shader) const
     glActiveTexture(GL_TEXTURE0);
     glCheckError();
 }
+
+
 
 }

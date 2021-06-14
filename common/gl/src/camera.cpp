@@ -45,7 +45,7 @@ void Camera2D::SetExtends(glm::vec2 size)
 
 glm::mat4 Camera3D::GetProjection() const
 {
-    return glm::perspective(fovY, aspect, nearPlane, farPlane);
+    return glm::perspective(glm::radians(fovY), aspect, nearPlane, farPlane);
 }
 
 void Camera3D::SetAspect(glm::vec2 size)

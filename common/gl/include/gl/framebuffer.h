@@ -51,6 +51,9 @@ public:
     [[nodiscard]] bool IsBinded() const;
 
     static void CheckFramebuffer(std::string_view file, int line);
+
+    [[nodiscard]] auto GetSize() const { return size_; }
+
 private:
     inline static unsigned int currentFramebufferBind_ = 0;
     unsigned int frameBufferType_ = DEFAULT;

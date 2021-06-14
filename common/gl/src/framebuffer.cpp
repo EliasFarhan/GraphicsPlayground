@@ -198,4 +198,5 @@ bool Framebuffer::IsBinded() const
 {
     return currentFramebufferBind_ == fbo_;
 }
+
 }
