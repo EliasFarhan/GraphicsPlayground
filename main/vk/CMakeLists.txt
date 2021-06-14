@@ -1,9 +1,11 @@
 file(GLOB_RECURSE source_files include/*.h src/*.cpp)
-add_executable(vk_samples ${source_files})
+file(GLOB_RECURSE shaders_files data/*.vert data/*.frag)
+add_executable(vk_samples ${source_files} ${shaders_files})
 target_include_directories(vk_samples PRIVATE "include/")
 target_link_libraries(vk_samples PRIVATE CommonVk)
+
+
 GENERATEVKDATA(${CMAKE_CURRENT_SOURCE_DIR} vk_samples)
-add_dependencies(vk_samples "vk_samples_DATA")
 
 set_target_properties(vk_samples PROPERTIES UNITY_BUILD ON)
 

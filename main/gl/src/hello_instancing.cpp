@@ -100,12 +100,12 @@ void HelloInstancing::Update(core::seconds dt)
             uniformInstancingShader_.SetMat4("projection",
                                              camera_.GetProjection());
 
-            for (size_t chunk = 0;
+            for (std::size_t chunk = 0;
                  chunk < asteroidNmb_ / uniformChunkSize_ + 1; chunk++)
             {
                 const size_t chunkBeginIndex = chunk * uniformChunkSize_;
                 const size_t chunkEndIndex = std::min(asteroidNmb_,
-                                                      (chunk + 1) *
+                                                      static_cast<unsigned long>(chunk + 1) *
                                                       uniformChunkSize_);
                 {
 #ifdef TRACY_ENABLE
@@ -156,7 +156,7 @@ void HelloInstancing::Update(core::seconds dt)
             {
                 const size_t chunkBeginIndex = chunk * instanceChunkSize_;
                 const size_t chunkEndIndex = std::min(asteroidNmb_,
-                                                      (chunk + 1) *
+                                                      static_cast<unsigned long>(chunk + 1) *
                                                       instanceChunkSize_);
                 if (chunkEndIndex > chunkBeginIndex)
                 {
