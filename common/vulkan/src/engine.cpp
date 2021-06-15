@@ -48,7 +48,8 @@ void Engine::Run()
                 {
                     isOpen = false;
                 }
-                if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+                if (event.type == SDL_WINDOWEVENT &&
+                    event.window.event == SDL_WINDOWEVENT_RESIZED)
                 {
                     RecreateSwapchain();
                 }
@@ -59,14 +60,17 @@ void Engine::Run()
 #ifdef TRACY_ENABLE
             ZoneNamedN(fenceWait, "Wait For Fence", true);
 #endif
-            vkWaitForFences(driver_.device, 1, &renderer_.inFlightFences[renderer_.currentFrame], VK_TRUE, UINT64_MAX);
+            vkWaitForFences(driver_.device, 1,
+                            &renderer_.inFlightFences[renderer_.currentFrame],
+                            VK_TRUE, UINT64_MAX);
 
         }
         {
 #ifdef TRACY_ENABLE
             ZoneNamedN(acquireImage, "Acquire Image", true);
 #endif
-            vkAcquireNextImageKHR(driver_.device, swapchain_.swapChain, UINT64_MAX,
+            vkAcquireNextImageKHR(driver_.device, swapchain_.swapChain,
+                                  UINT64_MAX,
                                   renderer_.imageAvailableSemaphores[renderer_.currentFrame],
                                   VK_NULL_HANDLE,
                                   &renderer_.imageIndex);
@@ -75,14 +79,18 @@ void Engine::Run()
 #ifdef TRACY_ENABLE
             ZoneNamedN(fenceWait, "Wait Fence If Image Flight", true);
 #endif
-            if (renderer_.imagesInFlight[renderer_.imageIndex] != VK_NULL_HANDLE)
+            if (renderer_.imagesInFlight[renderer_.imageIndex] !=
+                VK_NULL_HANDLE)
             {
-                vkWaitForFences(driver_.device, 1, &renderer_.imagesInFlight[renderer_.imageIndex], VK_TRUE,
+                vkWaitForFences(driver_.device, 1,
+                                &renderer_.imagesInFlight[renderer_.imageIndex],
+                                VK_TRUE,
                                 UINT64_MAX);
             }
         }
         renderer_.imagesInFlight[renderer_.imageIndex] = renderer_.inFlightFences[renderer_.currentFrame];
-        vkResetFences(driver_.device, 1, &renderer_.inFlightFences[renderer_.currentFrame]);
+        vkResetFences(driver_.device, 1,
+                      &renderer_.inFlightFences[renderer_.currentFrame]);
 
         {
 #ifdef TRACY_ENABLE
@@ -94,7 +102,8 @@ void Engine::Run()
 #ifdef TRACY_ENABLE
             ZoneNamedN(presentImage, "Present Image", true);
 #endif
-            VkSemaphore signalSemaphores[] = {renderer_.renderFinishedSemaphores[renderer_.currentFrame]};
+            VkSemaphore signalSemaphores[] = {
+                    renderer_.renderFinishedSemaphores[renderer_.currentFrame]};
             VkPresentInfoKHR presentInfo{};
             presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -109,9 +118,11 @@ void Engine::Run()
             vkQueuePresentKHR(driver_.presentQueue, &presentInfo);
         }
 #ifdef TRACY_ENABLE
-        TracyVkCollect(tracyContexts_[renderer_.imageIndex], renderer_.commandBuffers[renderer_.imageIndex])
+        TracyVkCollect(tracyContexts_[renderer_.imageIndex],
+                       renderer_.commandBuffers[renderer_.imageIndex])
 #endif
-        renderer_.currentFrame = (renderer_.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        renderer_.currentFrame =
+                (renderer_.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     Destroy();
@@ -127,7 +138,8 @@ void Engine::Init()
     CreateInstance();
     SetupDebugMessenger();
     CreateSurface();
-    driver_.physicalDevice = PickPhysicalDevice(driver_.instance, driver_.surface);
+    driver_.physicalDevice = PickPhysicalDevice(driver_.instance,
+                                                driver_.surface);
     CreateLogicalDevice();
     CreateSwapChain();
     CreateImageViews();
@@ -153,8 +165,10 @@ void Engine::Destroy()
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(driver_.device, renderer_.renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(driver_.device, renderer_.imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(driver_.device,
+                           renderer_.renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(driver_.device,
+                           renderer_.imageAvailableSemaphores[i], nullptr);
         vkDestroyFence(driver_.device, renderer_.inFlightFences[i], nullptr);
     }
     vmaDestroyAllocator(allocator_);
@@ -162,7 +176,8 @@ void Engine::Destroy()
     vkDestroyDevice(driver_.device, nullptr);
     if (enableDebugMessenger_ && enableValidationLayers_)
     {
-        DestroyDebugUtilsMessengerEXT(driver_.instance, debugMessenger_, nullptr);
+        DestroyDebugUtilsMessengerEXT(driver_.instance, debugMessenger_,
+                                      nullptr);
     }
     vkDestroySurfaceKHR(driver_.instance, driver_.surface, nullptr);
 
@@ -188,7 +203,7 @@ void Engine::CreateInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Graphics Playground";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_MAKE_VERSION(1,2,0);
+    appInfo.apiVersion = VK_MAKE_VERSION(1, 2, 0);
 
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -282,7 +297,8 @@ void Engine::SetupDebugMessenger()
     }
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     PopulateDebugMessengerCreateInfo(createInfo);
-    if (CreateDebugUtilsMessengerEXT(driver_.instance, &createInfo, nullptr, &debugMessenger_) !=
+    if (CreateDebugUtilsMessengerEXT(driver_.instance, &createInfo, nullptr,
+                                     &debugMessenger_) !=
         VK_SUCCESS)
     {
         core::LogError("Failed to set up debug messenger!");
@@ -296,11 +312,13 @@ void Engine::CreateLogicalDevice()
     ZoneScoped;
 #endif
     core::LogDebug("Creating Logical Device");
-    QueueFamilyIndices indices = FindQueueFamilies(driver_.physicalDevice, driver_.surface);
+    QueueFamilyIndices indices = FindQueueFamilies(driver_.physicalDevice,
+                                                   driver_.surface);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<std::uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
-                                                   indices.presentFamily.value()};
+    std::set<std::uint32_t> uniqueQueueFamilies = {
+            indices.graphicsFamily.value(),
+            indices.presentFamily.value()};
     float queuePriority = 1.0f;
     for (std::uint32_t queueFamily : uniqueQueueFamilies)
     {
@@ -335,13 +353,16 @@ void Engine::CreateLogicalDevice()
         createInfo.enabledLayerCount = 0;
     }
 
-    if (vkCreateDevice(driver_.physicalDevice, &createInfo, nullptr, &driver_.device) != VK_SUCCESS)
+    if (vkCreateDevice(driver_.physicalDevice, &createInfo, nullptr,
+                       &driver_.device) != VK_SUCCESS)
     {
         core::LogError("Failed to create logical device!");
         std::terminate();
     }
-    vkGetDeviceQueue(driver_.device, indices.graphicsFamily.value(), 0, &driver_.graphicsQueue);
-    vkGetDeviceQueue(driver_.device, indices.presentFamily.value(), 0, &driver_.presentQueue);
+    vkGetDeviceQueue(driver_.device, indices.graphicsFamily.value(), 0,
+                     &driver_.graphicsQueue);
+    vkGetDeviceQueue(driver_.device, indices.presentFamily.value(), 0,
+                     &driver_.presentQueue);
 
 
 }
@@ -365,15 +386,19 @@ void Engine::CreateSwapChain()
     ZoneScoped;
 #endif
     core::LogDebug("Create SwapChain");
-    SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(driver_.physicalDevice,
-                                                                     driver_.surface);
+    SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
+            driver_.physicalDevice,
+            driver_.surface);
 
-    VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
-    VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+    VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(
+            swapChainSupport.formats);
+    VkPresentModeKHR presentMode = ChooseSwapPresentMode(
+            swapChainSupport.presentModes);
     VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
-    core::LogDebug(fmt::format("Swapchain support, minImageCount: {} maxImageCount: {}",
-                               swapChainSupport.capabilities.minImageCount,
-                               swapChainSupport.capabilities.maxImageCount));
+    core::LogDebug(fmt::format(
+            "Swapchain support, minImageCount: {} maxImageCount: {}",
+            swapChainSupport.capabilities.minImageCount,
+            swapChainSupport.capabilities.maxImageCount));
     swapchain_.minImageCount = swapChainSupport.capabilities.minImageCount;
     swapchain_.imageCount = swapChainSupport.capabilities.minImageCount + 1;
 
@@ -382,7 +407,8 @@ void Engine::CreateSwapChain()
     {
         swapchain_.imageCount = swapChainSupport.capabilities.maxImageCount;
     }
-    core::LogDebug(fmt::format("Image count: {}", swapchain_.imageCount));
+    core::LogDebug(
+            fmt::format("Chosen image count: {}", swapchain_.imageCount));
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -396,8 +422,10 @@ void Engine::CreateSwapChain()
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 
-    QueueFamilyIndices indices = FindQueueFamilies(driver_.physicalDevice, driver_.surface);
-    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    QueueFamilyIndices indices = FindQueueFamilies(driver_.physicalDevice,
+                                                   driver_.surface);
+    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(),
+                                     indices.presentFamily.value()};
 
     if (indices.graphicsFamily != indices.presentFamily)
     {
@@ -418,16 +446,19 @@ void Engine::CreateSwapChain()
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(driver_.device, &createInfo, nullptr, &swapchain_.swapChain) !=
+    if (vkCreateSwapchainKHR(driver_.device, &createInfo, nullptr,
+                             &swapchain_.swapChain) !=
         VK_SUCCESS)
     {
-        core::LogError("[Error] failed to create swap chain!");
+        core::LogError("[Error] Failed to create swap chain!");
         std::terminate();
     }
     //Adding images
-    vkGetSwapchainImagesKHR(driver_.device, swapchain_.swapChain, &swapchain_.imageCount, nullptr);
+    vkGetSwapchainImagesKHR(driver_.device, swapchain_.swapChain,
+                            &swapchain_.imageCount, nullptr);
     swapchain_.images.resize(swapchain_.imageCount);
-    vkGetSwapchainImagesKHR(driver_.device, swapchain_.swapChain, &swapchain_.imageCount,
+    vkGetSwapchainImagesKHR(driver_.device, swapchain_.swapChain,
+                            &swapchain_.imageCount,
                             swapchain_.images.data());
 
     swapchain_.imageFormat = surfaceFormat.format;
@@ -456,7 +487,8 @@ void Engine::CreateImageViews()
         createInfo.subresourceRange.levelCount = 1;
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView(driver_.device, &createInfo, nullptr, &swapchain_.imageViews[i]) !=
+        if (vkCreateImageView(driver_.device, &createInfo, nullptr,
+                              &swapchain_.imageViews[i]) !=
             VK_SUCCESS)
         {
             core::LogError("Failed to create image views!");
@@ -482,8 +514,10 @@ void Engine::CleanupSwapchain()
     TracyVkDestroy(tracyTransferContext_);
 #endif
     vkFreeCommandBuffers(driver_.device, renderer_.commandPool,
-                         static_cast<uint32_t>(renderer_.commandBuffers.size()), renderer_.commandBuffers.data());
-    vkFreeCommandBuffers(driver_.device, renderer_.commandPool, 1, &renderer_.transferCmdBuffer);
+                         static_cast<uint32_t>(renderer_.commandBuffers.size()),
+                         renderer_.commandBuffers.data());
+    vkFreeCommandBuffers(driver_.device, renderer_.commandPool, 1,
+                         &renderer_.transferCmdBuffer);
     vkDestroyCommandPool(driver_.device, renderer_.commandPool, nullptr);
     vkDestroyRenderPass(driver_.device, renderer_.renderPass, nullptr);
 
@@ -509,9 +543,11 @@ void Engine::CreateAllocator()
     vmaCreateAllocator(&allocatorInfo, &allocator_);
 }
 
-VkExtent2D Engine::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D
+Engine::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
-    if (capabilities.currentExtent.width != std::numeric_limits<std::uint32_t>::max())
+    if (capabilities.currentExtent.width !=
+        std::numeric_limits<std::uint32_t>::max())
     {
         return capabilities.currentExtent;
     }
@@ -524,7 +560,8 @@ VkExtent2D Engine::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities
     };
 
     actualExtent.width = std::max(capabilities.minImageExtent.width,
-                                  std::min(capabilities.maxImageExtent.width, actualExtent.width));
+                                  std::min(capabilities.maxImageExtent.width,
+                                           actualExtent.width));
     actualExtent.height = std::max(capabilities.minImageExtent.height,
                                    std::min(capabilities.maxImageExtent.height,
                                             actualExtent.height));
@@ -574,7 +611,8 @@ void Engine::CreateRenderPass()
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(driver_.device, &renderPassInfo, nullptr, &renderer_.renderPass) !=
+    if (vkCreateRenderPass(driver_.device, &renderPassInfo, nullptr,
+                           &renderer_.renderPass) !=
         VK_SUCCESS)
     {
         core::LogError("Failed to create render pass!");
@@ -603,9 +641,11 @@ void Engine::CreateSyncObjects()
     for (std::size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         if (vkCreateSemaphore(driver_.device, &semaphoreInfo, nullptr,
-                              &renderer_.imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                              &renderer_.imageAvailableSemaphores[i]) !=
+            VK_SUCCESS ||
             vkCreateSemaphore(driver_.device, &semaphoreInfo, nullptr,
-                              &renderer_.renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                              &renderer_.renderFinishedSemaphores[i]) !=
+            VK_SUCCESS ||
             vkCreateFence(driver_.device, &fenceInfo, nullptr,
                           &renderer_.inFlightFences[i]) != VK_SUCCESS)
         {
@@ -653,14 +693,16 @@ void Engine::CreateCommandPool()
     ZoneScoped;
 #endif
     core::LogDebug("Create Command Pool");
-    QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(driver_.physicalDevice,
-                                                              driver_.surface);
+    QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(
+            driver_.physicalDevice,
+            driver_.surface);
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
-    if (vkCreateCommandPool(driver_.device, &poolInfo, nullptr, &renderer_.commandPool) !=
+    if (vkCreateCommandPool(driver_.device, &poolInfo, nullptr,
+                            &renderer_.commandPool) !=
         VK_SUCCESS)
     {
         core::LogDebug("Failed to create command pool!");
@@ -682,7 +724,8 @@ void Engine::CreateCommandBuffers()
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = static_cast<uint32_t>(renderer_.commandBuffers.size());
 
-    if (vkAllocateCommandBuffers(driver_.device, &allocInfo, renderer_.commandBuffers.data()) !=
+    if (vkAllocateCommandBuffers(driver_.device, &allocInfo,
+                                 renderer_.commandBuffers.data()) !=
         VK_SUCCESS)
     {
         core::LogError("Failed to allocate command buffers!\n");
@@ -695,7 +738,8 @@ void Engine::CreateCommandBuffers()
     allocInfo.commandPool = renderer_.commandPool;
     allocInfo.commandBufferCount = 1;
 
-    vkAllocateCommandBuffers(driver_.device, &allocInfo, &renderer_.transferCmdBuffer);
+    vkAllocateCommandBuffers(driver_.device, &allocInfo,
+                             &renderer_.transferCmdBuffer);
 
 #ifdef TRACY_ENABLE
     tracyContexts_.resize(renderer_.commandBuffers.size());
@@ -708,11 +752,11 @@ void Engine::CreateCommandBuffers()
                                     renderer_.commandBuffers[i]);
     }
     tracyTransferContext_ = TracyVkContext(
-            driver_.physicalDevice,
-            driver_.device,
-            driver_.graphicsQueue,
-            renderer_.transferCmdBuffer
-            );
+                                    driver_.physicalDevice,
+                                    driver_.device,
+                                    driver_.graphicsQueue,
+                                    renderer_.transferCmdBuffer
+                            );
 #endif
 }
 
@@ -758,7 +802,8 @@ void Engine::RecreateSwapchain()
 }
 
 void
-Engine::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer,
+Engine::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                     VkMemoryPropertyFlags properties, VkBuffer& buffer,
                      VmaAllocation& allocation)
 {
     VkBufferCreateInfo bufferInfo{};
@@ -770,14 +815,16 @@ Engine::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryProper
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     allocInfo.requiredFlags = properties;
-    if (vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr) != VK_SUCCESS)
+    if (vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer,
+                        &allocation, nullptr) != VK_SUCCESS)
     {
         core::LogError("Failed to create a buffer");
         std::terminate();
     }
 }
 
-void Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size)
+void
+Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size)
 {
 #ifdef TRACY_ENABLE
     ZoneScoped;
@@ -789,13 +836,15 @@ void Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size
     {
         vkBeginCommandBuffer(renderer_.transferCmdBuffer, &beginInfo);
 #ifdef TRACY_ENABLE
-        TracyVkZone(tracyTransferContext_, renderer_.transferCmdBuffer, "Copy Buffer to GPU");
+        TracyVkZone(tracyTransferContext_, renderer_.transferCmdBuffer,
+                    "Copy Buffer to GPU");
 #endif
         VkBufferCopy copyRegion{};
         copyRegion.srcOffset = 0; // Optional
         copyRegion.dstOffset = 0; // Optional
         copyRegion.size = size;
-        vkCmdCopyBuffer(renderer_.transferCmdBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+        vkCmdCopyBuffer(renderer_.transferCmdBuffer, srcBuffer, dstBuffer, 1,
+                        &copyRegion);
     }
     vkEndCommandBuffer(renderer_.transferCmdBuffer);
     VkSubmitInfo submitInfo{};
@@ -807,7 +856,8 @@ void Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size
     vkQueueWaitIdle(driver_.graphicsQueue);
 
 #ifdef TRACY_ENABLE
-    TracyVkCollect(tracyTransferContext_, renderer_.commandBuffers[renderer_.imageIndex])
+    TracyVkCollect(tracyTransferContext_,
+                   renderer_.commandBuffers[renderer_.imageIndex])
 #endif
 
 }

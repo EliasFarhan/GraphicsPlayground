@@ -151,11 +151,11 @@ void HelloInstancing::Update(core::seconds dt)
             vertexInstancingDrawShader_.SetMat4("projection",
                                                 camera_.GetProjection());
 
-            for (size_t chunk = 0;
+            for (std::size_t chunk = 0;
                  chunk < asteroidNmb_ / instanceChunkSize_ + 1; chunk++)
             {
-                const size_t chunkBeginIndex = chunk * instanceChunkSize_;
-                const size_t chunkEndIndex = std::min(asteroidNmb_,
+                const std::size_t chunkBeginIndex = chunk * instanceChunkSize_;
+                const std::size_t chunkEndIndex = std::min(asteroidNmb_,
                                                       static_cast<unsigned long>(chunk + 1) *
                                                       instanceChunkSize_);
                 if (chunkEndIndex > chunkBeginIndex)
