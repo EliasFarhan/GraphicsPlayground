@@ -739,6 +739,7 @@ void Engine::CreateCommandBuffers()
 
 #ifdef TRACY_ENABLE
     tracyContexts_.resize(renderer_.commandBuffers.size());
+
     for (int i = 0; i < renderer_.commandBuffers.size(); i++)
     {
         tracyContexts_[i] = TracyVkContext(
@@ -843,8 +844,7 @@ Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size)
                         &copyRegion);
     }
 #ifdef TRACY_ENABLE
-    TracyVkCollect(tracyTransferContext_,
-                   renderer_.commandBuffers[renderer_.imageIndex])
+    TracyVkCollect(tracyTransferContext_, renderer_.transferCmdBuffer)
 #endif
     vkEndCommandBuffer(renderer_.transferCmdBuffer);
     VkSubmitInfo submitInfo{};
