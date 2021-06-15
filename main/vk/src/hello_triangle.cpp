@@ -237,6 +237,9 @@ void HelloTriangle::CreateCommands()
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+#ifdef TRACY_ENABLE
+        auto& tracyCtx = engine.GetTracyCtx();
+#endif
         {
             if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
             {
@@ -244,7 +247,6 @@ void HelloTriangle::CreateCommands()
                 std::terminate();
             }
 #ifdef TRACY_ENABLE
-            auto& tracyCtx = engine.GetTracyCtx();
             TracyVkZone(tracyCtx[i], renderer.commandBuffers[i], "Hello Triangle");
 #endif
             VkRenderPassBeginInfo renderPassInfo{};
@@ -266,6 +268,9 @@ void HelloTriangle::CreateCommands()
 
             vkCmdEndRenderPass(commandBuffers[i]);
         }
+#ifdef TRACY_ENABLE
+        TracyVkCollect(tracyCtx[i], commandBuffers[i])
+#endif
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
         {
             core::LogError("Failed to record command buffer!");

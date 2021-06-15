@@ -242,6 +242,9 @@ void HelloIndexBuffer::CreateCommands()
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        #ifdef TRACY_ENABLE
+        auto& tracyCtxs = engine.GetTracyCtx();
+        #endif
         {
             if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
             {
@@ -249,8 +252,7 @@ void HelloIndexBuffer::CreateCommands()
                 std::terminate();
             }
 #ifdef TRACY_ENABLE
-            auto& tracyCtx = engine.GetTracyCtx();
-            TracyVkZone(tracyCtx[i], commandBuffers[i], "Hello Staging Buffer");
+            TracyVkZone(tracyCtxs[i], commandBuffers[i], "Hello Staging Buffer");
 #endif
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -274,6 +276,9 @@ void HelloIndexBuffer::CreateCommands()
             vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices_.size()), 1, 0, 0, 0);
             vkCmdEndRenderPass(commandBuffers[i]);
         }
+#ifdef TRACY_ENABLE
+        TracyVkCollect(tracyCtxs[i], commandBuffers[i])
+#endif
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
         {
             core::LogError("Failed to record command buffer!");

@@ -117,10 +117,6 @@ void Engine::Run()
             presentInfo.pResults = nullptr; // Optional
             vkQueuePresentKHR(driver_.presentQueue, &presentInfo);
         }
-#ifdef TRACY_ENABLE
-        TracyVkCollect(tracyContexts_[renderer_.imageIndex],
-                       renderer_.commandBuffers[renderer_.imageIndex])
-#endif
         renderer_.currentFrame =
                 (renderer_.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
@@ -846,6 +842,10 @@ Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size)
         vkCmdCopyBuffer(renderer_.transferCmdBuffer, srcBuffer, dstBuffer, 1,
                         &copyRegion);
     }
+#ifdef TRACY_ENABLE
+    TracyVkCollect(tracyTransferContext_,
+                   renderer_.commandBuffers[renderer_.imageIndex])
+#endif
     vkEndCommandBuffer(renderer_.transferCmdBuffer);
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -855,10 +855,7 @@ Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size)
     vkQueueSubmit(driver_.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(driver_.graphicsQueue);
 
-#ifdef TRACY_ENABLE
-    TracyVkCollect(tracyTransferContext_,
-                   renderer_.commandBuffers[renderer_.imageIndex])
-#endif
+
 
 }
 
