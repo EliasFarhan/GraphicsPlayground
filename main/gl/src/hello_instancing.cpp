@@ -2,6 +2,12 @@
 #include "hello_instancing.h"
 #include <random>
 
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+#endif
+
+
 namespace gl
 {
 

@@ -6,6 +6,9 @@
 #include "GL/glew.h"
 #include <cmath>
 
+#include <vector>
+#include <glm/vec3.hpp>
+
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"
