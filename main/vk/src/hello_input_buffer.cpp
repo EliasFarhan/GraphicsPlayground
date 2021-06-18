@@ -245,44 +245,37 @@ void HelloInputBuffer::CreateCommands()
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-#ifdef TRACY_ENABLE
-        auto& tracyCtx = engine.GetTracyCtx();
-#endif
+        
+        if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
         {
-            if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
-            {
-                core::LogError("Failed to begin recording command buffer!");
-                std::terminate();
-            }
-#ifdef TRACY_ENABLE
-            TracyVkZone(tracyCtx[i], renderer.commandBuffers[i], "Hello Input Buffer");
-#endif
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = renderer.renderPass;
-            renderPassInfo.framebuffer = renderer.framebuffers[i];
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = swapchain.extent;
-
-            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearColor;
-
-            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-
-            VkBuffer vertexBuffers[] = {vertexBuffer_};
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1, vertexBuffers, offsets);
-
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-
-            vkCmdEndRenderPass(commandBuffers[i]);
+            core::LogError("Failed to begin recording command buffer!");
+            std::terminate();
         }
-#ifdef TRACY_ENABLE
-        TracyVkCollect(tracyCtx[i], commandBuffers[i])
-#endif
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderer.renderPass;
+        renderPassInfo.framebuffer = renderer.framebuffers[i];
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = swapchain.extent;
+
+        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearColor;
+
+        vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+
+        VkBuffer vertexBuffers[] = {vertexBuffer_};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+        vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+        vkCmdEndRenderPass(commandBuffers[i]);
+    
+
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
         {
             core::LogError("Failed to record command buffer!");

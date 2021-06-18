@@ -243,18 +243,14 @@ void HelloStagingBuffer::CreateCommands()
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-#ifdef TRACY_ENABLE
-        auto& tracyCtx = engine.GetTracyCtx();
-#endif
+
         {
             if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
             {
                 core::LogError("Failed to begin recording command buffer!");
                 std::terminate();
             }
-#ifdef TRACY_ENABLE
-            TracyVkZone(tracyCtx[i], commandBuffers[i], "Hello Staging Buffer");
-#endif
+
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = renderer.renderPass;
@@ -278,9 +274,7 @@ void HelloStagingBuffer::CreateCommands()
 
             vkCmdEndRenderPass(commandBuffers[i]);
         }
-#ifdef TRACY_ENABLE
-        TracyVkCollect(tracyCtx[i], commandBuffers[i])
-#endif
+
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
         {
             core::LogError("Failed to record command buffer!");

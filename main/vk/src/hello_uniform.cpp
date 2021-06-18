@@ -5,7 +5,6 @@
 
 namespace vk
 {
-
 void vk::HelloUniform::Init()
 {
     CreateVertexBuffer();
@@ -24,6 +23,7 @@ void vk::HelloUniform::Update(core::seconds dt)
     auto& driver = engine.GetDriver();
     auto& swapchain = engine.GetSwapchain();
     auto& renderer = engine.GetRenderer();
+   
 
     UpdateUniformBuffers(dt);
 
@@ -31,9 +31,11 @@ void vk::HelloUniform::Update(core::seconds dt)
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkSemaphore waitSemaphores[] = {
-            renderer.imageAvailableSemaphores[renderer.currentFrame]};
+        renderer.imageAvailableSemaphores[renderer.currentFrame]
+    };
     VkPipelineStageFlags waitStages[] = {
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -41,7 +43,8 @@ void vk::HelloUniform::Update(core::seconds dt)
     submitInfo.pCommandBuffers = &renderer.commandBuffers[renderer.imageIndex];
 
     VkSemaphore signalSemaphores[] = {
-            renderer.renderFinishedSemaphores[renderer.currentFrame]};
+        renderer.renderFinishedSemaphores[renderer.currentFrame]
+    };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
     if (vkQueueSubmit(driver.graphicsQueue, 1, &submitInfo,
@@ -66,12 +69,10 @@ void vk::HelloUniform::Destroy()
 
 void vk::HelloUniform::OnEvent(SDL_Event& event)
 {
-
 }
 
 void vk::HelloUniform::DrawImGui()
 {
-
 }
 
 void vk::HelloUniform::CleanupSwapchain()
@@ -89,7 +90,6 @@ void vk::HelloUniform::CleanupSwapchain()
     }
 
     vkDestroyDescriptorPool(driver.device, descriptorPool_, nullptr);
-
 }
 
 void vk::HelloUniform::RecreateSwapchain()
@@ -110,9 +110,9 @@ void vk::HelloUniform::CreateGraphicsPipeline()
     auto& swapchain = engine.GetSwapchain();
 
     core::BufferFile vertexShaderFile = filesystem.LoadFile(
-            "data/shaders/05_hello_uniform/triangle.vert.spv");
+        "data/shaders/05_hello_uniform/triangle.vert.spv");
     core::BufferFile fragmentShaderFile = filesystem.LoadFile(
-            "data/shaders/05_hello_uniform/triangle.frag.spv");
+        "data/shaders/05_hello_uniform/triangle.frag.spv");
 
     VkShaderModule vertShaderModule = CreateShaderModule(vertexShaderFile,
                                                          driver.device);
@@ -131,8 +131,10 @@ void vk::HelloUniform::CreateGraphicsPipeline()
     fragShaderStageInfo.module = fragShaderModule;
     fragShaderStageInfo.pName = "main";
 
-    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,
-                                                      fragShaderStageInfo};
+    VkPipelineShaderStageCreateInfo shaderStages[] = {
+        vertShaderStageInfo,
+        fragShaderStageInfo
+    };
 
     auto bindingDescription = Vertex::GetBindingDescription();
     auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -191,9 +193,9 @@ void vk::HelloUniform::CreateGraphicsPipeline()
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask =
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-            VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT;
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+        VK_COLOR_COMPONENT_B_BIT |
+        VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
@@ -272,63 +274,54 @@ void vk::HelloUniform::CreateCommands()
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-#ifdef TRACY_ENABLE
-        auto& tracyCtxs = engine.GetTracyCtx();
-#endif
+
+        if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) !=
+            VK_SUCCESS)
         {
-            if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) !=
-                VK_SUCCESS)
-            {
-                core::LogError("Failed to begin recording command buffer!");
-                std::terminate();
-            }
-#ifdef TRACY_ENABLE
-            TracyVkNamedZone(tracyCtxs[i], uniformBufferUpdate, commandBuffers[i], "Hello Uniform Buffer", true);
-#endif
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = renderer.renderPass;
-            renderPassInfo.framebuffer = renderer.framebuffers[i];
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = swapchain.extent;
-
-            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearColor;
-
-            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo,
-                                 VK_SUBPASS_CONTENTS_INLINE);
-
-            vkCmdBindPipeline(commandBuffers[i],
-                              VK_PIPELINE_BIND_POINT_GRAPHICS,
-                              graphicsPipeline_);
-
-            VkBuffer vertexBuffers[] = {vertexBuffer_};
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1,
-                                   vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(renderer.commandBuffers[i], indexBuffer_, 0,
-                                 VK_INDEX_TYPE_UINT16);
-            vkCmdBindDescriptorSets(commandBuffers[i],
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    pipelineLayout_, 0, 1, &descriptorSets_[i],
-                                    0, nullptr);
-            vkCmdDrawIndexed(commandBuffers[i],
-                             static_cast<uint32_t>(indices_.size()), 1, 0, 0,
-                             0);
-
-            vkCmdEndRenderPass(commandBuffers[i]);
-#ifdef TRACY_ENABLE
-            TracyVkCollect(tracyCtxs[i], commandBuffers[i])
-#endif
+            core::LogError("Failed to begin recording command buffer!");
+            std::terminate();
         }
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderer.renderPass;
+        renderPassInfo.framebuffer = renderer.framebuffers[i];
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = swapchain.extent;
+
+        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearColor;
+
+        vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo,
+                             VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffers[i],
+                          VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          graphicsPipeline_);
+
+        VkBuffer vertexBuffers[] = {vertexBuffer_};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(renderer.commandBuffers[i], 0, 1,
+                               vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(renderer.commandBuffers[i], indexBuffer_, 0,
+                             VK_INDEX_TYPE_UINT16);
+        vkCmdBindDescriptorSets(commandBuffers[i],
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipelineLayout_, 0, 1, &descriptorSets_[i],
+                                0, nullptr);
+        vkCmdDrawIndexed(commandBuffers[i],
+                         static_cast<uint32_t>(indices_.size()), 1, 0, 0,
+                         0);
+
+        vkCmdEndRenderPass(commandBuffers[i]);
+
 
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
         {
             core::LogError("Failed to record command buffer!");
             std::terminate();
         }
-
     }
 }
 
@@ -377,11 +370,11 @@ void vk::HelloUniform::CreateIndexBuffer()
 
     void* data;
     vmaMapMemory(allocator, stagingAllocation, &data);
-    std::memcpy(data, indices_.data(), (size_t) bufferSize);
+    std::memcpy(data, indices_.data(), (size_t)bufferSize);
     vmaUnmapMemory(allocator, stagingAllocation);
 
     engine.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer_,
                         indexAllocation_);
 
@@ -449,7 +442,7 @@ void HelloUniform::UpdateUniformBuffers(core::seconds duration)
                            glm::vec3(0.0f, 0.0f, 0.0f),
                            glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapchain.extent.width /
-                                                     (float) swapchain.extent.height,
+                                (float)swapchain.extent.height,
                                 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
     void* data;

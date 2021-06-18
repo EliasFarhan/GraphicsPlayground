@@ -7,7 +7,6 @@
 
 namespace vk
 {
-
 void HelloTriangle::Init()
 {
 #ifdef TRACY_ENABLE
@@ -44,13 +43,12 @@ void HelloTriangle::Update(core::seconds dt)
     submitInfo.pSignalSemaphores = signalSemaphores;
 
 
-    if (vkQueueSubmit(driver.graphicsQueue, 1, &submitInfo, renderer.inFlightFences[renderer.currentFrame]) != VK_SUCCESS)
+    if (vkQueueSubmit(driver.graphicsQueue, 1, &submitInfo, renderer.inFlightFences[renderer.currentFrame]) !=
+        VK_SUCCESS)
     {
         core::LogError("Failed to submit draw command buffer!");
         std::terminate();
     }
-
-
 }
 
 void HelloTriangle::Destroy()
@@ -60,12 +58,10 @@ void HelloTriangle::Destroy()
 
 void HelloTriangle::OnEvent(SDL_Event& event)
 {
-
 }
 
 void HelloTriangle::DrawImGui()
 {
-
 }
 
 void HelloTriangle::CreateGraphicsPipeline()
@@ -80,9 +76,9 @@ void HelloTriangle::CreateGraphicsPipeline()
     auto& swapchain = engine.GetSwapchain();
 
     core::BufferFile vertexShaderFile = filesystem.LoadFile(
-            "data/shaders/01_hello_triangle/triangle.vert.spv");
+        "data/shaders/01_hello_triangle/triangle.vert.spv");
     core::BufferFile fragmentShaderFile = filesystem.LoadFile(
-            "data/shaders/01_hello_triangle/triangle.frag.spv");
+        "data/shaders/01_hello_triangle/triangle.frag.spv");
 
     VkShaderModule vertShaderModule = CreateShaderModule(vertexShaderFile, driver.device);
     VkShaderModule fragShaderModule = CreateShaderModule(fragmentShaderFile, driver.device);
@@ -157,8 +153,8 @@ void HelloTriangle::CreateGraphicsPipeline()
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask =
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT;
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+        VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
@@ -237,40 +233,32 @@ void HelloTriangle::CreateCommands()
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-#ifdef TRACY_ENABLE
-        auto& tracyCtx = engine.GetTracyCtx();
-#endif
+
+        if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
         {
-            if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
-            {
-                core::LogError("Failed to begin recording command buffer!");
-                std::terminate();
-            }
-#ifdef TRACY_ENABLE
-            TracyVkZone(tracyCtx[i], renderer.commandBuffers[i], "Hello Triangle");
-#endif
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = renderer.renderPass;
-            renderPassInfo.framebuffer = renderer.framebuffers[i];
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = swapchain.extent;
-
-            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearColor;
-
-            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-
-            vkCmdEndRenderPass(commandBuffers[i]);
+            core::LogError("Failed to begin recording command buffer!");
+            std::terminate();
         }
-#ifdef TRACY_ENABLE
-        TracyVkCollect(tracyCtx[i], commandBuffers[i])
-#endif
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderer.renderPass;
+        renderPassInfo.framebuffer = renderer.framebuffers[i];
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = swapchain.extent;
+
+        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearColor;
+
+        vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+
+        vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+        vkCmdEndRenderPass(commandBuffers[i]);
+
+
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
         {
             core::LogError("Failed to record command buffer!");
@@ -292,5 +280,4 @@ void HelloTriangle::RecreateSwapchain()
     CreateGraphicsPipeline();
     CreateCommands();
 }
-
 }
