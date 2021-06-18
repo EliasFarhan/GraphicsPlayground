@@ -3,6 +3,9 @@
 #include <condition_variable>
 #include <future>
 
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#endif
 namespace core
 {
 
@@ -19,7 +22,7 @@ public:
     [[nodiscard]] bool CheckDependenciesStarted() const;
     [[nodiscard]] bool IsDone() const;
     [[nodiscard]] bool HasStarted() const;
-    void AddDependency(std::weak_ptr<Task> dep);
+    void AddDependency(const std::weak_ptr<Task>& newDependencyPtr);
     /**
      * \brief This function clears the dependencies, the promise/future and status, but keeps the task function
      */
@@ -42,12 +45,20 @@ private:
 class WorkerQueue
 {
 public:
+    ~WorkerQueue();
     [[nodiscard]] bool IsEmpty() const;
-    [[nodiscard]] std::weak_ptr<Task> GetNextTask();
-    void AddTask(std::shared_ptr<Task>&& task);
+    [[nodiscard]] std::shared_ptr<Task> PopNextTask();
+    void AddTask(std::shared_ptr<Task> task);
+    void WaitForTask();
+    void Destroy();
 private:
     std::vector<std::shared_ptr<Task>> tasks_;
+#ifdef TRACY_ENABLE
+    mutable TracyLockable ( std::mutex , queueMutex_ );
+#else
     mutable std::mutex queueMutex_;
+#endif
+    std::condition_variable_any conditionVariable_;
 };
 
 
@@ -55,8 +66,11 @@ class WorkerThread
 {
 public:
     WorkerThread(WorkerQueue& queue);
-    void Start(std::function<void()> workerFunction);
+    ~WorkerThread();
+    void Start();
+    void Destroy();
 private:
+    void Loop();
     WorkerQueue& taskQueue_;
     std::thread thread_;
     bool isRunning_ = true;
