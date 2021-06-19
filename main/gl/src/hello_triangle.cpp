@@ -34,7 +34,7 @@ void HelloTriangle::Init()
     basicQuadProgram_.shaderProgram.SetVec3("color", glm::vec3(1.0f));
 }
 
-void HelloTriangle::Update(core::seconds dt)
+void HelloTriangle::Update([[maybe_unused]] core::seconds dt)
 {
     switch (currentProgram_)
     {
@@ -64,7 +64,7 @@ void HelloTriangle::Destroy()
     basicQuadProgram_.shaderProgram.Destroy();
 }
 
-void HelloTriangle::OnEvent(SDL_Event& event)
+void HelloTriangle::OnEvent([[maybe_unused]] SDL_Event& event)
 {
 }
 

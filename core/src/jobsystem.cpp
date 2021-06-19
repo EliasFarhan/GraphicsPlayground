@@ -11,8 +11,8 @@ namespace core
 {
 
 Task::Task(std::function<void()> task) : task_(std::move(task)),
-                                         taskDoneFuture_(promise_.get_future()),
-                                         status_(NONE)
+                                         status_(NONE),
+                                         taskDoneFuture_(promise_.get_future())
 {
 
 }
@@ -159,9 +159,9 @@ void WorkerThread::Destroy()
 bool WorkerQueue::IsEmpty() const
 {
 #ifdef TRACY_ENABLE
-    std::unique_lock<LockableBase (std::mutex) > lock(queueMutex_);
+    std::shared_lock<SharedLockableBase(std::shared_mutex) > lock(queueMutex_);
 #else
-    std::unique_lock<std::mutex> lock(queueMutex_);
+    std::shared_lock<std::shared_mutex> lock(queueMutex_);
 #endif
     return tasks_.empty();
 }
@@ -169,9 +169,9 @@ bool WorkerQueue::IsEmpty() const
 std::shared_ptr<Task> WorkerQueue::PopNextTask()
 {
 #ifdef TRACY_ENABLE
-    std::unique_lock<LockableBase (std::mutex) > lock(queueMutex_);
+    std::unique_lock<SharedLockableBase (std::shared_mutex) > lock(queueMutex_);
 #else
-    std::unique_lock<std::mutex> lock(queueMutex_);
+    std::unique_lock<std::shared_mutex> lock(queueMutex_);
 #endif
     auto task = tasks_.front();
     tasks_.erase(tasks_.cbegin());
@@ -181,9 +181,9 @@ std::shared_ptr<Task> WorkerQueue::PopNextTask()
 void WorkerQueue::AddTask(std::shared_ptr<Task> task)
 {
 #ifdef TRACY_ENABLE
-    std::unique_lock<LockableBase (std::mutex) > lock(queueMutex_);
+    std::unique_lock<SharedLockableBase (std::shared_mutex) > lock(queueMutex_);
 #else
-    std::unique_lock<std::mutex> lock(queueMutex_);
+    std::unique_lock<std::shared_mutex> lock(queueMutex_);
 #endif
     tasks_.push_back(std::move(task));
     conditionVariable_.notify_one();
@@ -192,9 +192,9 @@ void WorkerQueue::AddTask(std::shared_ptr<Task> task)
 void WorkerQueue::WaitForTask()
 {
 #ifdef TRACY_ENABLE
-    std::unique_lock<LockableBase (std::mutex) > lock(queueMutex_);
+    std::unique_lock<SharedLockableBase (std::shared_mutex) > lock(queueMutex_);
 #else
-    std::unique_lock<std::mutex> lock(queueMutex_);
+    std::unique_lock<std::shared_mutex> lock(queueMutex_);
 #endif
     conditionVariable_.wait(lock);
 }

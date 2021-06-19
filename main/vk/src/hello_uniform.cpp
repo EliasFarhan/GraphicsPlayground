@@ -21,7 +21,6 @@ void vk::HelloUniform::Update(core::seconds dt)
 {
     auto& engine = Engine::GetInstance();
     auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& renderer = engine.GetRenderer();
    
 
@@ -67,7 +66,7 @@ void vk::HelloUniform::Destroy()
     vkDestroyDescriptorSetLayout(driver.device, descriptorSetLayout_, nullptr);
 }
 
-void vk::HelloUniform::OnEvent(SDL_Event& event)
+void vk::HelloUniform::OnEvent([[maybe_unused]] SDL_Event& event)
 {
 }
 
@@ -265,7 +264,6 @@ void vk::HelloUniform::CreateCommands()
     core::LogDebug("Create Commands");
     auto& engine = Engine::GetInstance();
     auto& renderer = engine.GetRenderer();
-    auto& driver = engine.GetDriver();
     auto& swapchain = engine.GetSwapchain();
 
     auto& commandBuffers = renderer.commandBuffers;
@@ -289,7 +287,7 @@ void vk::HelloUniform::CreateCommands()
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = swapchain.extent;
 
-        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearColor;
 
@@ -328,8 +326,6 @@ void vk::HelloUniform::CreateCommands()
 void vk::HelloUniform::CreateVertexBuffer()
 {
     auto& engine = Engine::GetInstance();
-    auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& allocator = engine.GetAllocator();
     const auto bufferSize = sizeof(vertices_[0]) * vertices_.size();
     VkBuffer stagingBuffer;
@@ -356,8 +352,6 @@ void vk::HelloUniform::CreateVertexBuffer()
 void vk::HelloUniform::CreateIndexBuffer()
 {
     auto& engine = Engine::GetInstance();
-    auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& allocator = engine.GetAllocator();
     VkDeviceSize bufferSize = sizeof(indices_[0]) * indices_.size();
 
@@ -428,7 +422,6 @@ void HelloUniform::CreateUniformBuffers()
 void HelloUniform::UpdateUniformBuffers(core::seconds duration)
 {
     auto& engine = Engine::GetInstance();
-    auto& driver = engine.GetDriver();
     auto& renderer = engine.GetRenderer();
     auto& swapchain = engine.GetSwapchain();
     auto& allocator = engine.GetAllocator();

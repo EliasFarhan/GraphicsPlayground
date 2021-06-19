@@ -73,7 +73,7 @@ void SampleBrowser::DrawImGui()
     if (ImGui::BeginCombo("Current Sample",
                           samples_[currentIndex_].sampleName.c_str())) // The second parameter is the label previewed before opening the combo.
     {
-        for (int i = 0; i < samples_.size(); i++)
+        for (std::size_t i = 0; i < samples_.size(); i++)
         {
             const bool isSelected = currentIndex_ == i;
             if (ImGui::Selectable(samples_[i].sampleName.c_str(), isSelected))

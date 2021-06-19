@@ -16,14 +16,13 @@ void HelloTriangle::Init()
     CreateCommands();
 }
 
-void HelloTriangle::Update(core::seconds dt)
+void HelloTriangle::Update([[maybe_unused]] core::seconds dt)
 {
 #ifdef TRACY_ENABLE
     ZoneNamedN(triangleLoop, "Triangle Loop", true);
 #endif
     auto& engine = Engine::GetInstance();
     auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& renderer = engine.GetRenderer();
 
 
@@ -56,7 +55,7 @@ void HelloTriangle::Destroy()
     CleanupSwapchain();
 }
 
-void HelloTriangle::OnEvent(SDL_Event& event)
+void HelloTriangle::OnEvent([[maybe_unused]] SDL_Event& event)
 {
 }
 
@@ -225,7 +224,6 @@ void HelloTriangle::CreateCommands()
     core::LogDebug("Create Commands");
     auto& engine = Engine::GetInstance();
     auto& renderer = engine.GetRenderer();
-    auto& driver = engine.GetDriver();
     auto& swapchain = engine.GetSwapchain();
 
     auto& commandBuffers = renderer.commandBuffers;
@@ -246,7 +244,7 @@ void HelloTriangle::CreateCommands()
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = swapchain.extent;
 
-        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearColor;
 

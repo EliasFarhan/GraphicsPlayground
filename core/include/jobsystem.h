@@ -2,6 +2,7 @@
 #include <thread>
 #include <condition_variable>
 #include <future>
+#include <shared_mutex>
 
 #ifdef TRACY_ENABLE
 #include "Tracy.hpp"
@@ -54,9 +55,9 @@ public:
 private:
     std::vector<std::shared_ptr<Task>> tasks_;
 #ifdef TRACY_ENABLE
-    mutable TracyLockable ( std::mutex , queueMutex_ );
+    mutable TracySharedLockable ( std::shared_mutex , queueMutex_ );
 #else
-    mutable std::mutex queueMutex_;
+    mutable std::shared_mutex queueMutex_;
 #endif
     std::condition_variable_any conditionVariable_;
 };

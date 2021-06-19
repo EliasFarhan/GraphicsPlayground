@@ -4,6 +4,14 @@ project(GraphicsPlayground)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (MSVC)
+    # warning level 4 and all warnings as errors
+    add_compile_options(/W4 /WX /w14640)
+else()
+    # lots of warnings and all warnings as errors
+    add_compile_options(-Wall -Wextra -Wshadow -Wnon-virtual-dtor)
+endif()
+
 add_compile_definitions(_USE_MATH_DEFINES)
 
 set(TRACY_ENABLE ON CACHE BOOL "")

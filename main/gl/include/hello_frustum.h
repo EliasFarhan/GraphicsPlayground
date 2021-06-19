@@ -32,7 +32,6 @@ private:
     unsigned long instanceChunkSize_ = 1'000;
     unsigned long asteroidNmb_ = 1000;
 
-    unsigned long culledAsteroids_ = 0;
 
     ShaderProgram vertexInstancingDrawShader_;
     ShaderProgram screenShader_;

@@ -4,7 +4,7 @@
 #include "hello_triangle.h"
 #include "hello_input_buffer.h"
 
-int main(int argc, char** argv)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
     core::Filesystem filesystem;
     vk::HelloUniform program_;

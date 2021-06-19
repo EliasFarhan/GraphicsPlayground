@@ -14,14 +14,13 @@ void HelloIndexBuffer::Init()
     CreateCommands();
 }
 
-void HelloIndexBuffer::Update(core::seconds dt)
+void HelloIndexBuffer::Update([[maybe_unused]] core::seconds dt)
 {
 #ifdef TRACY_ENABLE
     ZoneNamedN(inputBufferUpdate, "Input Buffer Update", true);
 #endif
     auto& engine = Engine::GetInstance();
     auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& renderer = engine.GetRenderer();
 
     VkSubmitInfo submitInfo{};
@@ -55,7 +54,7 @@ void HelloIndexBuffer::Destroy()
     CleanupSwapchain();
 }
 
-void HelloIndexBuffer::OnEvent(SDL_Event& event)
+void HelloIndexBuffer::OnEvent([[maybe_unused]]SDL_Event& event)
 {
 }
 
@@ -233,7 +232,6 @@ void HelloIndexBuffer::CreateCommands()
     core::LogDebug("Create Commands");
     auto& engine = Engine::GetInstance();
     auto& renderer = engine.GetRenderer();
-    auto& driver = engine.GetDriver();
     auto& swapchain = engine.GetSwapchain();
 
     auto& commandBuffers = renderer.commandBuffers;
@@ -256,7 +254,7 @@ void HelloIndexBuffer::CreateCommands()
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = swapchain.extent;
 
-        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearColor;
 
@@ -286,8 +284,6 @@ void HelloIndexBuffer::CreateVertexBuffer()
     ZoneScoped;
 #endif
     auto& engine = Engine::GetInstance();
-    auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& allocator = engine.GetAllocator();
     const auto bufferSize = sizeof(vertices_[0]) * vertices_.size();
     VkBuffer stagingBuffer;
@@ -314,8 +310,6 @@ void HelloIndexBuffer::CreateVertexBuffer()
 void HelloIndexBuffer::CreateIndexBuffer()
 {
     auto& engine = Engine::GetInstance();
-    auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& allocator = engine.GetAllocator();
     VkDeviceSize bufferSize = sizeof(indices_[0]) * indices_.size();
 

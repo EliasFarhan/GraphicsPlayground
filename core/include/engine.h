@@ -22,6 +22,7 @@ public:
 class SdlEventSystemInterface
 {
 public:
+    virtual ~SdlEventSystemInterface() = default;
     virtual void OnEvent(const SDL_Event& event) = 0;
 };
 

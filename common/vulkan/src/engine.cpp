@@ -503,7 +503,7 @@ void Engine::CleanupSwapchain()
         vkDestroyFramebuffer(driver_.device, framebuffer, nullptr);
     }
 #ifdef TRACY_ENABLE
-    for (int i = 0; i < tracyContexts_.size(); i++)
+    for (std::size_t i = 0; i < tracyContexts_.size(); i++)
     {
         TracyVkDestroy(tracyContexts_[i]);
     }
@@ -740,7 +740,7 @@ void Engine::CreateCommandBuffers()
 #ifdef TRACY_ENABLE
     tracyContexts_.resize(renderer_.commandBuffers.size());
 
-    for (int i = 0; i < renderer_.commandBuffers.size(); i++)
+    for (std::size_t i = 0; i < renderer_.commandBuffers.size(); i++)
     {
         tracyContexts_[i] = TracyVkContext(
                                     driver_.physicalDevice,
