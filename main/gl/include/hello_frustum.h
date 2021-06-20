@@ -1,5 +1,12 @@
 #pragma once
 
+#include "glm/vec3.hpp"
+#include "engine.h"
+#include "gl/shader.h"
+#include "gl/model.h"
+#include "gl/framebuffer.h"
+#include "gl/camera.h"
+
 namespace gl
 {
 

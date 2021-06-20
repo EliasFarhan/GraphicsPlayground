@@ -1,6 +1,3 @@
-#include <SDL_main.h>
-
-#include "filesystem.h"
 #include <hello_texture.h>
 #include "imgui.h"
 
