@@ -44,12 +44,13 @@ void Framebuffer::Create()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
+                        GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC,
+                        GL_LEQUAL);
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthBuffer_,
                                0);
-        GLenum drawBuffers = GL_NONE;
-        glDrawBuffers(1, &drawBuffers);
-        glReadBuffer(GL_NONE);
         glBindTexture(GL_TEXTURE_2D, 0);
         glCheckError();
     }

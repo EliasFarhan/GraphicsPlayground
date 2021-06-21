@@ -161,6 +161,16 @@ void ShaderProgram::SetTexture(std::string_view uniformName, const Texture& text
 
 }
 
+void ShaderProgram::SetTexture(std::string_view uniformName,
+                               unsigned int textureName, int textureUnit)
+{
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(GL_TEXTURE_2D, textureName);
+    glUniform1i(GetUniformLocation(uniformName), textureUnit);
+    glCheckError();
+}
+
+
 int ShaderProgram::GetUniformLocation(std::string_view uniformName)
 {
 #ifdef TRACY_ENABLE
@@ -208,5 +218,6 @@ unsigned ShaderProgram::CreateShaderProgram(unsigned vertexShader, unsigned frag
     }
     return program;
 }
+
 
 }
