@@ -14,6 +14,7 @@
 #include <hello_instancing.h>
 #include <hello_frustum.h>
 #include <hello_point_shadow.h>
+#include <hello_cascaded_shadow.h>
 #include "hello_shadow.h"
 #include "hello_normal.h"
 #include "imgui.h"
@@ -42,6 +43,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"15 Hello Normal", std::make_unique<HelloNormal>()});
     samples_.push_back({"16 Hello Shadow", std::make_unique<HelloShadow>()});
     samples_.push_back({"17 Hello Point Shadow", std::make_unique<HelloPointShadow>()});
+    samples_.push_back({"18 Hello Cascaded Shadow", std::make_unique<HelloCascadedShadow>()});
 }
 
 void SampleBrowser::Init()

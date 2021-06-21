@@ -1,6 +1,9 @@
 #pragma once
 
 #include "engine.h"
+#include "gl/camera.h"
+#include "gl/model.h"
+#include "gl/shader.h"
 
 namespace gl
 {

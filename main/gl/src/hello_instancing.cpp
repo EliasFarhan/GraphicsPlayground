@@ -1,6 +1,7 @@
-#include <imgui_impl_sdl.h>
+#include "GL/glew.h"
 #include "hello_instancing.h"
 #include <random>
+#include <imgui.h>
 
 #ifdef TRACY_ENABLE
 #include "Tracy.hpp"
