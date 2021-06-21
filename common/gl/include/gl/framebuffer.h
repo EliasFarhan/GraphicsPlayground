@@ -14,6 +14,7 @@ public:
         HDR = 1u << 4u,
         DEPTH_ATTACHMENT = 1u << 5u,
         DEPTH_STENCIL_ATTACHMENT = 1u << 6u,
+        DEPTH_CUBEMAP = 1u << 7u,
         DEFAULT = COLOR_ATTACHMENT_0 | DEPTH_RBO
     };
 
