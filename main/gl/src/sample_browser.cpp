@@ -16,6 +16,7 @@
 #include <hello_point_shadow.h>
 #include <hello_cascaded_shadow.h>
 
+#include "hello_bloom.h"
 #include "hello_hdr.h"
 #include "hello_shadow.h"
 #include "hello_normal.h"
@@ -47,6 +48,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"17 Hello Point Shadow", std::make_unique<HelloPointShadow>()});
     samples_.push_back({"18 Hello Cascaded Shadow", std::make_unique<HelloCascadedShadow>()});
     samples_.push_back({"19 Hello HDR", std::make_unique<HelloHdr>()});
+    samples_.push_back({"20 Hello Bloom", std::make_unique<HelloBloom>()});
 }
 
 void SampleBrowser::Init()

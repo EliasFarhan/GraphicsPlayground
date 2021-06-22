@@ -4,6 +4,9 @@
 
 #include "GL/glew.h"
 #include "gl/framebuffer.h"
+#include "log.h"
+#include "gl/error.h"
+#include "fmt/core.h"
 
 #ifdef TRACY_ENABLE
 
@@ -95,19 +98,31 @@ void Framebuffer::Create()
     }
     else if (frameBufferType_ & COLOR_ATTACHMENT_0)
     {
-        glGenTextures(1, &colorBuffer_);
-        glBindTexture(GL_TEXTURE_2D, colorBuffer_);
-        glTexImage2D(GL_TEXTURE_2D, 0,
-                     frameBufferType_ & HDR ? GL_RGB16F : GL_RGB8, size_.x,
-                     size_.y, 0, GL_RGB,
-                     frameBufferType_ & HDR ? GL_FLOAT : GL_UNSIGNED_BYTE,
-                     nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D, colorBuffer_, 0);
-        glCheckError();
+        glGenTextures(colorAttachmentNmb, &colorBuffers_[0]);
+        for (int i = 0; i < colorAttachmentNmb; i++)
+        {
+            glBindTexture(GL_TEXTURE_2D, colorBuffers_[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0,
+                frameBufferType_ & HDR ? GL_RGB16F : GL_RGB8, size_.x,
+                size_.y, 0, GL_RGB,
+                frameBufferType_ & HDR ? GL_FLOAT : GL_UNSIGNED_BYTE,
+                nullptr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i,
+                GL_TEXTURE_2D, colorBuffers_[i], 0);
+            glCheckError();
+        }
+        constexpr std::array<unsigned, MAX_COLOR_ATTACHMENT> attachments {
+            GL_COLOR_ATTACHMENT0,
+            GL_COLOR_ATTACHMENT0+1,
+            GL_COLOR_ATTACHMENT0+2,
+            GL_COLOR_ATTACHMENT0+3,
+        };
+        glDrawBuffers(colorAttachmentNmb, attachments.data());
     }
 
     CheckFramebuffer(__FILE__, __LINE__);
@@ -135,15 +150,15 @@ void Framebuffer::Destroy()
 #endif
     if (fbo_)
         glDeleteFramebuffers(1, &fbo_);
-    if (colorBuffer_)
-        glDeleteTextures(1, &colorBuffer_);
+    if (colorBuffers_[0])
+        glDeleteTextures(colorAttachmentNmb, &colorBuffers_[0]);
     if (depthBuffer_)
         glDeleteTextures(1, &depthBuffer_);
     if (depthRbo_)
         glDeleteRenderbuffers(1, &depthRbo_);
     glCheckError();
     fbo_ = 0;
-    colorBuffer_ = 0;
+    std::for_each(colorBuffers_.begin(), colorBuffers_.begin() + colorAttachmentNmb, [](auto& colorBuffer) {colorBuffer = 0; });
     depthBuffer_ = 0;
     depthRbo_ = 0;
 }
