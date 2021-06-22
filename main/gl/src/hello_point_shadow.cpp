@@ -1,7 +1,7 @@
 //
 // Created by efarhan on 21.06.21.
 //
-#include "GL/glew.h"
+#include <GL/glew.h>
 #include "hello_point_shadow.h"
 
 namespace gl

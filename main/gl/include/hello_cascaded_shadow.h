@@ -2,6 +2,11 @@
 
 #include <gl/framebuffer.h>
 #include "engine.h"
+#include <gl/vertex_array.h>
+#include <gl/texture.h>
+#include <gl/camera.h>
+#include <gl/model.h>
+#include <gl/shader.h>
 
 namespace gl
 {
@@ -38,15 +43,15 @@ private:
 
     void ShadowPass(int cascadeIndex);
 
-    void RenderScene(gl::ShaderProgram& shader);
+    void RenderScene(ShaderProgram& shader);
 
     sdl::Camera3D camera_;
     Framebuffer shadowFramebuffer_;
     std::array<unsigned int, 3> shadowMaps_{};
 
-    gl::ShaderProgram simpleDepthShader_;
-    gl::ShaderProgram shadowShader_;
-    gl::ShaderProgram screenShader_;
+    ShaderProgram simpleDepthShader_;
+    ShaderProgram shadowShader_;
+    ShaderProgram screenShader_;
 
     static constexpr unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
     float cascadedNearRatio_ = 0.1f;
