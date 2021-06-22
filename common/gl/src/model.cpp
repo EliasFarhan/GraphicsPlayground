@@ -1,9 +1,13 @@
 #include "gl/model.h"
 
+#include <algorithm>
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include "fmt/core.h"
+
 #include "gl/texture.h"
-#include <algorithm>
+#include "log.h"
 
 #ifdef TRACY_ENABLE
 
@@ -176,7 +180,7 @@ Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type,
         {
             textures_.emplace_back();
             auto& newTexture = textures_.back();
-            newTexture.LoadTexture(texturePath, 0, true, true, false);
+            newTexture.LoadTexture(texturePath, Texture::MIPMAP | Texture::SMOOTH);
             texture.textureName = newTexture.GetName();
             textureHashes_.push_back(textureHash);
         }

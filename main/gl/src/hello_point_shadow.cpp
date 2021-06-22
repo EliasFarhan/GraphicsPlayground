@@ -3,6 +3,13 @@
 //
 #include <GL/glew.h>
 #include "hello_point_shadow.h"
+#include <imgui.h>
+
+#ifdef TRACY_ENABLE
+#include <Tracy.hpp>
+#include <TracyOpenGL.hpp>
+#endif
+
 
 namespace gl
 {
@@ -39,6 +46,10 @@ void HelloPointShadow::Init()
 
 void HelloPointShadow::Update(core::seconds dt)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(pointShadowUpdate, "Point Shadow Update", true);
+    TracyGpuNamedZone(pointShadowUpdateGpu, "Point Shadow Update", true);
+#endif
     camera_.Update(dt);
     dt_ += dt.count();
     lightCamera_.position = 4.0f * glm::vec3 (std::sin(dt_), 0.0f, std::sin(dt_));
@@ -67,6 +78,10 @@ void HelloPointShadow::Update(core::seconds dt)
     glViewport(0, 0, shadowFramebuffer_.GetSize().x, shadowFramebuffer_.GetSize().y);
     for (int i = 0; i < 6; i++)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(pointFaceRender, "Point Shadow Face Render", true);
+        TracyGpuNamedZone(pointFaceRenderGpu, "Point Shadow Face Render", true);
+#endif
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                                shadowFramebuffer_.GetDepthTexture(), 0);
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -140,6 +155,10 @@ void HelloPointShadow::DrawImGui()
 
 void HelloPointShadow::RenderScene(ShaderProgram& program)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(renderScene, "Render Scene", true);
+    TracyGpuNamedZone(renderSceneGpu, "Render Scene", true);
+#endif
     auto model = glm::mat4(1.0f);
     program.SetInt("inverseNormals", false);
 

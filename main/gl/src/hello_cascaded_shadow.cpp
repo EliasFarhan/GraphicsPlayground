@@ -6,6 +6,11 @@
 #include <gl/error.h>
 #include <imgui.h>
 
+#ifdef TRACY_ENABLE
+#include <Tracy.hpp>
+#include <TracyOpenGL.hpp>
+#endif
+
 namespace gl
 {
 
@@ -49,6 +54,10 @@ void HelloCascadedShadow::Init()
 
 void HelloCascadedShadow::Update(core::seconds dt)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(shadowUpdate, "Cascaded Shadow Update", true);
+    TracyGpuNamedZone(shadowUpdateGpu, "Cascaded Shadow Update", true);
+#endif
     camera_.Update(dt);
     //Shadow passes
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
@@ -225,6 +234,10 @@ Camera2D HelloCascadedShadow::CalculateOrthoLight(float cascadeNear, float casca
 
 void HelloCascadedShadow::ShadowPass(int cascadeIndex)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(shadowUpdate, "Cascaded Shadow Pass", true);
+    TracyGpuNamedZone(shadowUpdateGpu, "Cascaded Shadow Pass", true);
+#endif
     const auto cascadeNear = cascadeIndex == 0 ? camera_.nearPlane :
                              cascadeIndex == 1 ? camera_.farPlane * cascadedNearRatio_ :
                              camera_.farPlane * cascadedMiddleRatio_;
@@ -249,7 +262,10 @@ void HelloCascadedShadow::ShadowPass(int cascadeIndex)
 
 void HelloCascadedShadow::RenderScene(gl::ShaderProgram& shader)
 {
-
+#ifdef TRACY_ENABLE
+    ZoneNamedN(shadowUpdate, "Render Scene", true);
+    TracyGpuNamedZone(shadowUpdateGpu, "Render Scene", true);
+#endif
     for (int z = 0; z < 5; z++)
     {
         for (int x = -1; x < 2; x++)
