@@ -326,7 +326,6 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
     TracyGpuNamedZone(loadTextureGpu, "Compress Texture Loading", true);
 #endif
     gli::gl glProfile(gli::gl::PROFILE_GL33);
-<<<<<<< HEAD
     gli::texture texture;
     {
 #ifdef TRACY_ENABLE
@@ -336,12 +335,6 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
             reinterpret_cast<const char*>(textureFile.dataBuffer),
             textureFile.dataLength);
     }
-=======
-
-    auto texture = gli::load(
-        reinterpret_cast<const char*>(textureFile.dataBuffer),
-        textureFile.dataLength);
->>>>>>> 750c581154c17553fbf426b8dd1383c54b06ed95
     if (texture.empty())
     {
         core::LogError("Could not load texture with GLI");
@@ -355,7 +348,6 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
 
     glm::tvec3<GLsizei> extent{texture.extent()};
     core::LogDebug(fmt::format(
-<<<<<<< HEAD
             "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}, extends: {},{}",
             (int) texture.format(),
             (int) texture.target(),
@@ -371,19 +363,6 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
         glGenTextures(1, &textureName_);
         glBindTexture(target, textureName_);
     }
-=======
-        "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}, extends: {},{}",
-        (int)texture.format(),
-        (int)texture.target(),
-        is_compressed(texture.format()),
-        texture.layers(),
-        texture.faces(),
-        extent.x, extent.y));
-
-    glGenTextures(1, &textureName_);
-    glBindTexture(target, textureName_);
-
->>>>>>> 750c581154c17553fbf426b8dd1383c54b06ed95
     glCheckError();
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(target, GL_TEXTURE_MAX_LEVEL,
