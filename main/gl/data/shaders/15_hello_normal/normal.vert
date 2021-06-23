@@ -9,6 +9,9 @@ layout (location = 3) in vec3 aTangent;
 out vec3 FragPos;
 out vec2 TexCoords;
 out vec3 Normal;
+
+uniform vec3 viewPos;
+uniform vec3 lightPos;
 out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentFragPos;
@@ -16,9 +19,6 @@ out vec3 TangentFragPos;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
-uniform vec3 viewPos;
-uniform vec3 lightPos;
 
 uniform mat4 transposeInverseModel;
 uniform bool enableNormalMap;
@@ -39,7 +39,7 @@ void main()
 
         mat3 TBN = transpose(mat3(T, B, N));
 
-        TangentLightPos = TBN * lightPos;
+        TangentLightPos = TBN * lightPos; //TBN translates from world space to tangent space
         TangentViewPos  = TBN * viewPos;
         TangentFragPos  = TBN * FragPos;
     }

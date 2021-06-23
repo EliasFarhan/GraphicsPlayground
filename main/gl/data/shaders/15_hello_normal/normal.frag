@@ -27,7 +27,7 @@ void main()
     if(enableNormalMap)
     {
         normal = texture(texture_normal1, TexCoords).rgb;
-        normal = normalize(normal * 2.0 - 1.0);
+        normal = normalize(normal * 2.0 - 1.0); //[0,1] -> [-1,1]
     }
     else
     {

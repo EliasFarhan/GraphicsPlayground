@@ -1,6 +1,7 @@
 #include <imgui_impl_sdl.h>
 #include "hello_instancing.h"
 #include <random>
+#include <fmt/core.h>
 
 namespace gl
 {
@@ -78,7 +79,7 @@ void HelloInstancing::Update(core::seconds dt)
             singleDrawShader_.SetMat4("view", camera_.GetView());
             singleDrawShader_.SetMat4("projection", camera_.GetProjection());
 
-            for (size_t i = 0; i < asteroidNmb_; i++)
+            for (std::size_t i = 0; i < asteroidNmb_; i++)
             {
                 singleDrawShader_.SetVec3("position", asteroidPositions_[i]);
                 rockModel_.Draw(singleDrawShader_);
@@ -116,16 +117,19 @@ void HelloInstancing::Update(core::seconds dt)
                     for (size_t index = chunkBeginIndex;
                          index < chunkEndIndex; index++)
                     {
-                        const std::string uniformName = "position[" +
-                                                        std::to_string(index -
-                                                                       chunkBeginIndex) +
-                                                        "]";
+                        const std::string uniformName = fmt::format("position[{}]", index -
+                                                                       chunkBeginIndex);
                         uniformInstancingShader_.SetVec3(uniformName,
                                                          asteroidPositions_[index]);
                     }
                 }
                 if (chunkEndIndex > chunkBeginIndex)
                 {
+#ifdef TRACY_ENABLE
+                    ZoneNamedN(drawInstanced, "Draw Instanced", true);
+                    TracyGpuNamedZone(drawInstancedGpu, "Draw Instanced",
+                        true);
+#endif
                     glBindVertexArray(asteroidMesh.GetVao());
                     glDrawElementsInstanced(GL_TRIANGLES,
                                             asteroidMesh.GetIndicesCount(),
@@ -176,12 +180,20 @@ void HelloInstancing::Update(core::seconds dt)
                                      GL_DYNAMIC_DRAW);
                         glBindBuffer(GL_ARRAY_BUFFER, 0);
                     }
-                    glBindVertexArray(asteroidMesh.GetVao());
-                    glDrawElementsInstanced(GL_TRIANGLES,
-                                            asteroidMesh.GetIndicesCount(),
-                                            GL_UNSIGNED_INT, 0,
-                                            chunkSize);
-                    glBindVertexArray(0);
+                    {
+#ifdef TRACY_ENABLE
+                        ZoneNamedN(drawInstances, "Draw Instances",
+                            true);
+                        TracyGpuNamedZone(drawInstancesGpu,
+                            "Draw Instances", true);
+#endif
+                        glBindVertexArray(asteroidMesh.GetVao());
+                        glDrawElementsInstanced(GL_TRIANGLES,
+                            asteroidMesh.GetIndicesCount(),
+                            GL_UNSIGNED_INT, 0,
+                            chunkSize);
+                        glBindVertexArray(0);
+                    }
                 }
             }
 
@@ -232,7 +244,7 @@ void HelloInstancing::DrawImGui()
     ImGui::End();
 }
 
-void HelloInstancing::CalculateForce(unsigned long begin, unsigned long end)
+void HelloInstancing::CalculateForce(unsigned long long begin, unsigned long long end)
 {
 #ifdef TRACY_ENABLE
     ZoneScoped;
@@ -247,7 +259,7 @@ void HelloInstancing::CalculateForce(unsigned long begin, unsigned long end)
     }
 }
 
-void HelloInstancing::CalculateVelocity(unsigned long begin, unsigned long end)
+void HelloInstancing::CalculateVelocity(unsigned long long begin, unsigned long long end)
 {
 #ifdef TRACY_ENABLE
     ZoneScoped;
@@ -266,7 +278,7 @@ void HelloInstancing::CalculateVelocity(unsigned long begin, unsigned long end)
     }
 }
 
-void HelloInstancing::CalculatePositions(unsigned long begin, unsigned long end)
+void HelloInstancing::CalculatePositions(unsigned long long begin, unsigned long long end)
 {
 #ifdef TRACY_ENABLE
     ZoneScoped;

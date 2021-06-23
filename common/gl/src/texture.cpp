@@ -40,8 +40,13 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
         core::LogError(fmt::format("[Error] Texture: {} does not exist", path));
         return;
     }
-    core::BufferFile textureFile = filesystem.LoadFile(path);
-
+    core::BufferFile textureFile;
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(loadFile, "Load Buffer File", true);
+#endif
+        textureFile = filesystem.LoadFile(path);
+    }
     const auto extension = core::FilesystemInterface::GetExtension(path);
     bool hdr = false;
     if (extension == ".hdr")
@@ -84,7 +89,7 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
         return;
     }
 #ifdef TRACY_ENABLE
-    ZoneNamedN(gpuUpload, "GPU Upload", true)
+    ZoneNamedN(gpuUpload, "GPU Upload", true);
     TracyGpuNamedZone(uploadTextureGpu, "GPU Upload", true);
 #endif
     unsigned int texture;
@@ -145,6 +150,7 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
             case 3:
             {
 #ifdef TRACY_ENABLE
+                ZoneNamedN(textureRGBUploadCpu, "Texture RGB Upload", true);
                 TracyGpuNamedZone(textureRGBUpload, "Texture RGB Upload", true);
 #endif
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
@@ -171,6 +177,7 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
     if (mipmap)
     {
 #ifdef TRACY_ENABLE
+        ZoneNamedN(mipmapGenerationCpu, "Mipmap Generation", true);
         TracyGpuNamedZone(mipmapGeneration, "Mipmap Generation", true);
 #endif
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -309,14 +316,19 @@ unsigned int Texture::GetType() const
 void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
 {
 #ifdef TRACY_ENABLE
-    ZoneNamedN(loadTexture, "KTX Texture Loading", true);
-    TracyGpuNamedZone(loadTextureGpu, " KTX Texture Loading", true);
+    ZoneNamedN(loadTexture, "Compress Texture Loading", true);
+    TracyGpuNamedZone(loadTextureGpu, "Compress Texture Loading", true);
 #endif
     gli::gl glProfile(gli::gl::PROFILE_GL33);
-
-    auto texture = gli::load(
+    gli::texture texture;
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(gliLoad, "gli Load", true);
+#endif
+        texture = gli::load(
             reinterpret_cast<const char*>(textureFile.dataBuffer),
             textureFile.dataLength);
+    }
     if (texture.empty())
     {
         core::LogError("Could not load texture with GLI");
@@ -337,10 +349,14 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
             texture.layers(),
             texture.faces(),
             extent.x, extent.y));
-
-    glGenTextures(1, &textureName_);
-    glBindTexture(target, textureName_);
-
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(genTextures, "glGenTextures", true);
+        TracyGpuNamedZone(genTexturesGpu, "glGenTextures", true);
+#endif
+        glGenTextures(1, &textureName_);
+        glBindTexture(target, textureName_);
+    }
     glCheckError();
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(target, GL_TEXTURE_MAX_LEVEL,
@@ -350,17 +366,27 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
     glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, format.Swizzles[2]);
     glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, format.Swizzles[3]);
     glCheckError();
-    glTexStorage2D(target, static_cast<GLint>(texture.levels()),
-                   format.Internal, extent.x, extent.y);
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(texStorage, "glTexStorage2D", true);
+        TracyGpuNamedZone(texStorageGpu, "glTexStorage2D", true);
+#endif
+        glTexStorage2D(target, static_cast<GLint>(texture.levels()),
+            format.Internal, extent.x, extent.y);
+    }
     textureType_ = target;
     glCheckError();
+#ifdef TRACY_ENABLE
+    ZoneNamedN(loadingFaces, "Loading Faces", true);
+    TracyGpuNamedZone(loadingFacesGpu, "Loading Faces", true);
+#endif
     for (std::size_t face = 0; face < texture.faces(); ++face)
     {
         for (std::size_t level = 0; level < texture.levels(); ++level)
         {
 #ifdef TRACY_ENABLE
-            ZoneNamedN(loadFaceTexture, "KTX Face Loading", true);
-            TracyGpuNamedZone(loadFaceTextureGpu, " KTX Face Loading", true);
+            ZoneNamedN(loadFaceTexture, "Face Loading", true);
+            TracyGpuNamedZone(loadFaceTextureGpu, " Face Loading", true);
 #endif
             target = gli::is_target_cube(texture.target()) ?
                      GL_TEXTURE_CUBE_MAP_POSITIVE_X + face :

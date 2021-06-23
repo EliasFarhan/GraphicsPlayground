@@ -41,6 +41,9 @@ void BufferFile::Destroy()
 {
     if (dataBuffer != nullptr)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(destroyFile, "Destroy File", true);
+#endif
         delete[] dataBuffer;
         dataBuffer = nullptr;
         dataLength = 0;

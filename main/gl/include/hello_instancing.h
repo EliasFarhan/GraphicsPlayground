@@ -25,20 +25,20 @@ private:
         BUFFER_INSTANCING,
         LENGTH
     };
-    void CalculateForce(unsigned long begin, unsigned long end);
-    void CalculateVelocity(unsigned long begin, unsigned long end);
-    void CalculatePositions(unsigned long begin, unsigned long end);
+    void CalculateForce(unsigned long long begin, unsigned long long end);
+    void CalculateVelocity(unsigned long long begin, unsigned long long end);
+    void CalculatePositions(unsigned long long begin, unsigned long long end);
 
     InstancingType instancingType_ = InstancingType::NO_INSTANCING;
 
     sdl::Camera3D camera_;
     Model rockModel_;
 
-    const unsigned long maxAsteroidNmb_ = 100'000;
-    const unsigned long minAsteroidNmb_ = 1'000;
-    const unsigned long uniformChunkSize_ = 254;
-    unsigned long instanceChunkSize_ = 1'000;
-    unsigned long asteroidNmb_ = 1000;
+    const unsigned long long maxAsteroidNmb_ = 100'000;
+    const unsigned long long minAsteroidNmb_ = 1'000;
+    const unsigned long long uniformChunkSize_ = 254;
+    unsigned long long instanceChunkSize_ = 1'000;
+    unsigned long long asteroidNmb_ = 1000;
 
     ShaderProgram singleDrawShader_;
     ShaderProgram uniformInstancingShader_;
