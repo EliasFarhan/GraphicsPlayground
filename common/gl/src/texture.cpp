@@ -4,6 +4,7 @@
 #include "log.h"
 #include <GL/glew.h>
 #include "fmt/core.h"
+#include "gl/error.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -26,10 +27,8 @@ Texture::~Texture()
 }
 
 void
-Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
-                     bool smooth, bool clamp_wrap)
+Texture::LoadTexture(std::string_view path, std::uint8_t textureFlags, int channelsDesired)
 {
-
 #ifdef TRACY_ENABLE
     ZoneNamedN(loadTexture, "Texture Loading", true);
     TracyGpuNamedZone(loadTextureGpu, "Texture Loading", true);
@@ -65,9 +64,9 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
     if (hdr)
     {
         hdrImageData = stbi_loadf_from_memory(
-                static_cast<unsigned char*>(textureFile.dataBuffer),
-                textureFile.dataLength, &imageWidth,
-                &imageHeight, &channelNb, channelsDesired);
+            static_cast<unsigned char*>(textureFile.dataBuffer),
+            textureFile.dataLength, &imageWidth,
+            &imageHeight, &channelNb, channelsDesired);
     }
     else
     {
@@ -75,11 +74,11 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
         ZoneNamedN(stbLoad, "STB Load", true);
 #endif
         imageData = stbi_load_from_memory(
-                textureFile.dataBuffer,
-                static_cast<int>(textureFile.dataLength),
-                &imageWidth,
-                &imageHeight,
-                &channelNb, channelsDesired);
+            textureFile.dataBuffer,
+            static_cast<int>(textureFile.dataLength),
+            &imageWidth,
+            &imageHeight,
+            &channelNb, channelsDesired);
     }
 
     textureFile.Destroy();
@@ -98,24 +97,32 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                    clamp_wrap ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+                    textureFlags & CLAMP_WRAP
+                        ? GL_CLAMP_TO_EDGE
+                        : textureFlags & MIRROR_REPEAT_WRAP
+                        ? GL_MIRRORED_REPEAT
+                        : GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                    clamp_wrap ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+                    textureFlags & CLAMP_WRAP
+                        ? GL_CLAMP_TO_EDGE
+                        : textureFlags & MIRROR_REPEAT_WRAP
+                        ? GL_MIRRORED_REPEAT
+                        : GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                    smooth ? GL_LINEAR : GL_NEAREST);
+                    textureFlags & SMOOTH ? GL_LINEAR : GL_NEAREST);
     glCheckError();
-    if (mipmap)
+    if (textureFlags & MIPMAP)
     {
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                        smooth ? GL_LINEAR_MIPMAP_LINEAR
-                               : GL_NEAREST_MIPMAP_LINEAR);
+                        textureFlags & SMOOTH
+                            ? GL_LINEAR_MIPMAP_LINEAR
+                            : GL_NEAREST_MIPMAP_LINEAR);
         glCheckError();
     }
     else
     {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                        smooth ? GL_LINEAR : GL_NEAREST);
+                        textureFlags & SMOOTH ? GL_LINEAR : GL_NEAREST);
         glCheckError();
     }
     if (hdr)
@@ -127,54 +134,55 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
     {
         switch (channelNb)
         {
-            case 1:
-            {
+        case 1:
+        {
 #ifdef TRACY_ENABLE
-                TracyGpuNamedZone(textureRUpload, "Texture RED Upload", true);
+            TracyGpuNamedZone(textureRUpload, "Texture RED Upload", true);
 #endif
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imageWidth, imageHeight,
-                             0,
-                             GL_RED, GL_UNSIGNED_BYTE, imageData);
-                break;
-            }
-            case 2:
-            {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imageWidth, imageHeight,
+                         0,
+                         GL_RED, GL_UNSIGNED_BYTE, imageData);
+            break;
+        }
+        case 2:
+        {
 #ifdef TRACY_ENABLE
-                TracyGpuNamedZone(textureRGUpload, "Texture RG Upload", true);
+            TracyGpuNamedZone(textureRGUpload, "Texture RG Upload", true);
 #endif
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, imageWidth, imageHeight,
-                             0,
-                             GL_RG, GL_UNSIGNED_BYTE, imageData);
-                break;
-            }
-            case 3:
-            {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, imageWidth, imageHeight,
+                         0,
+                         GL_RG, GL_UNSIGNED_BYTE, imageData);
+            break;
+        }
+        case 3:
+        {
 #ifdef TRACY_ENABLE
                 ZoneNamedN(textureRGBUploadCpu, "Texture RGB Upload", true);
                 TracyGpuNamedZone(textureRGBUpload, "Texture RGB Upload", true);
 #endif
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
-                             0,
-                             GL_RGB, GL_UNSIGNED_BYTE, imageData);
-                break;
-            }
-            case 4:
-            {
+            glTexImage2D(GL_TEXTURE_2D, 0, textureFlags & GAMMA_CORRECTION ? GL_SRGB : GL_RGB, imageWidth, imageHeight,
+                         0,
+                         GL_RGB, GL_UNSIGNED_BYTE, imageData);
+            break;
+        }
+        case 4:
+        {
 #ifdef TRACY_ENABLE
-                TracyGpuNamedZone(textureRGBAUpload, "Texture RGBA Upload", true);
+            TracyGpuNamedZone(textureRGBAUpload, "Texture RGBA Upload", true);
 #endif
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight,
-                             0,
-                             GL_RGBA, GL_UNSIGNED_BYTE, imageData);
-                break;
-            }
-            default:
-                break;
+            glTexImage2D(GL_TEXTURE_2D, 0, textureFlags & GAMMA_CORRECTION ? GL_SRGB_ALPHA : GL_RGBA, imageWidth,
+                         imageHeight,
+                         0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+            break;
+        }
+        default:
+            break;
         }
     }
 
     glCheckError();
-    if (mipmap)
+    if (textureFlags & MIPMAP)
     {
 #ifdef TRACY_ENABLE
         ZoneNamedN(mipmapGenerationCpu, "Mipmap Generation", true);
@@ -186,7 +194,6 @@ Texture::LoadTexture(std::string_view path, int channelsDesired, bool mipmap,
     textureSize_ = glm::vec2(imageWidth, imageHeight);
     free(imageData);
     textureName_ = texture;
-
 }
 
 void Texture::Destroy()
@@ -236,7 +243,6 @@ Texture& Texture::operator=(Texture&& other) noexcept
 
 Texture::Texture() : textureType_(GL_TEXTURE_2D), textureSize_(glm::vec2())
 {
-
 }
 
 void Texture::LoadCubemap(const std::vector<std::string_view>& paths)
@@ -273,11 +279,11 @@ void Texture::LoadCubemap(const std::vector<std::string_view>& paths)
             ZoneNamedN(stbLoad, "STB Load", true);
 #endif
             imageData = stbi_load_from_memory(
-                    textureFile.dataBuffer,
-                    static_cast<int>(textureFile.dataLength),
-                    &imageWidth,
-                    &imageHeight,
-                    &channelNb, 0);
+                textureFile.dataBuffer,
+                static_cast<int>(textureFile.dataLength),
+                &imageWidth,
+                &imageHeight,
+                &channelNb, 0);
         }
         textureFile.Destroy();
         if (imageData != nullptr)
@@ -320,6 +326,7 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
     TracyGpuNamedZone(loadTextureGpu, "Compress Texture Loading", true);
 #endif
     gli::gl glProfile(gli::gl::PROFILE_GL33);
+<<<<<<< HEAD
     gli::texture texture;
     {
 #ifdef TRACY_ENABLE
@@ -329,6 +336,12 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
             reinterpret_cast<const char*>(textureFile.dataBuffer),
             textureFile.dataLength);
     }
+=======
+
+    auto texture = gli::load(
+        reinterpret_cast<const char*>(textureFile.dataBuffer),
+        textureFile.dataLength);
+>>>>>>> 750c581154c17553fbf426b8dd1383c54b06ed95
     if (texture.empty())
     {
         core::LogError("Could not load texture with GLI");
@@ -342,6 +355,7 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
 
     glm::tvec3<GLsizei> extent{texture.extent()};
     core::LogDebug(fmt::format(
+<<<<<<< HEAD
             "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}, extends: {},{}",
             (int) texture.format(),
             (int) texture.target(),
@@ -357,6 +371,19 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
         glGenTextures(1, &textureName_);
         glBindTexture(target, textureName_);
     }
+=======
+        "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}, extends: {},{}",
+        (int)texture.format(),
+        (int)texture.target(),
+        is_compressed(texture.format()),
+        texture.layers(),
+        texture.faces(),
+        extent.x, extent.y));
+
+    glGenTextures(1, &textureName_);
+    glBindTexture(target, textureName_);
+
+>>>>>>> 750c581154c17553fbf426b8dd1383c54b06ed95
     glCheckError();
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(target, GL_TEXTURE_MAX_LEVEL,
@@ -388,26 +415,24 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
             ZoneNamedN(loadFaceTexture, "Face Loading", true);
             TracyGpuNamedZone(loadFaceTextureGpu, " Face Loading", true);
 #endif
-            target = gli::is_target_cube(texture.target()) ?
-                     GL_TEXTURE_CUBE_MAP_POSITIVE_X + face :
-                     target;
+            target = gli::is_target_cube(texture.target()) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X + face : target;
             glm::tvec3<GLsizei> levelExtent(texture.extent(level));
             if (gli::is_compressed(texture.format()))
             {
                 glCompressedTexSubImage2D(
-                        target, static_cast<GLint>(level), 0, 0, levelExtent.x,
-                        levelExtent.y,
-                        format.Internal,
-                        static_cast<GLsizei>(texture.size(level)),
-                        texture.data(0, face, level));
+                    target, static_cast<GLint>(level), 0, 0, levelExtent.x,
+                    levelExtent.y,
+                    format.Internal,
+                    static_cast<GLsizei>(texture.size(level)),
+                    texture.data(0, face, level));
             }
             else
             {
                 glTexSubImage2D(
-                        target, static_cast<GLint>(level), 0, 0, levelExtent.x,
-                        levelExtent.y,
-                        format.External, format.Type,
-                        texture.data(0, face, level));
+                    target, static_cast<GLint>(level), 0, 0, levelExtent.x,
+                    levelExtent.y,
+                    format.External, format.Type,
+                    texture.data(0, face, level));
             }
             glCheckError();
         }

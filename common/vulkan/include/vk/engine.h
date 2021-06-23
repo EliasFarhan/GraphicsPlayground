@@ -58,6 +58,7 @@ struct Renderer
 class VulkanSwapchainRecreationInterface
 {
 public:
+    virtual ~VulkanSwapchainRecreationInterface() = default;
     virtual void CleanupSwapchain() = 0;
 
     virtual void RecreateSwapchain() = 0;
@@ -68,11 +69,10 @@ class Program : public core::Program, public VulkanSwapchainRecreationInterface
 
 };
 
-class Engine : public VulkanSwapchainRecreationInterface
+class Engine final : public VulkanSwapchainRecreationInterface
 {
 public:
     Engine(Program& program);
-
 
     void Run();
 

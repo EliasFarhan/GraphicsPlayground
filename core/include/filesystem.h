@@ -48,16 +48,16 @@ public:
 
 class NullFilesystem : public FilesystemInterface
 {
-    [[nodiscard]] BufferFile LoadFile(std::string_view path) const override
+    [[nodiscard]] BufferFile LoadFile([[maybe_unused]] std::string_view path) const override
     { return {}; }
 
-    [[nodiscard]] bool FileExists(std::string_view view) const override
+    [[nodiscard]] bool FileExists([[maybe_unused]] std::string_view view) const override
     { return false; }
 
-    [[nodiscard]] bool IsRegularFile(std::string_view view) const override
+    [[nodiscard]] bool IsRegularFile([[maybe_unused]] std::string_view view) const override
     { return false; }
 
-    [[nodiscard]] bool IsDirectory(std::string_view view) const override
+    [[nodiscard]] bool IsDirectory([[maybe_unused]] std::string_view view) const override
     { return false; }
 };
 

@@ -55,7 +55,7 @@ void Camera3D::SetAspect(glm::vec2 size)
 
 float Camera3D::GetFovX() const
 {
-    return fovY * aspect;
+    return glm::degrees(2.0f * std::atan(std::tan(glm::radians(fovY) * 0.5f) * aspect));
 }
 
 namespace sdl

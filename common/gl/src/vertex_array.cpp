@@ -6,6 +6,9 @@
 #include "GL/glew.h"
 #include <cmath>
 
+#include <vector>
+#include <glm/vec3.hpp>
+
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"
@@ -94,7 +97,8 @@ void Quad::Init()
         const glm::vec2 deltaUV1 = texCoords[1] - texCoords[0];
         const glm::vec2 deltaUV2 = texCoords[2] - texCoords[0];
 
-        const float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        const float f =
+                1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
         tangent[0].x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
         tangent[0].y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
         tangent[0].z = 0.0f;
@@ -116,26 +120,31 @@ void Quad::Init()
     // 2. copy our vertices array in a buffer for OpenGL to use
     glBindBuffer(GL_ARRAY_BUFFER, vbo_[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*) 0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2),
+                          (void*) 0);
     glEnableVertexAttribArray(0);
     //bind texture coords data
     glBindBuffer(GL_ARRAY_BUFFER, vbo_[1]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*) 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
+                          (void*) 0);
     glEnableVertexAttribArray(1);
     // bind normals data
     glBindBuffer(GL_ARRAY_BUFFER, vbo_[2]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*) 0);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
+                          (void*) 0);
     glEnableVertexAttribArray(2);
     // bind tangent data
     glBindBuffer(GL_ARRAY_BUFFER, vbo_[3]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(tangent), &tangent[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*) 0);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
+                          (void*) 0);
     glEnableVertexAttribArray(3);
     //bind EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+                 GL_STATIC_DRAW);
     glBindVertexArray(0);
     glCheckError();
 }
@@ -333,7 +342,8 @@ void Cuboid::Init()
         const glm::vec2 deltaUV1 = texCoords[i + 1] - texCoords[i];
         const glm::vec2 deltaUV2 = texCoords[i + 2] - texCoords[i];
 
-        const float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        const float f =
+                1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
         tangent[i].x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
         tangent[i].y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
         tangent[i].z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
@@ -423,11 +433,17 @@ void Sphere::Init()
     {
         for (unsigned int x = 0; x <= segment_; ++x)
         {
-            float xSegment = static_cast<float>(x) / static_cast<float>(segment_);
-            float ySegment = static_cast<float>(y) / static_cast<float>(segment_);
-            float xPos = offset_.x + radius_ * std::cos(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI);
+            float xSegment =
+                    static_cast<float>(x) / static_cast<float>(segment_);
+            float ySegment =
+                    static_cast<float>(y) / static_cast<float>(segment_);
+            float xPos = offset_.x +
+                         radius_ * std::cos(xSegment * 2.0f * M_PI) *
+                         std::sin(ySegment * M_PI);
             float yPos = offset_.y + radius_ * std::cos(ySegment * M_PI);
-            float zPos = offset_.z + radius_ * std::sin(xSegment * 2.0f * M_PI) * std::sin(ySegment * M_PI);
+            float zPos = offset_.z +
+                         radius_ * std::sin(xSegment * 2.0f * M_PI) *
+                         std::sin(ySegment * M_PI);
 
             positions.emplace_back(xPos, yPos, zPos);
             uv.emplace_back(xSegment, ySegment);
@@ -459,21 +475,28 @@ void Sphere::Init()
     indexCount_ = indices.size();
     for (size_t i = 0; i < indexCount_ - 2; i++)
     {
-        const glm::vec3 edge1 = positions[indices[i + 1]] - positions[indices[i]];
-        const glm::vec3 edge2 = positions[indices[i + 2]] - positions[indices[i]];
+        const glm::vec3 edge1 =
+                positions[indices[i + 1]] - positions[indices[i]];
+        const glm::vec3 edge2 =
+                positions[indices[i + 2]] - positions[indices[i]];
         const glm::vec2 deltaUV1 = uv[indices[i + 1]] - uv[indices[i]];
         const glm::vec2 deltaUV2 = uv[indices[i + 2]] - uv[indices[i]];
 
-        const float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-        tangent[indices[i]].x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-        tangent[indices[i]].y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-        tangent[indices[i]].z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+        const float f =
+                1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        tangent[indices[i]].x =
+                f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent[indices[i]].y =
+                f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent[indices[i]].z =
+                f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
 
     }
 
     std::vector<float> data;
     data.reserve(
-            positions.size() * sizeof(glm::vec3) + uv.size() * sizeof(glm::vec2) + normals.size() * sizeof(glm::vec3));
+            positions.size() * sizeof(glm::vec3) +
+            uv.size() * sizeof(glm::vec2) + normals.size() * sizeof(glm::vec3));
     for (unsigned int i = 0; i < positions.size(); ++i)
     {
         data.push_back(positions[i].x);
@@ -499,18 +522,23 @@ void Sphere::Init()
     }
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_[0]);
-    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0],
+                 GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
+                 &indices[0], GL_STATIC_DRAW);
     const auto stride = (3 + 2 + 3 + 3) * sizeof(float);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) (3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride,
+                          (void*) (3 * sizeof(float)));
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*) (5 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride,
+                          (void*) (5 * sizeof(float)));
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*) (8 * sizeof(float)));
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride,
+                          (void*) (8 * sizeof(float)));
     glBindVertexArray(0);
     glCheckError();
 }
@@ -527,8 +555,8 @@ void Sphere::Draw()
     glDrawElements(GL_TRIANGLE_STRIP, indexCount_, GL_UNSIGNED_INT, 0);
 }
 
-Sphere::Sphere(float radius, glm::vec3 offset, std::size_t segment) : radius_(radius), segment_(segment),
-                                                                      offset_(offset)
+Sphere::Sphere(float radius, glm::vec3 offset, std::size_t segment) :
+        offset_(offset), radius_(radius), segment_(segment)
 {
 
 }

@@ -3,12 +3,23 @@
 #include <string_view>
 #include <vector>
 #include <glm/vec2.hpp>
+#include "filesystem.h"
 
 namespace gl
 {
 class Texture
 {
 public:
+    enum TextureFlags : std::uint8_t
+    {
+        MIPMAP = 1u,
+        SMOOTH = 1u << 1u,
+        CLAMP_WRAP = 1u << 2u,
+        MIRROR_REPEAT_WRAP = 1u << 3u,
+        GAMMA_CORRECTION = 1u << 4u,
+        HDR = 1u << 5u,
+        DEFAULT = MIPMAP | SMOOTH | CLAMP_WRAP,
+    };
     Texture();
 
     Texture(const Texture& other) = delete;
@@ -22,10 +33,8 @@ public:
     ~Texture();
 
     void LoadTexture(std::string_view path,
-                     int channelsDesired = 0,
-                     bool mipmap = true,
-                     bool smooth = true,
-                     bool clamp_wrap = true);
+        std::uint8_t textureFlags = DEFAULT,
+                     int channelsDesired = 0);
 
     void LoadCubemap(const std::vector<std::string_view>& paths);
 

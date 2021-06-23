@@ -30,6 +30,6 @@ private:
 
     };
     std::vector<Sample> samples_;
-    int currentIndex_ = 0;
+    std::size_t currentIndex_ = 0;
 };
 }

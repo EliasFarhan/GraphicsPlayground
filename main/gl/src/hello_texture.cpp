@@ -1,6 +1,3 @@
-#include <SDL_main.h>
-
-#include "filesystem.h"
 #include <hello_texture.h>
 #include "imgui.h"
 
@@ -17,7 +14,7 @@ void HelloTexture::Init()
     ddsTexture_.LoadTexture("data/textures/brickwall.dds");
 }
 
-void HelloTexture::Update(core::seconds dt)
+void HelloTexture::Update([[maybe_unused]] core::seconds dt)
 {
     shader_.Bind();
     switch(textureType_)
@@ -44,7 +41,7 @@ void HelloTexture::Destroy()
     ktxTexture_.Destroy();
 }
 
-void HelloTexture::OnEvent(SDL_Event& event)
+void HelloTexture::OnEvent([[maybe_unused]] SDL_Event& event)
 {
 }
 

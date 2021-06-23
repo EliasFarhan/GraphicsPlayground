@@ -17,14 +17,13 @@ void HelloInputBuffer::Init()
     CreateCommands();
 }
 
-void HelloInputBuffer::Update(core::seconds dt)
+void HelloInputBuffer::Update([[maybe_unused]] core::seconds dt)
 {
 #ifdef TRACY_ENABLE
     ZoneNamedN(inputBufferUpdate, "Input Buffer Update", true);
 #endif
     auto& engine = Engine::GetInstance();
     auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& renderer = engine.GetRenderer();
 
     VkSubmitInfo submitInfo{};
@@ -56,7 +55,7 @@ void HelloInputBuffer::Destroy()
     CleanupSwapchain();
 }
 
-void HelloInputBuffer::OnEvent(SDL_Event& event)
+void HelloInputBuffer::OnEvent([[maybe_unused]] SDL_Event& event)
 {
 
 }
@@ -236,7 +235,6 @@ void HelloInputBuffer::CreateCommands()
     core::LogDebug("Create Commands");
     auto& engine = Engine::GetInstance();
     auto& renderer = engine.GetRenderer();
-    auto& driver = engine.GetDriver();
     auto& swapchain = engine.GetSwapchain();
 
     auto& commandBuffers = renderer.commandBuffers;
@@ -259,7 +257,7 @@ void HelloInputBuffer::CreateCommands()
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = swapchain.extent;
 
-        VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearColor;
 
@@ -287,8 +285,6 @@ void HelloInputBuffer::CreateCommands()
 void HelloInputBuffer::CreateVertexBuffer()
 {
     auto& engine = Engine::GetInstance();
-    auto& driver = engine.GetDriver();
-    auto& swapchain = engine.GetSwapchain();
     auto& allocator = engine.GetAllocator();
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

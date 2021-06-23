@@ -48,6 +48,7 @@ public:
     void Bind() const;
 
     void SetTexture(std::string_view uniformName, const Texture& texture, int textureUnit);
+    void SetTexture(std::string_view uniformName, unsigned int textureName, int textureUnit);
 
     void SetMat4(std::string_view uniformName, const glm::mat4& mat);
 

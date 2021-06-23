@@ -1,5 +1,12 @@
 #pragma once
 
+#include "glm/vec3.hpp"
+#include "engine.h"
+#include "gl/shader.h"
+#include "gl/model.h"
+#include "gl/framebuffer.h"
+#include "gl/camera.h"
+
 namespace gl
 {
 
@@ -32,7 +39,6 @@ private:
     unsigned long instanceChunkSize_ = 1'000;
     unsigned long asteroidNmb_ = 1000;
 
-    unsigned long culledAsteroids_ = 0;
 
     ShaderProgram vertexInstancingDrawShader_;
     ShaderProgram screenShader_;

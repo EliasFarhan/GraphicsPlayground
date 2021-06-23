@@ -13,7 +13,12 @@
 #include <hello_culling.h>
 #include <hello_instancing.h>
 #include <hello_frustum.h>
+#include <hello_point_shadow.h>
+#include <hello_cascaded_shadow.h>
 
+#include "hello_bloom.h"
+#include "hello_hdr.h"
+#include "hello_shadow.h"
 #include "hello_normal.h"
 #include "imgui.h"
 
@@ -39,6 +44,11 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"13 Hello Instancing", std::make_unique<HelloInstancing>()});
     samples_.push_back({"14 Hello Frustum Culling", std::make_unique<HelloFrustum>()});
     samples_.push_back({"15 Hello Normal", std::make_unique<HelloNormal>()});
+    samples_.push_back({"16 Hello Shadow", std::make_unique<HelloShadow>()});
+    samples_.push_back({"17 Hello Point Shadow", std::make_unique<HelloPointShadow>()});
+    samples_.push_back({"18 Hello Cascaded Shadow", std::make_unique<HelloCascadedShadow>()});
+    samples_.push_back({"19 Hello HDR", std::make_unique<HelloHdr>()});
+    samples_.push_back({"20 Hello Bloom", std::make_unique<HelloBloom>()});
 }
 
 void SampleBrowser::Init()
@@ -73,7 +83,7 @@ void SampleBrowser::DrawImGui()
     if (ImGui::BeginCombo("Current Sample",
                           samples_[currentIndex_].sampleName.c_str())) // The second parameter is the label previewed before opening the combo.
     {
-        for (int i = 0; i < samples_.size(); i++)
+        for (std::size_t i = 0; i < samples_.size(); i++)
         {
             const bool isSelected = currentIndex_ == i;
             if (ImGui::Selectable(samples_[i].sampleName.c_str(), isSelected))

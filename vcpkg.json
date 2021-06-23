@@ -18,6 +18,7 @@
     },
     "vulkan-memory-allocator",
     "spdlog",
-    "argh"
+    "argh",
+    "gtest"
   ]
 }
