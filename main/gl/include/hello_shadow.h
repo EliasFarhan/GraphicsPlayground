@@ -2,6 +2,10 @@
 
 #include <gl/framebuffer.h>
 #include "engine.h"
+#include "gl/shader.h"
+#include "gl/vertex_array.h"
+#include "gl/model.h"
+#include "gl/camera.h"
 
 namespace gl
 {

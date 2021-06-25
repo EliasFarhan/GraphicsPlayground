@@ -2,7 +2,12 @@
 #include "hello_frustum.h"
 #include <random>
 #include "imgui.h"
+#ifdef TRACY_ENABLE
 
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+
+#endif
 namespace gl
 {
     void HelloFrustum::Init()

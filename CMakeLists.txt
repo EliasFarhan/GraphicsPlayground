@@ -38,5 +38,5 @@ add_subdirectory(common/vulkan)
 add_subdirectory(main/gl)
 add_subdirectory(main/vk)
 add_subdirectory(main/tools)
-add_subdirectory(main/egj)
+add_subdirectory(main/vr_playground)
 
