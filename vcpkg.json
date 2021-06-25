@@ -20,6 +20,6 @@
     "spdlog",
     "argh",
     "gtest",
-    "openvr"
+	"openvr"
   ]
 }
