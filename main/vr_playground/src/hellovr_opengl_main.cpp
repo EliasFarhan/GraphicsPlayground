@@ -12,9 +12,11 @@
 #else
 #include <GL/glu.h>
 #endif
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 #include <string>
 #include <cstdlib>
+#include <vector>
 
 #include <openvr.h>
 #include <thread>
@@ -324,7 +326,7 @@ void dprintf( const char *fmt, ... )
 	char buffer[ 2048 ];
 
 	va_start( args, fmt );
-	vsprintf_s( buffer, fmt, args );
+	vsprintf( buffer, fmt, args );
 	va_end( args );
 
 	if ( g_bPrintf )
@@ -368,27 +370,27 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 
 	for( int i = 1; i < argc; i++ )
 	{
-		if( !stricmp( argv[i], "-gldebug" ) )
+		if( !strcmp( argv[i], "-gldebug" ) )
 		{
 			m_bDebugOpenGL = true;
 		}
-		else if( !stricmp( argv[i], "-verbose" ) )
+		else if( !strcmp( argv[i], "-verbose" ) )
 		{
 			m_bVerbose = true;
 		}
-		else if( !stricmp( argv[i], "-novblank" ) )
+		else if( !strcmp( argv[i], "-novblank" ) )
 		{
 			m_bVblank = false;
 		}
-		else if( !stricmp( argv[i], "-noglfinishhack" ) )
+		else if( !strcmp( argv[i], "-noglfinishhack" ) )
 		{
 			m_bGlFinishHack = false;
 		}
-		else if( !stricmp( argv[i], "-noprintf" ) )
+		else if( !strcmp( argv[i], "-noprintf" ) )
 		{
 			g_bPrintf = false;
 		}
-		else if ( !stricmp( argv[i], "-cubevolume" ) && ( argc > i + 1 ) && ( *argv[ i + 1 ] != '-' ) )
+		else if ( !strcmp( argv[i], "-cubevolume" ) && ( argc > i + 1 ) && ( *argv[ i + 1 ] != '-' ) )
 		{
 			m_iSceneVolumeInit = atoi( argv[ i + 1 ] );
 			i++;
@@ -446,7 +448,7 @@ bool CMainApplication::BInit()
 	{
 		m_pHMD = NULL;
 		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+		sprintf( buf, "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
 		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
@@ -1721,7 +1723,7 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 	CGLRenderModel *pRenderModel = NULL;
 	for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
 	{
-		if( !stricmp( (*i)->GetName().c_str(), pchRenderModelName ) )
+		if( !strcmp( (*i)->GetName().c_str(), pchRenderModelName ) )
 		{
 			pRenderModel = *i;
 			break;

@@ -8,6 +8,6 @@ target_link_libraries(vr_playground PRIVATE
 	${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/openvr_api.lib)
 else()
 target_link_libraries(vr_playground PRIVATE 
-	${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/openvr_api.so)
+	${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/libopenvr_api.so)
 endif()
 GENERATEGLDATA(${CMAKE_CURRENT_SOURCE_DIR} vr_playground)
