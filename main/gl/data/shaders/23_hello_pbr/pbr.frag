@@ -18,12 +18,15 @@ struct Light
     vec3 position;
     vec3 color;
 };
-uniform Light lights[4];
+const int lightNmb = 4;
+uniform Light lights[lightNmb];
 
 uniform vec3 viewPos;
 uniform bool gammaCorrect;
 
 const float PI = 3.14159265359;
+// ----------------------------------------------------------------------------
+// Normal Distribution Function using GGX Trowbridge-Reitz
 // ----------------------------------------------------------------------------
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -40,6 +43,8 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
     return nom / denom; // prevent divide by zero for roughness=0.0 and NdotH=1.0
 }
 // ----------------------------------------------------------------------------
+// Geometry function using Schlick GGX
+// ----------------------------------------------------------------------------
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
@@ -55,8 +60,8 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0); 
     float NdotL = max(dot(N, L), 0.0); 
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);//geometry obstruction
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);//geometry shadowing
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness); //geometry obstruction
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness); //geometry shadowing
 
     return ggx1 * ggx2;
 }
@@ -78,7 +83,7 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < 4; ++i) 
+    for(int i = 0; i < lightNmb; ++i) 
     {
         // calculate per-light radiance
         vec3 L = normalize(lights[i].position - WorldPos);
