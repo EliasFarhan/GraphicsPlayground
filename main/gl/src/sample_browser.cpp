@@ -23,6 +23,8 @@
 #include <hello_normal.h>
 #include <imgui.h>
 
+#include "hello_pbr.h"
+
 
 namespace gl
 {
@@ -51,6 +53,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"19 Hello HDR", std::make_unique<HelloHdr>()});
     samples_.push_back({"20 Hello Bloom", std::make_unique<HelloBloom>()});
     samples_.push_back({"21 Hello Deferred", std::make_unique<HelloDeferred>()});
+    samples_.push_back({"23 Hello PBR", std::make_unique<HelloPbr>()});
 }
 
 void SampleBrowser::Init()
