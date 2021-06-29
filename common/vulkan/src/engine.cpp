@@ -136,6 +136,9 @@ void Engine::Init()
     CreateSurface();
     driver_.physicalDevice = PickPhysicalDevice(driver_.instance,
                                                 driver_.surface);
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(driver_.physicalDevice, &properties);
+    driver_.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
     CreateLogicalDevice();
     CreateSwapChain();
     CreateImageViews();
@@ -328,7 +331,7 @@ void Engine::CreateLogicalDevice()
 
 
     VkPhysicalDeviceFeatures deviceFeatures{};
-
+    deviceFeatures.samplerAnisotropy = VK_TRUE;
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -507,13 +510,10 @@ void Engine::CleanupSwapchain()
     {
         TracyVkDestroy(tracyContexts_[i]);
     }
-    TracyVkDestroy(tracyTransferContext_);
 #endif
     vkFreeCommandBuffers(driver_.device, renderer_.commandPool,
                          static_cast<uint32_t>(renderer_.commandBuffers.size()),
                          renderer_.commandBuffers.data());
-    vkFreeCommandBuffers(driver_.device, renderer_.commandPool, 1,
-                         &renderer_.transferCmdBuffer);
     vkDestroyCommandPool(driver_.device, renderer_.commandPool, nullptr);
     vkDestroyRenderPass(driver_.device, renderer_.renderPass, nullptr);
 
@@ -728,15 +728,6 @@ void Engine::CreateCommandBuffers()
         std::terminate();
     }
 
-    allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = renderer_.commandPool;
-    allocInfo.commandBufferCount = 1;
-
-    vkAllocateCommandBuffers(driver_.device, &allocInfo,
-                             &renderer_.transferCmdBuffer);
-
 #ifdef TRACY_ENABLE
     tracyContexts_.resize(renderer_.commandBuffers.size());
 
@@ -748,12 +739,6 @@ void Engine::CreateCommandBuffers()
                                     driver_.graphicsQueue,
                                     renderer_.commandBuffers[i]);
     }
-    tracyTransferContext_ = TracyVkContext(
-                                    driver_.physicalDevice,
-                                    driver_.device,
-                                    driver_.graphicsQueue,
-                                    renderer_.transferCmdBuffer
-                            );
 #endif
 }
 
@@ -827,37 +812,80 @@ Engine::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size)
     ZoneScoped;
 #endif
 
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
     {
-        vkBeginCommandBuffer(renderer_.transferCmdBuffer, &beginInfo);
-#ifdef TRACY_ENABLE
-        TracyVkZone(tracyTransferContext_, renderer_.transferCmdBuffer,
-                    "Copy Buffer to GPU");
-#endif
         VkBufferCopy copyRegion{};
         copyRegion.srcOffset = 0; // Optional
         copyRegion.dstOffset = 0; // Optional
         copyRegion.size = size;
-        vkCmdCopyBuffer(renderer_.transferCmdBuffer, srcBuffer, dstBuffer, 1,
+        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1,
                         &copyRegion);
     }
-#ifdef TRACY_ENABLE
-    TracyVkCollect(tracyTransferContext_, renderer_.transferCmdBuffer)
-#endif
-    vkEndCommandBuffer(renderer_.transferCmdBuffer);
+    EndSingleTimeCommands(commandBuffer);
+}
+
+void Engine::CopyBufferToImage(VkBuffer buffer, VkImage image, std::uint32_t width, std::uint32_t height)
+{
+    VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset = { 0, 0, 0 };
+    region.imageExtent = {
+        width,
+        height,
+        1
+    };
+    vkCmdCopyBufferToImage(
+        commandBuffer,
+        buffer,
+        image,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        1,
+        &region
+    );
+    EndSingleTimeCommands(commandBuffer);
+}
+
+VkCommandBuffer Engine::BeginSingleTimeCommands() const
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = renderer_.commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(driver_.device, &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    return commandBuffer;
+}
+
+void Engine::EndSingleTimeCommands(VkCommandBuffer commandBuffer) const
+{
+    vkEndCommandBuffer(commandBuffer);
+
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &renderer_.transferCmdBuffer;
+    submitInfo.pCommandBuffers = &commandBuffer;
 
     vkQueueSubmit(driver_.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(driver_.graphicsQueue);
 
-
-
+    vkFreeCommandBuffers(driver_.device, renderer_.commandPool, 1, &commandBuffer);
 }
-
-
 }
