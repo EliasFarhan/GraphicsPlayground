@@ -103,8 +103,8 @@ void Framebuffer::Create()
         {
             glBindTexture(GL_TEXTURE_2D, colorBuffers_[i]);
             glTexImage2D(GL_TEXTURE_2D, 0,
-                frameBufferType_ & HDR ? GL_RGB16F : GL_RGB8, size_.x,
-                size_.y, 0, GL_RGB,
+                frameBufferType_ & HDR ? GL_RGBA16F : GL_RGBA8, size_.x,
+                size_.y, 0, GL_RGBA,
                 frameBufferType_ & HDR ? GL_FLOAT : GL_UNSIGNED_BYTE,
                 nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

@@ -1,7 +1,13 @@
+#include "GL/glew.h"
 #include "hello_shadow.h"
 #include "imgui.h"
 #include "gl/error.h"
+#ifdef TRACY_ENABLE
 
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+
+#endif
 namespace gl
 {
 

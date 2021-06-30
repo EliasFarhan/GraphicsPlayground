@@ -23,6 +23,7 @@ struct Driver
     VkQueue graphicsQueue;
     VkQueue presentQueue;
     VkSurfaceKHR surface;
+    float maxAnisotropy;
 };
 
 
@@ -51,7 +52,6 @@ struct Renderer
     std::vector<VkFramebuffer> framebuffers;
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
-    VkCommandBuffer transferCmdBuffer;
 
 };
 
@@ -103,7 +103,10 @@ public:
 
 
     void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size);
-
+    void CopyBufferToImage(VkBuffer buffer, VkImage image, std::uint32_t width, std::uint32_t height);
+    VkCommandBuffer BeginSingleTimeCommands() const;
+    void EndSingleTimeCommands(VkCommandBuffer commandBuffer) const;
+    
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
 
@@ -153,7 +156,6 @@ private:
     VkDebugUtilsMessengerEXT debugMessenger_;
 #ifdef TRACY_ENABLE
     std::vector<TracyVkCtx> tracyContexts_;
-    TracyVkCtx tracyTransferContext_;
 #endif
 };
 

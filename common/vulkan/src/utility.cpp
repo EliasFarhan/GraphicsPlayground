@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <set>
 #include <vector>
@@ -8,7 +7,6 @@
 
 namespace vk
 {
-
 bool CheckValidationLayerSupport()
 {
     std::uint32_t layerCount;
@@ -46,10 +44,10 @@ bool CheckValidationLayerSupport()
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        [[maybe_unused]] void* pUserData)
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    [[maybe_unused]] void* pUserData)
 {
     if (messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
         return VK_FALSE;
@@ -74,8 +72,8 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                       const VkAllocationCallbacks* pAllocator,
                                       VkDebugUtilsMessengerEXT* pDebugMessenger)
 {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
-                                                                           "vkCreateDebugUtilsMessengerEXT");
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
+                                                                          "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr)
     {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -89,8 +87,8 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
                                    const VkAllocationCallbacks* pAllocator)
 {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
-                                                                            "vkDestroyDebugUtilsMessengerEXT");
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
+                                                                           "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr)
     {
         func(instance, debugMessenger, pAllocator);
@@ -102,11 +100,11 @@ void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     createInfo.pfnUserCallback = DebugCallback;
 }
 
@@ -124,11 +122,11 @@ bool IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface)
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);
 
         swapChainAdequate =
-                !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+            !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
     return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-           deviceFeatures.geometryShader && indices.IsComplete() && extensionsSupported &&
-           swapChainAdequate;
+        deviceFeatures.geometryShader && indices.IsComplete() && extensionsSupported &&
+        swapChainAdequate && deviceFeatures.samplerAnisotropy;
 }
 
 int RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)
@@ -152,7 +150,6 @@ int RateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)
     score += deviceProperties.limits.maxImageDimension2D;
 
     return score;
-
 }
 
 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
@@ -194,7 +191,7 @@ bool CheckDeviceExtensionSupport(VkPhysicalDevice device)
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
                                          availableExtensions.data());
-    for(auto& extension : availableExtensions)
+    for (auto& extension : availableExtensions)
     {
         core::LogDebug(extension.extensionName);
     }

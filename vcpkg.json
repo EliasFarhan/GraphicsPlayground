@@ -19,6 +19,7 @@
     "vulkan-memory-allocator",
     "spdlog",
     "argh",
-    "gtest"
+    "gtest",
+	"openvr"
   ]
 }

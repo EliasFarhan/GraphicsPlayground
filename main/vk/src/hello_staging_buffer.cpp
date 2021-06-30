@@ -4,6 +4,9 @@
 
 #include "hello_staging_buffer.h"
 #include <cstring>
+#include <log.h>
+#include <filesystem.h>
+#include <vk/utility.h>
 
 namespace vk
 {
