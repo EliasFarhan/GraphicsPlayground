@@ -66,9 +66,9 @@ void main()
     vec3 cascadeIndicator = vec3(0.0, 0.0, 0.0);
     float shadow = 0.0;
     float cascadeFarPlanes[3] = float[3](
-    maxNearCascade,
-    maxMiddleCascade,
-    farPlane
+        maxNearCascade,
+        maxMiddleCascade,
+        farPlane
     );
     for (int i = 0; i < 3; i++)
     {
@@ -97,13 +97,13 @@ void main()
             // transform to [0,1] range
             projCoords = projCoords * 0.5 + 0.5;
             if (projCoords.x < 0.0 || projCoords.y < 0.0 || projCoords.x > 1.0 || projCoords.y > 1.0)
-            continue;
+                continue;
             if (i == 0)
-            cascadeIndicator = vec3(0.1, 0.0, 0.0);
+                cascadeIndicator = vec3(0.1, 0.0, 0.0);
             else if (i == 1)
-            cascadeIndicator = vec3(0.0, 0.1, 0.0);
+                cascadeIndicator = vec3(0.0, 0.1, 0.0);
             else if (i == 2)
-            cascadeIndicator = vec3(0.0, 0.0, 0.1);
+                cascadeIndicator = vec3(0.0, 0.0, 0.1);
             break;
 
         }

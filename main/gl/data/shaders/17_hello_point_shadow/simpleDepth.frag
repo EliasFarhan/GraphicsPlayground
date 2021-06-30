@@ -8,5 +8,5 @@ uniform float lightFarPlane;
 void main()
 {
     vec3 delta = FragPos - lightPos;
-    gl_FragDepth = length(delta)/lightFarPlane;
+    gl_FragDepth = length(delta)/lightFarPlane; //linearize depth value
 }

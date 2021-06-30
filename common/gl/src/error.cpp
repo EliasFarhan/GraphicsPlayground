@@ -5,6 +5,7 @@
 #include "gl/error.h"
 #include <GL/glew.h>
 #include <fmt/core.h>
+#include "log.h"
 
 namespace gl
 {

@@ -23,7 +23,7 @@ void main()
     vec3 color = texture(diffuseTexture, TexCoords).rgb;
     vec3 normal = normalize(Normal);
     // ambient
-    vec3 ambient = 0.0 * color;
+    vec3 ambient = 0.1 * color;
     // lighting
     vec3 lighting = vec3(0.0);
     for(int i = 0; i < lightNmb; i++)
