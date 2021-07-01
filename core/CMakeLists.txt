@@ -1,7 +1,8 @@
-
+find_package(glm CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 file(GLOB_RECURSE CoreFiles src/*cpp include/*.h)
 if(TRACY_ENABLE)
@@ -12,7 +13,7 @@ add_library(Core STATIC ${CoreFiles})
 target_link_libraries(Core PUBLIC fmt::fmt)
 target_include_directories(Core PUBLIC "include/")
 
-target_link_libraries(Core PUBLIC SDL2::SDL2 SDL2::SDL2main spdlog::spdlog spdlog::spdlog_header_only)
+target_link_libraries(Core PUBLIC SDL2::SDL2 SDL2::SDL2main spdlog::spdlog spdlog::spdlog_header_only EnTT::EnTT glm::glm)
 set_target_properties(Core PROPERTIES UNITY_BUILD ON)
 
 file(GLOB_RECURSE test_files test/*.cpp)

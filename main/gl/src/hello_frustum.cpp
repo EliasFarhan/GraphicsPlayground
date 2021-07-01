@@ -5,10 +5,6 @@
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"
-#include "TracyOpen
-#ifdef TRACY_ENABLE
-
-#include "Tracy.hpp"
 #include "TracyOpenGL.hpp"
 
 #endif
