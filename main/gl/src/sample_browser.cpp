@@ -27,6 +27,7 @@
 #include <hello_pbr_textured.h>
 
 #include "hello_ibl.h"
+#include "hello_ssao.h"
 
 
 namespace gl
@@ -56,6 +57,7 @@ SampleBrowser::SampleBrowser()
     samples_.push_back({"19 Hello HDR", std::make_unique<HelloHdr>()});
     samples_.push_back({"20 Hello Bloom", std::make_unique<HelloBloom>()});
     samples_.push_back({"21 Hello Deferred", std::make_unique<HelloDeferred>()});
+    samples_.push_back({"22 Hello SSAO", std::make_unique<HelloSSAO>()});
     samples_.push_back({"23 Hello PBR", std::make_unique<HelloPbr>()});
     samples_.push_back({"24 Hello PBR Textured", std::make_unique<HelloPbrTextured>()});
     samples_.push_back({"25 Hello IBL", std::make_unique<HelloIbl>()});

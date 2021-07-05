@@ -106,7 +106,7 @@ void Framebuffer::Create()
         {
         case 1:
             colorFormat = GL_RED;
-            internalColorFormat = frameBufferType_ & HDR ? GL_R16F : GL_R8;
+            internalColorFormat = frameBufferType_ & HDR ? GL_R32F : GL_R8;
             break;
         case 2:
             colorFormat = GL_RG;

@@ -265,7 +265,7 @@ void HelloIbl::GenerateDiffuseIrradiance()
     }
     irradianceMap_.SetName(captureFramebuffer_.MoveColorTexture(0));
     irradianceMap_.SetType(GL_TEXTURE_CUBE_MAP);
-    captureFramebuffer_.Unbind();
+    Framebuffer::Unbind();
     glCheckError();
 }
 
@@ -329,6 +329,7 @@ void HelloIbl::GeneratePrefilter()
     }
     prefilterMap_.SetName(captureFramebuffer_.MoveColorTexture(0));
     prefilterMap_.SetType(GL_TEXTURE_CUBE_MAP);
+    Framebuffer::Unbind();
     glCheckError();
 }
 
@@ -350,6 +351,6 @@ void HelloIbl::GenerateLUT()
     quad_.Draw();
     brdfLUTTexture_.SetName(captureFramebuffer_.MoveColorTexture(0));
     glEnable(GL_DEPTH_TEST);
-    captureFramebuffer_.Unbind();
+    Framebuffer::Unbind();
 }
 }
