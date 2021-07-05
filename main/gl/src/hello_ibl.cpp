@@ -5,6 +5,11 @@
 #include <fmt/core.h>
 #include <imgui.h>
 
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+#endif
+
 namespace gl
 {
 void HelloIbl::Init()
@@ -122,6 +127,7 @@ void HelloIbl::Update(core::seconds dt)
 
 void HelloIbl::Destroy()
 {
+    glDisable(GL_DEPTH_TEST);
     hdrTexture_.Destroy();
     sphere_.Destroy();
     quad_.Destroy();
@@ -181,6 +187,10 @@ void HelloIbl::DrawImGui()
 
 void HelloIbl::GenerateCubemap()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(genCubemap, "Generate Cubemap", true);
+    TracyGpuNamedZone(genCubemapGpu, "Generate Cubemap", true);
+#endif
     captureFramebuffer_.SetSize({1024, 1024});
     captureFramebuffer_.SetType(
         Framebuffer::COLOR_ATTACHMENT_0 |
@@ -202,6 +212,10 @@ void HelloIbl::GenerateCubemap()
     captureFramebuffer_.Bind();
     for (unsigned int i = 0; i < 6; ++i)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(genCubemapFace, "Generate Cubemap Face", true);
+        TracyGpuNamedZone(genCubemapFaceGpu, "Generate Cubemap Face", true);
+#endif
         captureCamera.LookAt(viewDirs[i], upDirs[i]);
         equiToCubemap_.SetMat4("view", captureCamera.GetView());
         captureFramebuffer_.ActivateColorFace(i);
@@ -217,6 +231,10 @@ void HelloIbl::GenerateCubemap()
 
 void HelloIbl::GenerateDiffuseIrradiance()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(genDiffuse, "Generate Diffuse Irradiance", true);
+    TracyGpuNamedZone(genDiffuseGpu, "Generate Diffuse Irradiance", true);
+#endif
     captureFramebuffer_.SetSize({32, 32});
     captureFramebuffer_.Reload();
 
@@ -234,6 +252,10 @@ void HelloIbl::GenerateDiffuseIrradiance()
     captureFramebuffer_.Bind();
     for (int i = 0; i < 6; i++)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(genDiffuseFace, "Generate Diffuse Irradiance Face", true);
+        TracyGpuNamedZone(genDiffuseFaceGpu, "Generate Diffuse Irradiance Face", true);
+#endif
         captureCamera.LookAt(viewDirs[i], upDirs[i]);
         irradianceShader_.SetMat4("view", captureCamera.GetView());
         captureFramebuffer_.ActivateColorFace(i);
@@ -249,6 +271,10 @@ void HelloIbl::GenerateDiffuseIrradiance()
 
 void HelloIbl::GeneratePrefilter()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(genPrefilter, "Generate Prefilter Env Map", true);
+    TracyGpuNamedZone(genPrefilterGpu, "Generate Prefilter Env Map", true);
+#endif
     Camera3D captureCamera;
     captureCamera.position = glm::vec3();
     captureCamera.aspect = 1.0f;
@@ -273,6 +299,10 @@ void HelloIbl::GeneratePrefilter()
     unsigned int maxMipLevels = 5;
     for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
     {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(genPrefilterMip, "Generate Prefilter Env Map Mip", true);
+        TracyGpuNamedZone(genPrefilterMipGpu, "Generate Prefilter Env Map Mip", true);
+#endif
         // reisze framebuffer according to mip-level size.
         const unsigned int mipWidth = 128 * std::pow(0.5, mip);
         const unsigned int mipHeight = 128 * std::pow(0.5, mip);
@@ -285,6 +315,10 @@ void HelloIbl::GeneratePrefilter()
         prefilterShader_.SetFloat("roughness", roughness);
         for (unsigned int i = 0; i < 6; ++i)
         {
+#ifdef TRACY_ENABLE
+            ZoneNamedN(genPrefilterFace, "Generate Prefilter Env Map Mip Face", true);
+            TracyGpuNamedZone(genPrefilterGpuFace, "Generate Prefilter Env Map Mip Face", true);
+#endif
             captureCamera.LookAt(viewDirs[i], upDirs[i]);
             prefilterShader_.SetMat4("view", captureCamera.GetView());
             captureFramebuffer_.ActivateColorFace(i, mip);
@@ -300,6 +334,10 @@ void HelloIbl::GeneratePrefilter()
 
 void HelloIbl::GenerateLUT()
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(genLUT, "Generate LUT", true);
+    TracyGpuNamedZone(genLUTGpu, "Generate LUT", true);
+#endif
     captureFramebuffer_.SetType(Framebuffer::COLOR_ATTACHMENT_0 | Framebuffer::HDR);
     captureFramebuffer_.SetSize({ 512,512 });
     captureFramebuffer_.SetChannelCount(2);
