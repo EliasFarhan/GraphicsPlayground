@@ -33,6 +33,7 @@ Texture::LoadTexture(std::string_view path, std::uint8_t textureFlags, int chann
     ZoneNamedN(loadTexture, "Texture Loading", true);
     TracyGpuNamedZone(loadTextureGpu, "Texture Loading", true);
 #endif
+    stbi_set_flip_vertically_on_load(textureFlags & FLIP_Y);
     auto& filesystem = core::FilesystemLocator::get();
     if (!filesystem.FileExists(path))
     {
@@ -82,9 +83,9 @@ Texture::LoadTexture(std::string_view path, std::uint8_t textureFlags, int chann
     }
 
     textureFile.Destroy();
-    if (imageData == nullptr)
+    if (imageData == nullptr && hdrImageData == nullptr)
     {
-        core::LogDebug(fmt::format("[Error] Texture: cannot load {}", path));
+        core::LogError(fmt::format("[Error] Texture: cannot load {}", path));
         return;
     }
 #ifdef TRACY_ENABLE
@@ -125,61 +126,61 @@ Texture::LoadTexture(std::string_view path, std::uint8_t textureFlags, int chann
                         textureFlags & SMOOTH ? GL_LINEAR : GL_NEAREST);
         glCheckError();
     }
-    if (hdr)
+
+    switch (channelNb)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, imageWidth, imageHeight, 0,
-                     GL_RGB, GL_FLOAT, hdrImageData);
-    }
-    else
+    case 1:
     {
-        switch (channelNb)
-        {
-        case 1:
-        {
 #ifdef TRACY_ENABLE
-            TracyGpuNamedZone(textureRUpload, "Texture RED Upload", true);
+        TracyGpuNamedZone(textureRUpload, "Texture RED Upload", true);
 #endif
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imageWidth, imageHeight,
-                         0,
-                         GL_RED, GL_UNSIGNED_BYTE, imageData);
-            break;
-        }
-        case 2:
-        {
-#ifdef TRACY_ENABLE
-            TracyGpuNamedZone(textureRGUpload, "Texture RG Upload", true);
-#endif
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, imageWidth, imageHeight,
-                         0,
-                         GL_RG, GL_UNSIGNED_BYTE, imageData);
-            break;
-        }
-        case 3:
-        {
-#ifdef TRACY_ENABLE
-                ZoneNamedN(textureRGBUploadCpu, "Texture RGB Upload", true);
-                TracyGpuNamedZone(textureRGBUpload, "Texture RGB Upload", true);
-#endif
-            glTexImage2D(GL_TEXTURE_2D, 0, textureFlags & GAMMA_CORRECTION ? GL_SRGB : GL_RGB, imageWidth, imageHeight,
-                         0,
-                         GL_RGB, GL_UNSIGNED_BYTE, imageData);
-            break;
-        }
-        case 4:
-        {
-#ifdef TRACY_ENABLE
-            TracyGpuNamedZone(textureRGBAUpload, "Texture RGBA Upload", true);
-#endif
-            glTexImage2D(GL_TEXTURE_2D, 0, textureFlags & GAMMA_CORRECTION ? GL_SRGB_ALPHA : GL_RGBA, imageWidth,
-                         imageHeight,
-                         0,
-                         GL_RGBA, GL_UNSIGNED_BYTE, imageData);
-            break;
-        }
-        default:
-            break;
-        }
+        glTexImage2D(GL_TEXTURE_2D, 0, hdr ? GL_R16F : GL_R8, imageWidth, imageHeight,
+                     0,
+                     GL_RED, hdr ? GL_FLOAT : GL_UNSIGNED_BYTE,
+                     hdr ? static_cast<void*>(hdrImageData) : static_cast<void*>(imageData));
+        break;
     }
+    case 2:
+    {
+#ifdef TRACY_ENABLE
+        TracyGpuNamedZone(textureRGUpload, "Texture RG Upload", true);
+#endif
+        glTexImage2D(GL_TEXTURE_2D, 0, hdr ? GL_RG16F : GL_RG8, imageWidth, imageHeight,
+                     0,
+                     GL_RG, hdr ? GL_FLOAT : GL_UNSIGNED_BYTE,
+                     hdr ? static_cast<void*>(hdrImageData) : static_cast<void*>(imageData));
+        break;
+    }
+    case 3:
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(textureRGBUploadCpu, "Texture RGB Upload", true);
+        TracyGpuNamedZone(textureRGBUpload, "Texture RGB Upload", true);
+#endif
+        glTexImage2D(GL_TEXTURE_2D, 0, hdr ? GL_RGB16F : textureFlags & GAMMA_CORRECTION ? GL_SRGB : GL_RGB, imageWidth,
+                     imageHeight,
+                     0,
+                     GL_RGB, hdr ? GL_FLOAT : GL_UNSIGNED_BYTE,
+                     hdr ? static_cast<void*>(hdrImageData) : static_cast<void*>(imageData));
+        break;
+    }
+    case 4:
+    {
+#ifdef TRACY_ENABLE
+        TracyGpuNamedZone(textureRGBAUpload, "Texture RGBA Upload", true);
+#endif
+        glTexImage2D(GL_TEXTURE_2D, 0, hdr ? GL_RGBA16F : textureFlags & GAMMA_CORRECTION ? GL_SRGB_ALPHA : GL_RGBA,
+                     imageWidth,
+                     imageHeight,
+                     0,
+                     GL_RGBA, hdr ? GL_FLOAT : GL_UNSIGNED_BYTE,
+                     hdr ? static_cast<void*>(hdrImageData) : static_cast<void*>(imageData));
+        break;
+    }
+    default:
+        break;
+    }
+
 
     glCheckError();
     if (textureFlags & MIPMAP)
@@ -192,7 +193,14 @@ Texture::LoadTexture(std::string_view path, std::uint8_t textureFlags, int chann
         glCheckError();
     }
     textureSize_ = glm::vec2(imageWidth, imageHeight);
-    free(imageData);
+    if (imageData)
+    {
+        free(imageData);
+    }
+    else if (hdrImageData)
+    {
+        free(hdrImageData);
+    }
     textureName_ = texture;
 }
 
@@ -319,6 +327,20 @@ unsigned int Texture::GetType() const
     return textureType_;
 }
 
+void Texture::SetName(unsigned textureName)
+{
+    if (textureName_ != 0)
+    {
+        core::LogError("You are overriding a textureName");
+    }
+    textureName_ = textureName;
+}
+
+void Texture::SetType(unsigned textureType)
+{
+    textureType_ = textureType;
+}
+
 void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
 {
 #ifdef TRACY_ENABLE
@@ -348,13 +370,13 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
 
     glm::tvec3<GLsizei> extent{texture.extent()};
     core::LogDebug(fmt::format(
-            "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}, extends: {},{}",
-            (int) texture.format(),
-            (int) texture.target(),
-            is_compressed(texture.format()),
-            texture.layers(),
-            texture.faces(),
-            extent.x, extent.y));
+        "Texture format: {}, texture target {}, is compressed {}, layers nmb: {}, faces nmb: {}, extends: {},{}",
+        (int)texture.format(),
+        (int)texture.target(),
+        is_compressed(texture.format()),
+        texture.layers(),
+        texture.faces(),
+        extent.x, extent.y));
     {
 #ifdef TRACY_ENABLE
         ZoneNamedN(genTextures, "glGenTextures", true);
@@ -378,7 +400,7 @@ void Texture::LoadCompressedTexture(core::BufferFile&& textureFile)
         TracyGpuNamedZone(texStorageGpu, "glTexStorage2D", true);
 #endif
         glTexStorage2D(target, static_cast<GLint>(texture.levels()),
-            format.Internal, extent.x, extent.y);
+                       format.Internal, extent.x, extent.y);
     }
     textureType_ = target;
     glCheckError();

@@ -17,7 +17,7 @@ public:
         CLAMP_WRAP = 1u << 2u,
         MIRROR_REPEAT_WRAP = 1u << 3u,
         GAMMA_CORRECTION = 1u << 4u,
-        HDR = 1u << 5u,
+        FLIP_Y = 1u << 5u,
         DEFAULT = MIPMAP | SMOOTH | CLAMP_WRAP,
     };
     Texture();
@@ -46,6 +46,8 @@ public:
     void CreateWhiteTexture();
 
     [[nodiscard]] unsigned int GetType() const;
+    void SetName(unsigned textureName);
+    void SetType(unsigned textureType);
 
 private:
     void LoadCompressedTexture(core::BufferFile&& file);

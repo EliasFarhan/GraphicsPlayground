@@ -20,6 +20,7 @@ public:
         DEPTH_ATTACHMENT = 1u << 5u,
         DEPTH_STENCIL_ATTACHMENT = 1u << 6u,
         DEPTH_CUBEMAP = 1u << 7u,
+        COLOR_CUBEMAP = 1u << 8u,
         DEFAULT = COLOR_ATTACHMENT_0 | DEPTH_RBO
     };
 
@@ -35,6 +36,10 @@ public:
 
     void Clear(const glm::vec3& color);
     void SetColorAttachmentNmb(std::size_t nmb) { colorAttachmentNmb = nmb; }
+    void ActivateColorFace(unsigned index, unsigned mip = 0);
+    unsigned MoveColorTexture(unsigned index);
+    unsigned GetDepthRbo() const { return depthRbo_; }
+    void SetChannelCount(int channelCount);
 
     static void Unbind();
 
@@ -68,6 +73,7 @@ private:
     unsigned int fbo_ = 0;
     static constexpr int MAX_COLOR_ATTACHMENT = 4;
     int colorAttachmentNmb = 1;
+    int channelCount_ = 3;
     std::array<unsigned int, MAX_COLOR_ATTACHMENT> colorBuffers_{};
     unsigned int depthRbo_ = 0;
     unsigned int depthBuffer_ = 0;

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <gl/shader.h>
+#include <gl/error.h>
+#include <log.h>
 
 #include <GL/glew.h>
 #include <fmt/core.h>
