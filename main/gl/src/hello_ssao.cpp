@@ -3,6 +3,12 @@
 #include <gl/error.h>
 #include <random>
 #include <imgui.h>
+
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#include "TracyOpenGL.hpp"
+#endif
+
 namespace gl
 {
 void HelloSSAO::Init()
@@ -89,58 +95,85 @@ void HelloSSAO::Init()
 
 void HelloSSAO::Update(core::seconds dt)
 {
+#ifdef TRACY_ENABLE
+    ZoneNamedN(update, "Update", true);
+    TracyGpuNamedZone(updateGpu, "Update", true);
+#endif
     camera_.Update(dt);
 
     const auto view = camera_.GetView();
     const auto projection = camera_.GetProjection();
-
-    // 1. geometry pass: render scene's geometry/color data into gbuffer
-    gBuffer_.Bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    ssaoGeometryShader_.Bind();
-    ssaoGeometryShader_.SetMat4("view", view);
-    ssaoGeometryShader_.SetMat4("projection", projection);
-    RenderScene(ssaoGeometryShader_);
-    // 2. generate SSAO texture
-    ssaoFramebuffer_.Bind();
-    glClear(GL_COLOR_BUFFER_BIT);
-    ssaoShader_.Bind();
-    for (unsigned int i = 0; i < 64; i++)
     {
-        ssaoShader_.SetVec3("samples[" + std::to_string(i) + "]", ssaoKernel_[i]);
+#ifdef TRACY_ENABLE
+        ZoneNamedN(gPass, "Geometry Pass", true);
+        TracyGpuNamedZone(gPassGpu, "Geometry Pass", true);
+#endif
+        // 1. geometry pass: render scene's geometry/color data into gbuffer
+        gBuffer_.Bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ssaoGeometryShader_.Bind();
+        ssaoGeometryShader_.SetMat4("view", view);
+        ssaoGeometryShader_.SetMat4("projection", projection);
+        RenderScene(ssaoGeometryShader_);
     }
-    ssaoShader_.SetMat4("projection", projection);
-    ssaoShader_.SetTexture("gPosition", gBuffer_.GetColorTexture(0), 0);
-    ssaoShader_.SetTexture("gNormal", gBuffer_.GetColorTexture(1), 1);
-    ssaoShader_.SetTexture("texNoise", noiseTexture_, 2);
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(ssaoPass, "SSAO Pass", true);
+        TracyGpuNamedZone(ssaoPassGpu, "SSAO Pass", true);
+#endif
+        // 2. generate SSAO texture
+        ssaoFramebuffer_.Bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+        ssaoShader_.Bind();
+        for (unsigned int i = 0; i < 64; i++)
+        {
+            ssaoShader_.SetVec3("samples[" + std::to_string(i) + "]", ssaoKernel_[i]);
+        }
+        ssaoShader_.SetMat4("projection", projection);
+        ssaoShader_.SetTexture("gPosition", gBuffer_.GetColorTexture(0), 0);
+        ssaoShader_.SetTexture("gNormal", gBuffer_.GetColorTexture(1), 1);
+        ssaoShader_.SetTexture("texNoise", noiseTexture_, 2);
 
-    ssaoShader_.SetInt("kernelSize", kernelSize_);
-    ssaoShader_.SetFloat("radius", ssaoRadius_);
-    ssaoShader_.SetFloat("bias", ssaoBias_);
-    screenQuad_.Draw();
-    // 3. blur SSAO texture to remove noise
+        ssaoShader_.SetInt("kernelSize", kernelSize_);
+        ssaoShader_.SetFloat("radius", ssaoRadius_);
+        ssaoShader_.SetFloat("bias", ssaoBias_);
+        screenQuad_.Draw();
+    }
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(ssaoBlurPass, "Blur Pass", true);
+        TracyGpuNamedZone(ssaoBlurPassGpu, "Blur Pass", true);
+#endif
+        // 3. blur SSAO texture to remove noise
 
-    ssaoBlurFramebuffer_.Bind();
-    glClear(GL_COLOR_BUFFER_BIT);
-    ssaoBlurShader_.Bind();
-    ssaoBlurShader_.SetTexture("ssaoInput", ssaoFramebuffer_.GetColorTexture(0), 0);
-    screenQuad_.Draw();
-    // 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
-    Framebuffer::Unbind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    ssaoLightingShader_.Bind();
-    const auto lightPosView = glm::vec3(view * glm::vec4(light_.position, 1.0f));
-    ssaoLightingShader_.SetVec3("light.position", lightPosView);
-    ssaoLightingShader_.SetVec3("light.color", light_.color);
-    ssaoLightingShader_.SetFloat("light.linear", light_.linear);
-    ssaoLightingShader_.SetFloat("light.quadratic", light_.quadratic);
-    ssaoLightingShader_.SetFloat("light.constant", light_.constant);
-    ssaoLightingShader_.SetTexture("gPosition", gBuffer_.GetColorTexture(0), 0);
-    ssaoLightingShader_.SetTexture("gNormal", gBuffer_.GetColorTexture(1), 1);
-    ssaoLightingShader_.SetTexture("gAlbedo", gBuffer_.GetColorTexture(2), 2);
-    ssaoLightingShader_.SetTexture("ssao", ssaoBlurFramebuffer_.GetColorTexture(0), 3);
-    ssaoLightingShader_.SetInt("enableSSAO", enableSsao);
-    screenQuad_.Draw();
+        ssaoBlurFramebuffer_.Bind();
+        glClear(GL_COLOR_BUFFER_BIT);
+        ssaoBlurShader_.Bind();
+        ssaoBlurShader_.SetTexture("ssaoInput", ssaoFramebuffer_.GetColorTexture(0), 0);
+        screenQuad_.Draw();
+    }
+    {
+#ifdef TRACY_ENABLE
+        ZoneNamedN(lightingPass, "Lighting Pass", true);
+        TracyGpuNamedZone(lightingPassGpu, "Lighting Pass", true);
+#endif
+        // 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
+        Framebuffer::Unbind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ssaoLightingShader_.Bind();
+        const auto lightPosView = glm::vec3(view * glm::vec4(light_.position, 1.0f));
+        ssaoLightingShader_.SetVec3("light.position", lightPosView);
+        ssaoLightingShader_.SetVec3("light.color", light_.color);
+        ssaoLightingShader_.SetFloat("light.linear", light_.linear);
+        ssaoLightingShader_.SetFloat("light.quadratic", light_.quadratic);
+        ssaoLightingShader_.SetFloat("light.constant", light_.constant);
+        ssaoLightingShader_.SetTexture("gPosition", gBuffer_.GetColorTexture(0), 0);
+        ssaoLightingShader_.SetTexture("gNormal", gBuffer_.GetColorTexture(1), 1);
+        ssaoLightingShader_.SetTexture("gAlbedo", gBuffer_.GetColorTexture(2), 2);
+        ssaoLightingShader_.SetTexture("ssao", ssaoBlurFramebuffer_.GetColorTexture(0), 3);
+        ssaoLightingShader_.SetInt("enableSSAO", enableSsao);
+        screenQuad_.Draw();
+    }
 }
 
 void HelloSSAO::Destroy()
@@ -192,7 +225,7 @@ void HelloSSAO::RenderScene(ShaderProgram& shader)
 
     //Draw floor
     auto model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1,0,0));
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1,0,0));
     model = glm::scale(model, glm::vec3(5.0f));
     //model = glm::Translate(model, glm::vec3::forward * camera_.farPlane / 2.0f);
     shader.SetMat4("model", model);
@@ -200,9 +233,9 @@ void HelloSSAO::RenderScene(ShaderProgram& shader)
     plane_.Draw();
     //Draw model
     model = glm::mat4(1.0f);
-    model = model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1,0,0));
+    model = glm::translate(model, glm::vec3(0, 1, 0) * 0.1f);
+    model = model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1,0,0));
     model = glm::scale(model, glm::vec3( 0.1f));
-    model = glm::translate(model, glm::vec3(0,1,0) * 0.1f);
     shader.SetMat4("model", model);
     shader.SetMat4("normalMatrix", glm::transpose(glm::inverse(view * model)));
     model_.Draw(shader);
