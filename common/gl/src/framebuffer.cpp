@@ -24,6 +24,16 @@ Framebuffer::~Framebuffer()
         core::LogWarning("Framebuffer is not free!");
     }
 }
+template<int n>
+constexpr std::array<unsigned, n> GenerateColorAttachment()
+{
+    std::array<unsigned, n> attachments{};
+    for(int i = 0; i < n; i++)
+    {
+        attachments[i] = GL_COLOR_ATTACHMENT0+i;
+    }
+    return attachments;
+}
 
 void Framebuffer::Create()
 {
@@ -165,12 +175,8 @@ void Framebuffer::Create()
                                        GL_TEXTURE_2D, colorBuffers_[i], 0);
                 glCheckError();
             }
-            constexpr std::array<unsigned, MAX_COLOR_ATTACHMENT> attachments{
-                GL_COLOR_ATTACHMENT0,
-                GL_COLOR_ATTACHMENT0 + 1,
-                GL_COLOR_ATTACHMENT0 + 2,
-                GL_COLOR_ATTACHMENT0 + 3,
-            };
+            constexpr std::array<unsigned, MAX_COLOR_ATTACHMENT> attachments =
+                    GenerateColorAttachment<MAX_COLOR_ATTACHMENT>();
             glDrawBuffers(colorAttachmentNmb, attachments.data());
         }
     }

@@ -40,7 +40,14 @@ private:
 	void GeneratePrefilter();
 	void GenerateLUT();
 
-	std::array<Light, 4> lights_;
+	std::array<Light, 4> lights_{
+            {
+                    {glm::vec3(-10.0f, 10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
+                    {glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
+                    {glm::vec3(-10.0f, -10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
+                    {glm::vec3(10.0f, -10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
+            }
+    };
 	Texture hdrTexture_;
 	Sphere sphere_{ 1.0f, glm::vec3() };
 	Cuboid skybox_{ glm::vec3(2.0f), glm::vec3() };
@@ -84,9 +91,13 @@ private:
 
 	Framebuffer captureFramebuffer_;
 	Texture envCubemap_;
+	static constexpr glm::vec<2, int, glm::defaultp> cubemapFaceSize_{1024, 1024};
 	Texture irradianceMap_;
+    static constexpr glm::vec<2, int, glm::defaultp> irradianceFaceSize_{32, 32};
 	Texture brdfLUTTexture_;
+    static constexpr glm::vec<2, int, glm::defaultp> lutSize_{512,512};
 	Texture prefilterMap_;
+    static constexpr glm::vec<2, int, glm::defaultp> prefilterFaceSize_{128, 128};
 };
 
 }

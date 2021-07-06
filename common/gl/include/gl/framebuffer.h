@@ -71,7 +71,7 @@ private:
     unsigned int frameBufferType_ = DEFAULT;
     glm::vec<2, int, glm::defaultp> size_;
     unsigned int fbo_ = 0;
-    static constexpr int MAX_COLOR_ATTACHMENT = 4;
+    static constexpr int MAX_COLOR_ATTACHMENT = 16;
     int colorAttachmentNmb = 1;
     int channelCount_ = 3;
     std::array<unsigned int, MAX_COLOR_ATTACHMENT> colorBuffers_{};
