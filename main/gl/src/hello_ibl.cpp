@@ -38,14 +38,6 @@ void HelloIbl::Init()
         "data/shaders/25_hello_ibl/brdf.vert",
         "data/shaders/25_hello_ibl/brdf.frag");
 
-    lights_ = {
-        {
-            {glm::vec3(-10.0f, 10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
-            {glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
-            {glm::vec3(-10.0f, -10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
-            {glm::vec3(10.0f, -10.0f, 10.0f), glm::vec3(300.0f, 300.0f, 300.0f)},
-        }
-    };
     hdrTexture_.LoadTexture("data/textures/Ridgecrest_Road_Ref.hdr", Texture::SMOOTH | Texture::CLAMP_WRAP | Texture::FLIP_Y);
     flags_ = FIRST_FRAME;
 
@@ -191,7 +183,7 @@ void HelloIbl::GenerateCubemap()
     ZoneNamedN(genCubemap, "Generate Cubemap", true);
     TracyGpuNamedZone(genCubemapGpu, "Generate Cubemap", true);
 #endif
-    captureFramebuffer_.SetSize({1024, 1024});
+    captureFramebuffer_.SetSize({cubemapFaceSize_.x, cubemapFaceSize_.y});
     captureFramebuffer_.SetType(
         Framebuffer::COLOR_ATTACHMENT_0 |
         Framebuffer::COLOR_CUBEMAP |
@@ -208,7 +200,7 @@ void HelloIbl::GenerateCubemap()
     equiToCubemap_.Bind();
     equiToCubemap_.SetTexture("equirectangularMap", hdrTexture_, 0);
     equiToCubemap_.SetMat4("projection", captureCamera.GetProjection());
-    glViewport(0, 0, 1024, 1024);
+    glViewport(0, 0, cubemapFaceSize_.x, cubemapFaceSize_.y);
     captureFramebuffer_.Bind();
     for (unsigned int i = 0; i < 6; ++i)
     {
@@ -235,7 +227,7 @@ void HelloIbl::GenerateDiffuseIrradiance()
     ZoneNamedN(genDiffuse, "Generate Diffuse Irradiance", true);
     TracyGpuNamedZone(genDiffuseGpu, "Generate Diffuse Irradiance", true);
 #endif
-    captureFramebuffer_.SetSize({32, 32});
+    captureFramebuffer_.SetSize({irradianceFaceSize_.x, irradianceFaceSize_.y});
     captureFramebuffer_.Reload();
 
     Camera3D captureCamera;
@@ -248,7 +240,7 @@ void HelloIbl::GenerateDiffuseIrradiance()
     irradianceShader_.Bind();
     irradianceShader_.SetMat4("projection", captureCamera.GetProjection());
     irradianceShader_.SetTexture("environmentMap", envCubemap_, 0);
-    glViewport(0, 0, 32, 32);
+    glViewport(0, 0, irradianceFaceSize_.x, irradianceFaceSize_.y);
     captureFramebuffer_.Bind();
     for (int i = 0; i < 6; i++)
     {
@@ -281,7 +273,7 @@ void HelloIbl::GeneratePrefilter()
     captureCamera.fovY = 90.0f;
     captureCamera.nearPlane = 0.1f;
     captureCamera.farPlane = 10.0f;
-    captureFramebuffer_.SetSize({128, 128});
+    captureFramebuffer_.SetSize({prefilterFaceSize_.x, prefilterFaceSize_.y});
     captureFramebuffer_.Reload();
     captureFramebuffer_.Bind();
     const auto colorBuffer = captureFramebuffer_.GetColorTexture(0);
@@ -304,8 +296,8 @@ void HelloIbl::GeneratePrefilter()
         TracyGpuNamedZone(genPrefilterMipGpu, "Generate Prefilter Env Map Mip", true);
 #endif
         // reisze framebuffer according to mip-level size.
-        const unsigned int mipWidth = 128 * std::pow(0.5, mip);
-        const unsigned int mipHeight = 128 * std::pow(0.5, mip);
+        const unsigned int mipWidth = prefilterFaceSize_.x * std::pow(0.5, mip);
+        const unsigned int mipHeight = prefilterFaceSize_.y * std::pow(0.5, mip);
         glBindRenderbuffer(GL_RENDERBUFFER, captureFramebuffer_.GetDepthRbo());
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, mipWidth, mipHeight);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -340,12 +332,12 @@ void HelloIbl::GenerateLUT()
     TracyGpuNamedZone(genLUTGpu, "Generate LUT", true);
 #endif
     captureFramebuffer_.SetType(Framebuffer::COLOR_ATTACHMENT_0 | Framebuffer::HDR);
-    captureFramebuffer_.SetSize({ 512,512 });
+    captureFramebuffer_.SetSize({ lutSize_.x,lutSize_.y });
     captureFramebuffer_.SetChannelCount(2);
     captureFramebuffer_.Reload();
     glDisable(GL_DEPTH_TEST);
     captureFramebuffer_.Bind();
-    glViewport(0, 0, 512, 512);
+    glViewport(0, 0, lutSize_.x, lutSize_.y);
     brdfShader_.Bind();
     glClear(GL_COLOR_BUFFER_BIT);
     quad_.Draw();
