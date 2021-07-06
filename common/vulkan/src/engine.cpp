@@ -13,8 +13,6 @@
 #endif
 namespace vk
 {
-
-
 Engine* Engine::instance_ = nullptr;
 
 Engine::Engine(Program& program) : program_(program)
@@ -27,7 +25,7 @@ void Engine::Run()
     Init();
     bool isOpen = true;
     std::chrono::time_point<std::chrono::system_clock> clock =
-            std::chrono::system_clock::now();
+        std::chrono::system_clock::now();
     while (isOpen)
     {
 #ifdef TRACY_ENABLE
@@ -35,7 +33,7 @@ void Engine::Run()
 #endif
         const auto start = std::chrono::system_clock::now();
         const auto dt = std::chrono::duration_cast<core::seconds>(
-                start - clock);
+            start - clock);
         clock = start;
         {
 #ifdef TRACY_ENABLE
@@ -63,7 +61,6 @@ void Engine::Run()
             vkWaitForFences(driver_.device, 1,
                             &renderer_.inFlightFences[renderer_.currentFrame],
                             VK_TRUE, UINT64_MAX);
-
         }
         {
 #ifdef TRACY_ENABLE
@@ -103,7 +100,8 @@ void Engine::Run()
             ZoneNamedN(presentImage, "Present Image", true);
 #endif
             VkSemaphore signalSemaphores[] = {
-                    renderer_.renderFinishedSemaphores[renderer_.currentFrame]};
+                renderer_.renderFinishedSemaphores[renderer_.currentFrame]
+            };
             VkPresentInfoKHR presentInfo{};
             presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -118,7 +116,7 @@ void Engine::Run()
             vkQueuePresentKHR(driver_.presentQueue, &presentInfo);
         }
         renderer_.currentFrame =
-                (renderer_.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+            (renderer_.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     Destroy();
@@ -147,6 +145,7 @@ void Engine::Init()
 
     //Renderer Init
     CreateRenderPass();
+    CreateDepthResources();
     CreateFramebuffers();
     CreateCommandPool();
     CreateCommandBuffers();
@@ -157,7 +156,6 @@ void Engine::Init()
 
 void Engine::Destroy()
 {
-
     vkDeviceWaitIdle(driver_.device);
     program_.Destroy();
     CleanupSwapchain();
@@ -216,12 +214,12 @@ void Engine::CreateInstance()
     }
 
     const char* const additionalExtensions[] =
-            {
-                    VK_EXT_DEBUG_REPORT_EXTENSION_NAME, // example additional extension
-                    VK_EXT_DEBUG_UTILS_EXTENSION_NAME //adding validation layers
-            };
+    {
+        VK_EXT_DEBUG_REPORT_EXTENSION_NAME, // example additional extension
+        VK_EXT_DEBUG_UTILS_EXTENSION_NAME //adding validation layers
+    };
     const size_t additionalExtensionsCount =
-            sizeof(additionalExtensions) / sizeof(additionalExtensions[0]);
+        sizeof(additionalExtensions) / sizeof(additionalExtensions[0]);
     const size_t extensionCount = count + additionalExtensionsCount;
     std::vector<const char*> extensionNames(extensionCount);
 
@@ -276,12 +274,12 @@ void Engine::CreateWindow()
     ZoneScoped;
 #endif
     window_ = SDL_CreateWindow(
-            "Vulkan Playground",
-            SDL_WINDOWPOS_UNDEFINED,
-            SDL_WINDOWPOS_UNDEFINED,
-            1280,
-            720,
-            SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
+        "Vulkan Playground",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        1280,
+        720,
+        SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
     );
 }
 
@@ -316,8 +314,9 @@ void Engine::CreateLogicalDevice()
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<std::uint32_t> uniqueQueueFamilies = {
-            indices.graphicsFamily.value(),
-            indices.presentFamily.value()};
+        indices.graphicsFamily.value(),
+        indices.presentFamily.value()
+    };
     float queuePriority = 1.0f;
     for (std::uint32_t queueFamily : uniqueQueueFamilies)
     {
@@ -362,8 +361,6 @@ void Engine::CreateLogicalDevice()
                      &driver_.graphicsQueue);
     vkGetDeviceQueue(driver_.device, indices.presentFamily.value(), 0,
                      &driver_.presentQueue);
-
-
 }
 
 void Engine::CreateSurface()
@@ -386,18 +383,18 @@ void Engine::CreateSwapChain()
 #endif
     core::LogDebug("Create SwapChain");
     SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
-            driver_.physicalDevice,
-            driver_.surface);
+        driver_.physicalDevice,
+        driver_.surface);
 
     VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(
-            swapChainSupport.formats);
+        swapChainSupport.formats);
     VkPresentModeKHR presentMode = ChooseSwapPresentMode(
-            swapChainSupport.presentModes);
+        swapChainSupport.presentModes);
     VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
     core::LogDebug(fmt::format(
-            "Swapchain support, minImageCount: {} maxImageCount: {}",
-            swapChainSupport.capabilities.minImageCount,
-            swapChainSupport.capabilities.maxImageCount));
+        "Swapchain support, minImageCount: {} maxImageCount: {}",
+        swapChainSupport.capabilities.minImageCount,
+        swapChainSupport.capabilities.maxImageCount));
     swapchain_.minImageCount = swapChainSupport.capabilities.minImageCount;
     swapchain_.imageCount = swapChainSupport.capabilities.minImageCount + 1;
 
@@ -407,7 +404,7 @@ void Engine::CreateSwapChain()
         swapchain_.imageCount = swapChainSupport.capabilities.maxImageCount;
     }
     core::LogDebug(
-            fmt::format("Chosen image count: {}", swapchain_.imageCount));
+        fmt::format("Chosen image count: {}", swapchain_.imageCount));
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -423,8 +420,10 @@ void Engine::CreateSwapChain()
 
     QueueFamilyIndices indices = FindQueueFamilies(driver_.physicalDevice,
                                                    driver_.surface);
-    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(),
-                                     indices.presentFamily.value()};
+    uint32_t queueFamilyIndices[] = {
+        indices.graphicsFamily.value(),
+        indices.presentFamily.value()
+    };
 
     if (indices.graphicsFamily != indices.presentFamily)
     {
@@ -472,27 +471,8 @@ void Engine::CreateImageViews()
     swapchain_.imageViews.resize(swapchain_.images.size());
     for (size_t i = 0; i < swapchain_.images.size(); i++)
     {
-        VkImageViewCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = swapchain_.images[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = swapchain_.imageFormat;
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView(driver_.device, &createInfo, nullptr,
-                              &swapchain_.imageViews[i]) !=
-            VK_SUCCESS)
-        {
-            core::LogError("Failed to create image views!");
-            std::terminate();
-        }
+        swapchain_.imageViews[i] = CreateImageView(driver_.device, swapchain_.images[i], swapchain_.imageFormat,
+                                                   VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
@@ -516,6 +496,9 @@ void Engine::CleanupSwapchain()
                          renderer_.commandBuffers.data());
     vkDestroyCommandPool(driver_.device, renderer_.commandPool, nullptr);
     vkDestroyRenderPass(driver_.device, renderer_.renderPass, nullptr);
+
+    vkDestroyImageView(driver_.device, renderer_.depthImageView, nullptr);
+    vmaDestroyImage(allocator_, renderer_.depthImage, renderer_.depthImageMemory);
 
     for (auto& imageView : swapchain_.imageViews)
     {
@@ -551,8 +534,8 @@ Engine::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
     SDL_GetWindowSize(window_, &width, &height);
 
     VkExtent2D actualExtent = {
-            static_cast<std::uint32_t>(width),
-            static_cast<std::uint32_t>(height)
+        static_cast<std::uint32_t>(width),
+        static_cast<std::uint32_t>(height)
     };
 
     actualExtent.width = std::max(capabilities.minImageExtent.width,
@@ -581,27 +564,46 @@ void Engine::CreateRenderPass()
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+    VkAttachmentDescription depthAttachment{};
+    depthAttachment.format = FindDepthFormat(driver_.physicalDevice);
+    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
     VkSubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
+
+    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = 1;
@@ -645,7 +647,6 @@ void Engine::CreateSyncObjects()
             vkCreateFence(driver_.device, &fenceInfo, nullptr,
                           &renderer_.inFlightFences[i]) != VK_SUCCESS)
         {
-
             core::LogError("Failed to create sync objects!");
             std::terminate();
         }
@@ -661,19 +662,20 @@ void Engine::CreateFramebuffers()
     renderer_.framebuffers.resize(swapchain_.imageViews.size());
     for (size_t i = 0; i < swapchain_.imageViews.size(); i++)
     {
-        VkImageView attachments[] = {
-                swapchain_.imageViews[i]
+
+        std::array<VkImageView, 2> attachments = {
+            swapchain_.imageViews[i],
+            renderer_.depthImageView
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = renderer_.renderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = swapchain_.extent.width;
         framebufferInfo.height = swapchain_.extent.height;
         framebufferInfo.layers = 1;
-
         if (vkCreateFramebuffer(driver_.device, &framebufferInfo, nullptr,
                                 &renderer_.framebuffers[i]) != VK_SUCCESS)
         {
@@ -690,8 +692,8 @@ void Engine::CreateCommandPool()
 #endif
     core::LogDebug("Create Command Pool");
     QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(
-            driver_.physicalDevice,
-            driver_.surface);
+        driver_.physicalDevice,
+        driver_.surface);
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -734,12 +736,22 @@ void Engine::CreateCommandBuffers()
     for (std::size_t i = 0; i < renderer_.commandBuffers.size(); i++)
     {
         tracyContexts_[i] = TracyVkContext(
-                                    driver_.physicalDevice,
-                                    driver_.device,
-                                    driver_.graphicsQueue,
-                                    renderer_.commandBuffers[i]);
+            driver_.physicalDevice,
+            driver_.device,
+            driver_.graphicsQueue,
+            renderer_.commandBuffers[i]);
     }
 #endif
+}
+
+void Engine::CreateDepthResources()
+{
+    const auto depthFormat = FindDepthFormat(driver_.physicalDevice);
+    CreateImage(swapchain_.extent.width, swapchain_.extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, renderer_.depthImage,
+                renderer_.depthImageMemory);
+    renderer_.depthImageView = CreateImageView(driver_.device, renderer_.depthImage, depthFormat,
+                                               VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 SDL_Window* Engine::GetWindow() const
@@ -777,6 +789,7 @@ void Engine::RecreateSwapchain()
     CreateSwapChain();
     CreateImageViews();
     CreateRenderPass();
+    CreateDepthResources();
     CreateFramebuffers();
     CreateCommandPool();
     CreateCommandBuffers();
@@ -837,7 +850,7 @@ void Engine::CopyBufferToImage(VkBuffer buffer, VkImage image, std::uint32_t wid
     region.imageSubresource.baseArrayLayer = 0;
     region.imageSubresource.layerCount = 1;
 
-    region.imageOffset = { 0, 0, 0 };
+    region.imageOffset = {0, 0, 0};
     region.imageExtent = {
         width,
         height,
@@ -852,6 +865,32 @@ void Engine::CopyBufferToImage(VkBuffer buffer, VkImage image, std::uint32_t wid
         &region
     );
     EndSingleTimeCommands(commandBuffer);
+}
+
+void Engine::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image,
+                         VmaAllocation& imageMemory) const
+{
+    VkImageCreateInfo imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format;
+    imageInfo.tiling = tiling;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = usage;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    allocInfo.requiredFlags = properties;
+
+    vmaCreateImage(allocator_, &imageInfo, &allocInfo, &image, &imageMemory, nullptr);
 }
 
 VkCommandBuffer Engine::BeginSingleTimeCommands() const

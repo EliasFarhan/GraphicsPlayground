@@ -53,6 +53,10 @@ struct Renderer
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
 
+    VkImage depthImage;
+    VmaAllocation depthImageMemory;
+    VkImageView depthImageView;
+
 };
 
 class VulkanSwapchainRecreationInterface
@@ -104,6 +108,10 @@ public:
 
     void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, std::size_t size);
     void CopyBufferToImage(VkBuffer buffer, VkImage image, std::uint32_t width, std::uint32_t height);
+
+    void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+                     VkMemoryPropertyFlags properties, VkImage& image, VmaAllocation& imageMemory) const;
+
     VkCommandBuffer BeginSingleTimeCommands() const;
     void EndSingleTimeCommands(VkCommandBuffer commandBuffer) const;
     
@@ -143,6 +151,8 @@ private:
     void CreateCommandPool();
 
     void CreateCommandBuffers();
+
+    void CreateDepthResources();
 
     static Engine* instance_;
     SDL_Window* window_ = nullptr;

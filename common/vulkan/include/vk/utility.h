@@ -10,8 +10,6 @@
 
 namespace vk
 {
-
-
 struct QueueFamilyIndices
 {
     std::optional<std::uint32_t> graphicsFamily;
@@ -34,10 +32,10 @@ struct SwapChainSupportDetails
 bool CheckValidationLayerSupport();
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData);
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData);
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                       const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -68,13 +66,23 @@ VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& avai
 
 VkShaderModule CreateShaderModule(const core::BufferFile& bufferFile, VkDevice device);
 
+VkFormat FindSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat>& candidates,
+                             VkImageTiling tiling, VkFormatFeatureFlags features);
+
+VkFormat FindDepthFormat(VkPhysicalDevice physicalDevice);
+
+bool HasStencilComponent(VkFormat format);
+
+
+
+VkImageView CreateImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 constexpr std::array<const char*, 1> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
+    "VK_LAYER_KHRONOS_validation"
 };
 
 constexpr std::array<const char*, 1> deviceExtensions =
-        {
-                VK_KHR_SWAPCHAIN_EXTENSION_NAME
-        };
+{
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 }
