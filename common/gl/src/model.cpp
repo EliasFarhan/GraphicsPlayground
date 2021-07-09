@@ -198,7 +198,6 @@ Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type,
 
 Model::~Model()
 {
-    Destroy();
 }
 
 void Model::Destroy()
