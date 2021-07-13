@@ -22,3 +22,4 @@ target_link_libraries(CommonGL PUBLIC Core
 target_include_directories(CommonGL PUBLIC "include/")
 target_include_directories(CommonGL PUBLIC ${STB_INCLUDE_DIRS})
 set_target_properties(CommonGL PROPERTIES UNITY_BUILD ON)
+set_target_properties (CommonGL PROPERTIES FOLDER GL)

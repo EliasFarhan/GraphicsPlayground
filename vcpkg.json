@@ -21,6 +21,7 @@
     "argh",
     "gtest",
 	"openvr",
-	"entt"
+	"entt",
+	"volk"
   ]
 }
