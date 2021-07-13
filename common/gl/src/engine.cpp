@@ -1,7 +1,6 @@
 #include <gl/engine.h>
 #include <GL/glew.h>
 #include <gl/error.h>
-#include <stb_image.h>
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -31,18 +30,12 @@ void Engine::Init()
 #endif
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-//#ifdef WIN32
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-/*
-#else
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#endif
- */
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,
                         SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);

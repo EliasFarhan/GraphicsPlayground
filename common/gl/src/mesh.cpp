@@ -1,5 +1,7 @@
 #include "gl/mesh.h"
 #include "fmt/core.h"
+#include "gl/error.h"
+#include <log.h>
 
 #include <GL/glew.h>
 
@@ -152,10 +154,20 @@ void Mesh::Destroy()
         TracyGpuNamedZone(textureDestroyGpu, "Mesh Destroy", true);
 #endif
         glDeleteVertexArrays(1, &vao_);
-        glDeleteBuffers(1, &vbo_);
-        glDeleteBuffers(1, &ebo_);
-        glCheckError();
         vao_ = 0;
+        glCheckError();
+        if (vbo_ != 0)
+        {
+            glDeleteBuffers(1, &vbo_);
+            vbo_ = 0;
+            glCheckError();
+        }
+        if (ebo_ != 0)
+        {
+            glDeleteBuffers(1, &ebo_);
+            ebo_ = 0;
+            glCheckError();
+        }
     }
 }
 

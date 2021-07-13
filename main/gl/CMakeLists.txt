@@ -8,7 +8,9 @@ target_link_libraries(gl_samples PRIVATE CommonGL)
 GENERATEGLDATA(${CMAKE_CURRENT_SOURCE_DIR} gl_samples)
 
 set_target_properties(gl_samples PROPERTIES UNITY_BUILD ON)
-
+set_target_properties (gl_samples PROPERTIES FOLDER GL)
+set_target_properties (gl_samples_DATA PROPERTIES FOLDER GL)
+set_target_properties (gl_samples_ShadersCheck PROPERTIES FOLDER GL)
 if(UNIX)
     IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" )
     add_custom_command(

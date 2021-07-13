@@ -1,6 +1,18 @@
+#include <GL/glew.h>
+
 #include "hello_deferred.h"
 #include <random>
 #include "fmt/core.h"
+#include <gl/framebuffer.h>
+#include <gl/error.h>
+#include <gl/shader.h>
+#include <engine.h>
+
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <imgui.h>
+
 
 #ifdef TRACY_ENABLE
 
@@ -138,6 +150,7 @@ void HelloDeferred::Destroy()
     whiteTexture_.Destroy();
     containerSpecular_.Destroy();
     container_.Destroy();
+    model_.Destroy();
 
 }
 

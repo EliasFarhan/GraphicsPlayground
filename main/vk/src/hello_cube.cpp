@@ -1,5 +1,7 @@
 #include "hello_cube.h"
 
+#include <cstring>
+
 #include <stb_image.h>
 #include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -109,7 +111,7 @@ void HelloCube::Destroy()
     vkDestroyDescriptorSetLayout(driver.device, descriptorSetLayout_, nullptr);
 }
 
-void HelloCube::OnEvent(SDL_Event& event)
+void HelloCube::OnEvent([[maybe_unused]]SDL_Event& event)
 {
 }
 
@@ -346,7 +348,7 @@ void HelloCube::CreateCommands()
         renderPassInfo.renderArea.extent = swapchain.extent;
 
         std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+        clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
         renderPassInfo.clearValueCount = clearValues.size();
         renderPassInfo.pClearValues = clearValues.data();
@@ -579,7 +581,8 @@ void HelloCube::UpdateUniformBuffers(core::seconds duration)
     ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapchain.extent.width /
+    ubo.proj = glm::perspective(glm::radians(45.0f),
+                                static_cast<float>(swapchain.extent.width) /
         static_cast<float>(swapchain.extent.height),
         0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
@@ -668,7 +671,7 @@ void HelloCube::CreateTextureSampler()
     }
 }
 
-void HelloCube::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+void HelloCube::TransitionImageLayout(VkImage image, [[maybe_unused]]VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     auto& engine = Engine::GetInstance();
     VkCommandBuffer commandBuffer = engine.BeginSingleTimeCommands();

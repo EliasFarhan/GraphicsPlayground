@@ -8,6 +8,9 @@ target_link_libraries(vk_samples PRIVATE CommonVk)
 GENERATEVKDATA(${CMAKE_CURRENT_SOURCE_DIR} vk_samples)
 
 set_target_properties(vk_samples PROPERTIES UNITY_BUILD ON)
+set_target_properties (vk_samples PROPERTIES FOLDER VK)
+set_target_properties (vk_samples_DATA PROPERTIES FOLDER VK)
+set_target_properties (vk_samples_ShadersCheck PROPERTIES FOLDER VK)
 
 if(UNIX)
     IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" )
