@@ -18,7 +18,7 @@ uniform mat4 transposeInverseModel;
 void main()
 {
     TexCoords = aTexCoords;    
-	Normal = mat3(transposeInverseModel) * aNormal;
+	Normal = mat3(transposeInverseModel) *aNormal;
     FragPos = vec3(model * vec4(aPos, 1.0));
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

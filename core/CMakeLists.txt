@@ -6,7 +6,7 @@ find_package(EnTT CONFIG REQUIRED)
 
 file(GLOB_RECURSE CoreFiles src/*cpp include/*.h)
 if(TRACY_ENABLE)
-list(APPEND CoreFiles "${TRACY_FOLDER}/TracyClient.cpp" "${TRACY_FOLDER}/Tracy.hpp")
+	list(APPEND CoreFiles "${TRACY_FOLDER}/TracyClient.cpp" "${TRACY_FOLDER}/Tracy.hpp")
 endif()
 add_library(Core STATIC ${CoreFiles})
 
