@@ -1,5 +1,7 @@
-#include <SDL.h>
+
+#include <volk.h>
 #include <rt/engine.h>
+#include <SDL.h>
 #include <SDL_vulkan.h>
 #include <set>
 
@@ -8,6 +10,32 @@
 
 namespace rt
 {
+Engine* Engine::engine_ = nullptr;
+
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    [[maybe_unused]] void* pUserData)
+{
+    if (messageSeverity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+        return VK_FALSE;
+    const auto msg = pCallbackData->pMessage;
+    switch (messageSeverity)
+    {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        core::LogError(msg);
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        core::LogWarning(msg);
+        break;
+    default:
+        core::LogDebug(msg);
+        break;
+    }
+    return VK_FALSE;
+}
+
 bool Engine::CreateSurface()
 {
     core::LogDebug("Creating Surface");
@@ -91,8 +119,8 @@ bool Engine::CreateLogicalDevice()
 
     if (enableValidationLayers_)
     {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(vk::validationLayers.size());
-        createInfo.ppEnabledLayerNames = vk::validationLayers.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
     }
     else
     {
@@ -153,7 +181,6 @@ bool Engine::CreateSwapChain()
     if (capabilities.currentExtent.width ==
         std::numeric_limits<std::uint32_t>::max())
     {
-
         int width, height;
         SDL_GetWindowSize(window_, &width, &height);
 
@@ -163,11 +190,11 @@ bool Engine::CreateSwapChain()
         };
 
         actualExtent.width = std::max(capabilities.minImageExtent.width,
-            std::min(capabilities.maxImageExtent.width,
-                actualExtent.width));
+                                      std::min(capabilities.maxImageExtent.width,
+                                               actualExtent.width));
         actualExtent.height = std::max(capabilities.minImageExtent.height,
-            std::min(capabilities.maxImageExtent.height,
-                actualExtent.height));
+                                       std::min(capabilities.maxImageExtent.height,
+                                                actualExtent.height));
         extent = actualExtent;
     }
     else
@@ -228,7 +255,7 @@ bool Engine::CreateSwapChain()
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     if (vkCreateSwapchainKHR(device_, &createInfo, nullptr,
-        &swapchain_.value) !=
+                             &swapchain_.value) !=
         VK_SUCCESS)
     {
         core::LogError("[Error] Failed to create swap chain!");
@@ -236,15 +263,88 @@ bool Engine::CreateSwapChain()
     }
     //Adding images
     vkGetSwapchainImagesKHR(device_, swapchain_.value,
-        &swapchain_.imageCount, nullptr);
+                            &swapchain_.imageCount, nullptr);
     swapchain_.images.resize(swapchain_.imageCount);
     vkGetSwapchainImagesKHR(device_, swapchain_.value,
-        &swapchain_.imageCount,
-        swapchain_.images.data());
+                            &swapchain_.imageCount,
+                            swapchain_.images.data());
 
     swapchain_.imageFormat = surfaceFormat.format;
     swapchain_.extent = extent;
     return true;
+}
+
+bool Engine::CreateImageViews()
+{
+    swapchain_.imageViews.resize(swapchain_.images.size());
+    for (std::size_t i = 0; i < swapchain_.images.size(); i++)
+    {
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = swapchain_.images[i];
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = swapchain_.imageFormat;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+        
+        if (vkCreateImageView(device_, &viewInfo, nullptr, &swapchain_.imageViews[i]) != VK_SUCCESS)
+        {
+            core::LogError("Failed to create texture image view!");
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Engine::CreateAllocator()
+{
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_0;
+    allocatorInfo.physicalDevice = physicalDevice_;
+    allocatorInfo.device = device_;
+    allocatorInfo.instance = instance_;
+    VmaVulkanFunctions vulkanFunctions;
+    vulkanFunctions.vkAllocateMemory = vkAllocateMemory;
+    vulkanFunctions.vkBindBufferMemory = vkBindBufferMemory;
+    vulkanFunctions.vkBindBufferMemory2KHR = vkBindBufferMemory2KHR;
+    vulkanFunctions.vkBindImageMemory = vkBindImageMemory;
+    vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
+    vulkanFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
+    vulkanFunctions.vkCreateBuffer = vkCreateBuffer;
+    vulkanFunctions.vkCreateImage = vkCreateImage;
+    vulkanFunctions.vkDestroyBuffer = vkDestroyBuffer;
+    vulkanFunctions.vkDestroyImage = vkDestroyImage;
+    vulkanFunctions.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
+    vulkanFunctions.vkFreeMemory = vkFreeMemory;
+    vulkanFunctions.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
+    vulkanFunctions.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
+    vulkanFunctions.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
+    vulkanFunctions.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
+    vulkanFunctions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+    vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
+    vulkanFunctions.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+    vulkanFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
+    vulkanFunctions.vkMapMemory = vkMapMemory;
+    vulkanFunctions.vkUnmapMemory = vkUnmapMemory;
+    allocatorInfo.pVulkanFunctions = &vulkanFunctions;
+    vmaCreateAllocator(&allocatorInfo, &allocator_);
+    return true;
+}
+
+void Engine::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+{
+    createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = DebugCallback;
 }
 
 int Engine::RateDeviceSuitability(VkPhysicalDevice device) const
@@ -359,6 +459,10 @@ void Engine::Run()
         std::chrono::system_clock::now();
     while (isOpen)
     {
+        const auto start = std::chrono::system_clock::now();
+        const auto dt = std::chrono::duration_cast<core::seconds>(
+            start - clock);
+        clock = start;
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -367,8 +471,113 @@ void Engine::Run()
                 isOpen = false;
             }
         }
+        Update(dt);
     }
     Destroy();
+}
+
+std::array<std::uint32_t, 2> Engine::GetSize()
+{
+    return { swapchain_.extent.width, swapchain_.extent.height };
+}
+
+Engine& Engine::GetInstance()
+{
+    return *engine_;
+}
+
+bool Engine::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
+                          VkBuffer& buffer, VmaAllocation& allocation) const
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    allocInfo.requiredFlags = properties;
+    if (vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer,
+                        &allocation, nullptr) != VK_SUCCESS)
+    {
+        core::LogError("Failed to create a buffer");
+        return false;
+    }
+    return true;
+}
+
+void Engine::CreateImage(std::uint32_t width, std::uint32_t height, VkFormat format, VkImageTiling tiling,
+    VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaAllocation& imageMemory) const
+{
+    VkImageCreateInfo imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format;
+    imageInfo.tiling = tiling;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = usage;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    allocInfo.requiredFlags = properties;
+
+    vmaCreateImage(allocator_, &imageInfo, &allocInfo, &image, &imageMemory, nullptr);
+}
+
+VkCommandBuffer Engine::BeginSingleTimeCommands() const
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = commandPool_;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(device_, &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    return commandBuffer;
+}
+
+void Engine::EndSingleTimeCommands(VkCommandBuffer commandBuffer) const
+{
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphicsQueue_);
+
+    vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
+}
+
+std::uint64_t Engine::GetBufferDeviceAddress(VkBuffer buffer) const
+{
+    VkBufferDeviceAddressInfoKHR bufferDeviceAI{};
+    bufferDeviceAI.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    bufferDeviceAI.buffer = buffer;
+    return vkGetBufferDeviceAddressEXT(device_, &bufferDeviceAI);
+}
+
+Engine::Engine(core::Program& program) : program_(program)
+{
+    engine_ = this;
 }
 
 void Engine::Init()
@@ -388,17 +597,28 @@ void Engine::Init()
     initResult_ = initResult_ && PickPhysicalDevice();
     initResult_ = initResult_ && CreateLogicalDevice();
     initResult_ = initResult_ && CreateSwapChain();
+    initResult_ = initResult_ && CreateImageViews();
+    initResult_ = initResult_ && CreateAllocator();
+    if (initResult_)
+        program_.Init();
 }
 
 void Engine::Update(core::seconds dt)
 {
+    program_.Update(dt);
 }
 
 void Engine::Destroy()
 {
-
+    program_.Destroy();
     vkDeviceWaitIdle(device_);
+    for (auto& imageView : swapchain_.imageViews)
+    {
+        vkDestroyImageView(device_, imageView, nullptr);
+    }
     vkDestroySwapchainKHR(device_, swapchain_.value, nullptr);
+
+    vmaDestroyAllocator(allocator_);
     vkDestroyDevice(device_, nullptr);
     if (enableDebugMessenger_ && enableValidationLayers_)
     {
@@ -482,10 +702,10 @@ bool Engine::CreateInstance()
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (enableValidationLayers_)
     {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(vk::validationLayers.size());
-        createInfo.ppEnabledLayerNames = vk::validationLayers.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
 
-        vk::PopulateDebugMessengerCreateInfo(debugCreateInfo);
+        PopulateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = static_cast<VkDebugUtilsMessengerCreateInfoEXT*>(&debugCreateInfo);
     }
     else
@@ -509,7 +729,7 @@ bool Engine::SetupDebugMessenger()
         return true;
     }
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-    vk::PopulateDebugMessengerCreateInfo(createInfo);
+    PopulateDebugMessengerCreateInfo(createInfo);
     vkCreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger_);
     return true;
 }
