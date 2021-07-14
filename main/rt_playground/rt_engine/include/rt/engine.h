@@ -32,6 +32,7 @@ public:
     std::array<std::uint32_t, 2> GetSize();
     const Swapchain& GetSwapChain() { return swapchain_; }
     VkDevice GetDevice() const { return device_; }
+    VmaAllocator GetAllocator() const { return allocator_; }
 
     static Engine& GetInstance();
 
@@ -59,8 +60,6 @@ protected:
     };
 
 
-
-
     void Init();
     void Update(core::seconds dt);
     void Destroy();
@@ -74,6 +73,8 @@ protected:
     bool CreateSwapChain();
     bool CreateImageViews();
     bool CreateAllocator();
+    bool CreateCommandPool();
+    bool CreateCommandBuffers();
 
 
     static void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo);
@@ -83,7 +84,6 @@ protected:
 
     static Engine* engine_;
     core::Program& program_;
-    VkCommandPool commandPool_;
 
     QueueFamilyIndices FindQueueFamilyIndices(VkPhysicalDevice device) const;
 
@@ -97,6 +97,8 @@ protected:
     VkQueue transferQueue_{};
     VkQueue presentQueue_{};
     VmaAllocator allocator_{};
+    VkCommandPool commandPool_;
+    std::vector<VkCommandBuffer> commandBuffers_;
 
     //Debug features
     bool enableValidationLayers_ = true;

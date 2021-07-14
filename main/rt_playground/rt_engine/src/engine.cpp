@@ -323,6 +323,44 @@ bool Engine::CreateAllocator()
     return true;
 }
 
+bool Engine::CreateCommandPool()
+{
+    QueueFamilyIndices queueFamilyIndices = FindQueueFamilyIndices(physicalDevice_);
+
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
+    if (vkCreateCommandPool(device_, &poolInfo, nullptr,
+        &commandPool_) !=
+        VK_SUCCESS)
+    {
+        core::LogDebug("Failed to create command pool!");
+        std::terminate();
+    }
+}
+
+bool Engine::CreateCommandBuffers()
+{
+    core::LogDebug("Create Command Buffers");
+    commandBuffers_.resize(swapchain_.imageCount);
+
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = commandPool_;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers_.size());
+
+    if (vkAllocateCommandBuffers(device_, &allocInfo,
+        commandBuffers_.data()) !=
+        VK_SUCCESS)
+    {
+        core::LogError("Failed to allocate command buffers!\n");
+        return false;
+    }
+    return true;
+}
+
 void Engine::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
 {
     createInfo = {};
@@ -580,6 +618,8 @@ void Engine::Init()
     initResult_ = initResult_ && CreateSwapChain();
     initResult_ = initResult_ && CreateImageViews();
     initResult_ = initResult_ && CreateAllocator();
+    initResult_ = initResult_ && CreateCommandPool();
+    initResult_ = initResult_ && CreateCommandBuffers();
     if (initResult_)
         program_.Init();
 }
@@ -591,8 +631,12 @@ void Engine::Update(core::seconds dt)
 
 void Engine::Destroy()
 {
-    program_.Destroy();
     vkDeviceWaitIdle(device_);
+    program_.Destroy();
+    vkFreeCommandBuffers(device_, commandPool_,
+        static_cast<uint32_t>(commandBuffers_.size()),
+        commandBuffers_.data());
+    vkDestroyCommandPool(device_, commandPool_, nullptr);
     for (auto& imageView : swapchain_.imageViews)
     {
         vkDestroyImageView(device_, imageView, nullptr);
