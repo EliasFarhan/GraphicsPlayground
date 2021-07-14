@@ -1,11 +1,8 @@
-find_package(volk CONFIG REQUIRED)
-
 file(GLOB_RECURSE ENGINE_SRC rt_engine/*.cpp rt_engine/*.h)
 add_library(rt_engine STATIC ${ENGINE_SRC})
 target_include_directories(rt_engine PUBLIC rt_engine/include)
-target_link_libraries(rt_engine PUBLIC volk::volk volk::volk_headers Core)
+target_link_libraries(rt_engine PUBLIC CommonVk)
 set_target_properties (rt_engine PROPERTIES FOLDER RT)
-target_compile_definitions(rt_engine PUBLIC VMA_STATIC_VULKAN_FUNCTIONS=0)
 
 file(GLOB_RECURSE HELLO_TRIANGLE_SRC hello_triangle/*.cpp hello_triangle/*.h)
 add_executable(rt_triangle ${HELLO_TRIANGLE_SRC})

@@ -161,7 +161,7 @@ private:
     Swapchain swapchain_{};
     Renderer renderer_{};
     bool enableValidationLayers_ = true;
-    bool enableDebugMessenger_ = true;
+    bool enableDebugMessenger_ = false;
     VmaAllocator allocator_;
     VkDebugUtilsMessengerEXT debugMessenger_;
 #ifdef TRACY_ENABLE

@@ -318,7 +318,7 @@ void HelloInputBuffer::CreateVertexBuffer()
     }
     void* data;
     vmaMapMemory(allocator, allocation_, &data);
-    memcpy(data, vertices_.data(), vertices_.size() * sizeof(Vertex));
+    std::memcpy(data, vertices_.data(), vertices_.size() * sizeof(Vertex));
     vmaUnmapMemory(allocator, allocation_);
 }
 

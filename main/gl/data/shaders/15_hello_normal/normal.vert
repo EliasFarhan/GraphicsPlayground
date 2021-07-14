@@ -32,8 +32,8 @@ void main()
     mat3 normalMatrix = mat3(transposeInverseModel);
     if(enableNormalMap)
     {
-        vec3 T = normalize(normalMatrix * aTangent);
-        vec3 N = normalize(normalMatrix * aNormal);
+        vec3 T = normalize(normalMatrix * normalize(aTangent));
+        vec3 N = normalize(normalMatrix * normalize(aNormal));
         T = normalize(T - dot(T, N) * N);
         vec3 B = normalize(cross(N, T));
 

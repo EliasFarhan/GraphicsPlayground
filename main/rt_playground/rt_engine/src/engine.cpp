@@ -1,5 +1,4 @@
 
-#include <volk.h>
 #include <rt/engine.h>
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -7,6 +6,8 @@
 
 #include "log.h"
 #include <fmt/core.h>
+
+#include "vk/utility.h"
 
 namespace rt
 {
@@ -141,6 +142,18 @@ bool Engine::CreateLogicalDevice()
                      &transferQueue_);
     vkGetDeviceQueue(device_, indices.presentFamily.value(), 0,
                      &presentQueue_);
+
+    vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device_, "vkGetBufferDeviceAddressKHR"));
+    vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device_, "vkCmdBuildAccelerationStructuresKHR"));
+    vkBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device_, "vkBuildAccelerationStructuresKHR"));
+    vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(vkGetDeviceProcAddr(device_, "vkCreateAccelerationStructureKHR"));
+    vkDestroyAccelerationStructureKHR = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(vkGetDeviceProcAddr(device_, "vkDestroyAccelerationStructureKHR"));
+    vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device_, "vkGetAccelerationStructureBuildSizesKHR"));
+    vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device_, "vkGetAccelerationStructureDeviceAddressKHR"));
+    vkCmdTraceRaysKHR = reinterpret_cast<PFN_vkCmdTraceRaysKHR>(vkGetDeviceProcAddr(device_, "vkCmdTraceRaysKHR"));
+    vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device_, "vkGetRayTracingShaderGroupHandlesKHR"));
+    vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device_, "vkCreateRayTracingPipelinesKHR"));
+
 }
 
 bool Engine::CreateSwapChain()
@@ -306,30 +319,6 @@ bool Engine::CreateAllocator()
     allocatorInfo.physicalDevice = physicalDevice_;
     allocatorInfo.device = device_;
     allocatorInfo.instance = instance_;
-    VmaVulkanFunctions vulkanFunctions;
-    vulkanFunctions.vkAllocateMemory = vkAllocateMemory;
-    vulkanFunctions.vkBindBufferMemory = vkBindBufferMemory;
-    vulkanFunctions.vkBindBufferMemory2KHR = vkBindBufferMemory2KHR;
-    vulkanFunctions.vkBindImageMemory = vkBindImageMemory;
-    vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
-    vulkanFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
-    vulkanFunctions.vkCreateBuffer = vkCreateBuffer;
-    vulkanFunctions.vkCreateImage = vkCreateImage;
-    vulkanFunctions.vkDestroyBuffer = vkDestroyBuffer;
-    vulkanFunctions.vkDestroyImage = vkDestroyImage;
-    vulkanFunctions.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
-    vulkanFunctions.vkFreeMemory = vkFreeMemory;
-    vulkanFunctions.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
-    vulkanFunctions.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
-    vulkanFunctions.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
-    vulkanFunctions.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
-    vulkanFunctions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
-    vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
-    vulkanFunctions.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
-    vulkanFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
-    vulkanFunctions.vkMapMemory = vkMapMemory;
-    vulkanFunctions.vkUnmapMemory = vkUnmapMemory;
-    allocatorInfo.pVulkanFunctions = &vulkanFunctions;
     vmaCreateAllocator(&allocatorInfo, &allocator_);
     return true;
 }
@@ -572,7 +561,7 @@ std::uint64_t Engine::GetBufferDeviceAddress(VkBuffer buffer) const
     VkBufferDeviceAddressInfoKHR bufferDeviceAI{};
     bufferDeviceAI.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
     bufferDeviceAI.buffer = buffer;
-    return vkGetBufferDeviceAddressEXT(device_, &bufferDeviceAI);
+    return vkGetBufferDeviceAddressKHR(device_, &bufferDeviceAI);
 }
 
 Engine::Engine(core::Program& program) : program_(program)
@@ -583,15 +572,7 @@ Engine::Engine(core::Program& program) : program_(program)
 void Engine::Init()
 {
     initResult_ = initResult_ && CreateWindow();
-    const auto volkResult = volkInitialize();
-    if (volkResult != VK_SUCCESS)
-    {
-        core::LogError("Could not initialize volk");
-        initResult_ = false;
-    }
     initResult_ = initResult_ && CreateInstance();
-    if (initResult_)
-        volkLoadInstance(instance_);
     initResult_ = initResult_ && SetupDebugMessenger();
     initResult_ = initResult_ && CreateSurface();
     initResult_ = initResult_ && PickPhysicalDevice();
@@ -622,8 +603,7 @@ void Engine::Destroy()
     vkDestroyDevice(device_, nullptr);
     if (enableDebugMessenger_ && enableValidationLayers_)
     {
-        vkDestroyDebugUtilsMessengerEXT(instance_, debugMessenger_,
-                                        nullptr);
+        vk::DestroyDebugUtilsMessengerEXT(instance_, debugMessenger_, nullptr);
     }
     vkDestroySurfaceKHR(instance_, surface_, nullptr);
 
@@ -729,8 +709,8 @@ bool Engine::SetupDebugMessenger()
         return true;
     }
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-    PopulateDebugMessengerCreateInfo(createInfo);
-    vkCreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger_);
+    vk::PopulateDebugMessengerCreateInfo(createInfo);
+    vk::CreateDebugUtilsMessengerEXT(instance_, &createInfo, nullptr, &debugMessenger_);
     return true;
 }
 }
