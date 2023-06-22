@@ -4,7 +4,6 @@
 
 #include "GL/glew.h"
 #include "hello_normal.h"
-#include <imgui_impl_sdl.h>
 
 #include <functional>
 

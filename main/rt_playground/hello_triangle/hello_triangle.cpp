@@ -471,8 +471,7 @@ void HelloTriangle::Init()
         vkGetDeviceProcAddr(device, "vkGetRayTracingShaderGroupHandlesKHR"));
     vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(
         device, "vkCreateRayTracingPipelinesKHR"));
-
-    return;
+    
     // Create the acceleration structures used to render the ray traced scene
     initResult_ = initResult_ && CreateBottomLevelAccelerationStructure();
     initResult_ = initResult_ && CreateTopLevelAccelerationStructure();

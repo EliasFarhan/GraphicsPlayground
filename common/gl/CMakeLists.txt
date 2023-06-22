@@ -20,6 +20,6 @@ target_link_libraries(CommonGL PUBLIC Core
         assimp::assimp
         ${OPENGL_LIBRARIES})
 target_include_directories(CommonGL PUBLIC "include/")
-target_include_directories(CommonGL PUBLIC ${STB_INCLUDE_DIRS})
+target_include_directories(CommonGL PUBLIC ${Stb_INCLUDE_DIR})
 set_target_properties(CommonGL PROPERTIES UNITY_BUILD ON)
 set_target_properties (CommonGL PROPERTIES FOLDER GL)

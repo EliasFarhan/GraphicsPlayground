@@ -3,6 +3,8 @@
 
 #include "vk_mem_alloc.h"
 
+#include <array>
+#include <string_view>
 namespace rt
 {
 
