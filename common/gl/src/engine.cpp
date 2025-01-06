@@ -8,8 +8,8 @@
 #include "log.h"
 
 #ifdef TRACY_ENABLE
-#include "Tracy.hpp"
-#include "TracyOpenGL.hpp"
+#include "tracy/Tracy.hpp"
+#include "tracy/TracyOpenGL.hpp"
 #endif
 
 namespace gl
@@ -169,8 +169,8 @@ void Engine::Run()
 #endif
         SDL_GL_SwapWindow(window_);
 #ifdef TRACY_ENABLE
-        TracyGpuCollect
-        FrameMark
+        TracyGpuCollect;
+        FrameMark;
 #endif
         glCheckError();
 

@@ -4,8 +4,8 @@
 #include "imgui.h"
 #ifdef TRACY_ENABLE
 
-#include "Tracy.hpp"
-#include "TracyOpenGL.hpp"
+#include "tracy/Tracy.hpp"
+#include "tracy/TracyOpenGL.hpp"
 
 #endif
 
@@ -161,17 +161,17 @@ namespace gl
 
         ImGui::SliderScalar("Asteroid Nmb", ImGuiDataType_U64, &asteroidNmb_, &minAsteroidNmb_, &maxAsteroidNmb_);
 
-        const unsigned long minChunkSize = 100;
-        const unsigned long maxChunkSize = 10'000;
+        const uint64_t minChunkSize = 100;
+        const uint64_t maxChunkSize = 10'000;
         ImGui::SliderScalar("Instance Chunk Size", ImGuiDataType_U64, &instanceChunkSize_, &minChunkSize,
                             &maxChunkSize);
         ImGui::LabelText("Asteroid Actual Nmb", "%zu", asteroidCulledPositions_.size());
         ImGui::End();
     }
 
-    void HelloFrustum::CalculateForce(unsigned long begin, unsigned long end)
+    void HelloFrustum::CalculateForce(uint64_t begin, uint64_t end)
     {
-        const unsigned long endCount = std::min(end, asteroidNmb_);
+        const uint64_t endCount = std::min(end, asteroidNmb_);
         for (auto i = begin; i < endCount; i++)
         {
             const auto deltaToCenter = glm::vec3(0.0f) - asteroidPositions_[i];
@@ -181,9 +181,9 @@ namespace gl
         }
     }
 
-    void HelloFrustum::CalculateVelocity(unsigned long begin, unsigned long end)
+    void HelloFrustum::CalculateVelocity(uint64_t begin, uint64_t end)
     {
-        const size_t endCount = std::min(end, asteroidNmb_);
+        const uint64_t endCount = std::min(end, asteroidNmb_);
         for (auto i = begin; i < endCount; i++)
         {
             const auto deltaToCenter = glm::vec3() - asteroidPositions_[i];
@@ -195,9 +195,9 @@ namespace gl
         }
     }
 
-    void HelloFrustum::CalculatePositions(unsigned long begin, unsigned long end)
+    void HelloFrustum::CalculatePositions(uint64_t begin, uint64_t end)
     {
-        const size_t endCount = std::min(end, asteroidNmb_);
+        const uint64_t endCount = std::min(end, asteroidNmb_);
         for (auto i = begin; i < endCount; i++)
         {
             asteroidPositions_[i] += asteroidVelocities_[i] * dt_;

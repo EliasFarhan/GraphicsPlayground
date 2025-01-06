@@ -5,7 +5,7 @@
 #include <shared_mutex>
 
 #ifdef TRACY_ENABLE
-#include "Tracy.hpp"
+#include "tracy/Tracy.hpp"
 #endif
 namespace core
 {

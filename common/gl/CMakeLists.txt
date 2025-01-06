@@ -9,9 +9,6 @@ find_package(gli CONFIG REQUIRED)
 
 
 file(GLOB_RECURSE CommonGL_FILES src/* include/*)
-if(TRACY_ENABLE)
-	list(APPEND CommonGL_FILES "${TRACY_FOLDER}/TracyOpenGL.hpp")
-endif()
 add_library(CommonGL STATIC ${CommonGL_FILES})
 target_link_libraries(CommonGL PUBLIC Core
         GLEW::GLEW

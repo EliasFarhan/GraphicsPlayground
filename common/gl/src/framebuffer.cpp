@@ -12,8 +12,8 @@
 
 #ifdef TRACY_ENABLE
 
-#include "Tracy.hpp"
-#include "TracyOpenGL.hpp"
+#include "tracy/Tracy.hpp"
+#include "tracy/TracyOpenGL.hpp"
 
 #endif
 

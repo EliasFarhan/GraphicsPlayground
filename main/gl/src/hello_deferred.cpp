@@ -16,8 +16,8 @@
 
 #ifdef TRACY_ENABLE
 
-#include "Tracy.hpp"
-#include "TracyOpenGL.hpp"
+#include "tracy/Tracy.hpp"
+#include "tracy/TracyOpenGL.hpp"
 
 #endif
 
@@ -51,6 +51,7 @@ void HelloDeferred::Init()
     gBuffer_.SetColorAttachmentNmb(3);
     gBuffer_.SetType(Framebuffer::HDR | Framebuffer::COLOR_ATTACHMENT_0 |
                      Framebuffer::DEPTH_RBO);
+	gBuffer_.SetChannelCount(4);
     gBuffer_.Create();
 
     std::random_device rd;  //Will be used to obtain a seed for the random number engine

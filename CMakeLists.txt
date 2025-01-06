@@ -16,14 +16,12 @@ endif()
 
 add_compile_definitions(_USE_MATH_DEFINES)
 
-set(TRACY_ENABLE ON CACHE BOOL "")
+set(TRACY_ENABLE OFF CACHE BOOL "")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 
 if(TRACY_ENABLE)
-    add_compile_definitions(TRACY_ENABLE)
-    set(TRACY_FOLDER "${CMAKE_SOURCE_DIR}/externals/tracy/" CACHE STRING "")
-    include_directories("${TRACY_FOLDER}")
+    add_subdirectory(externals/tracy)
 endif()
 
 find_package(SDL2 CONFIG REQUIRED)

@@ -24,9 +24,9 @@ public:
     void DrawImGui() override;
     
 private:
-    void CalculateForce(unsigned long begin, unsigned long end);
-    void CalculateVelocity(unsigned long begin, unsigned long end);
-    void CalculatePositions(unsigned long begin, unsigned long end);
+    void CalculateForce(uint64_t begin, uint64_t end);
+    void CalculateVelocity(uint64_t begin, uint64_t end);
+    void CalculatePositions(uint64_t begin, uint64_t end);
     void Culling(unsigned long begin, unsigned long end);
 
 
@@ -34,10 +34,10 @@ private:
     Camera3D overCamera_;
 
     Model rockModel_;
-    const unsigned long maxAsteroidNmb_ = 100'000;
-    const unsigned long minAsteroidNmb_ = 1'000;
-    unsigned long instanceChunkSize_ = 1'000;
-    unsigned long asteroidNmb_ = 1000;
+    static constexpr uint64_t maxAsteroidNmb_ = 100'000;
+    static constexpr uint64_t minAsteroidNmb_ = 1'000;
+    uint64_t instanceChunkSize_ = 1'000;
+    uint64_t asteroidNmb_ = 1000;
 
 
     ShaderProgram vertexInstancingDrawShader_;

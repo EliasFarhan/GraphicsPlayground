@@ -9,7 +9,7 @@
 
 #ifdef TRACY_ENABLE
 
-#include "TracyVulkan.hpp"
+#include "tracy/TracyVulkan.hpp"
 
 #endif
 
