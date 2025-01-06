@@ -3,6 +3,8 @@
 #include <imgui.h>
 #include <fmt/core.h>
 
+#include <algorithm>
+
 namespace gl
 {
 void HelloPbr::Init()

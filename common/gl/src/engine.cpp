@@ -147,7 +147,7 @@ void Engine::Run()
         }
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame(window_);
+        ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
         DrawImGui();
         ImGui::Render();

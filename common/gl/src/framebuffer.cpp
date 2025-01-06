@@ -8,6 +8,8 @@
 #include "gl/error.h"
 #include "fmt/core.h"
 
+#include <algorithm>
+
 #ifdef TRACY_ENABLE
 
 #include "Tracy.hpp"

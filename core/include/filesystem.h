@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string_view>
 #include <service_locator.h>
+#include <string_view>
+#include <string>
 
 namespace core
 {
